@@ -16,8 +16,6 @@ namespace Core.GameStates.Types
             ConnectToServer(_messageSender);
 
             _messageSender.OnConnected += OnConnected;
-            
-            TriggerStateSwitch?.Invoke();
         }
 
         public override void TickState()
@@ -32,10 +30,7 @@ namespace Core.GameStates.Types
         {
             if (messageSender.Connect())
             {
-                if (messageSender.IsConnected)
-                {
-                    messageSender.SendJoinRoom();
-                }
+                TriggerStateSwitch?.Invoke();
             }
         }
 

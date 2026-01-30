@@ -9,6 +9,7 @@ namespace Core.GameStates
     {
         [SerializeField] private GameInitialize gameInitialize;
         [SerializeField] private GameConnect gameConnect;
+        [SerializeField] private GameJoinRoom gameJoinRoom;
         
         private HashSet<GameState> _gameStates;
         private Queue<GameState> _pendingStates;
@@ -24,6 +25,7 @@ namespace Core.GameStates
             {
                 gameInitialize,
                 gameConnect,
+                gameJoinRoom
             };
 
             _pendingStates = new Queue<GameState>();

@@ -1,15 +1,21 @@
 ﻿using System;
 using Core.Services;
+using Network;
 
 namespace Core.GameStates.Types
 {
-    public class GameInitialize : GameState
+    public class GameJoinRoom : GameState
     {
         public override Action TriggerStateSwitch { get; set; }
-
+        
+        private MessageSender _messageSender;
         public override void Initialize(ServiceContainer container)
         {
-            TriggerStateSwitch?.Invoke();
+             _messageSender = container.Get<MessageSender>();
+             
+             _messageSender.SendJoinRoom();
+             
+             TriggerStateSwitch?.Invoke();
         }
 
         public override void TickState()

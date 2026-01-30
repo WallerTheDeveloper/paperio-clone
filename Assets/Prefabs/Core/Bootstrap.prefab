@@ -65,6 +65,7 @@ Transform:
   m_Children:
   - {fileID: 4713192172202245710}
   - {fileID: 4597972521220698351}
+  - {fileID: 8127667653199610132}
   m_Father: {fileID: 6534864659616298208}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!114 &3370939064693828961
@@ -81,6 +82,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::Core.GameStates.GameStatesManager
   gameInitialize: {fileID: 7232870458478281758}
   gameConnect: {fileID: 4062315185405032209}
+  gameJoinRoom: {fileID: 7877800101714392073}
 --- !u!1 &4684858454388093765
 GameObject:
   m_ObjectHideFlags: 0
@@ -347,3 +349,76 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 0f7239d770ef95844ad56fb2b88ed1ae, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Game.Network.NetworkManager
+--- !u!1001 &7916231939988129479
+PrefabInstance:
+  m_ObjectHideFlags: 0
+  serializedVersion: 2
+  m_Modification:
+    serializedVersion: 3
+    m_TransformParent: {fileID: 8094305924707118863}
+    m_Modifications:
+    - target: {fileID: 2096247140584867795, guid: 1cdb267681db8e349b1ada1178d78f1d, type: 3}
+      propertyPath: m_LocalPosition.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 2096247140584867795, guid: 1cdb267681db8e349b1ada1178d78f1d, type: 3}
+      propertyPath: m_LocalPosition.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 2096247140584867795, guid: 1cdb267681db8e349b1ada1178d78f1d, type: 3}
+      propertyPath: m_LocalPosition.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 2096247140584867795, guid: 1cdb267681db8e349b1ada1178d78f1d, type: 3}
+      propertyPath: m_LocalRotation.w
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 2096247140584867795, guid: 1cdb267681db8e349b1ada1178d78f1d, type: 3}
+      propertyPath: m_LocalRotation.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 2096247140584867795, guid: 1cdb267681db8e349b1ada1178d78f1d, type: 3}
+      propertyPath: m_LocalRotation.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 2096247140584867795, guid: 1cdb267681db8e349b1ada1178d78f1d, type: 3}
+      propertyPath: m_LocalRotation.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 2096247140584867795, guid: 1cdb267681db8e349b1ada1178d78f1d, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 2096247140584867795, guid: 1cdb267681db8e349b1ada1178d78f1d, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 2096247140584867795, guid: 1cdb267681db8e349b1ada1178d78f1d, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 4212300364440063906, guid: 1cdb267681db8e349b1ada1178d78f1d, type: 3}
+      propertyPath: m_Name
+      value: Game Join Room
+      objectReference: {fileID: 0}
+    m_RemovedComponents: []
+    m_RemovedGameObjects: []
+    m_AddedGameObjects: []
+    m_AddedComponents: []
+  m_SourcePrefab: {fileID: 100100000, guid: 1cdb267681db8e349b1ada1178d78f1d, type: 3}
+--- !u!114 &7877800101714392073 stripped
+MonoBehaviour:
+  m_CorrespondingSourceObject: {fileID: 40403159547441870, guid: 1cdb267681db8e349b1ada1178d78f1d, type: 3}
+  m_PrefabInstance: {fileID: 7916231939988129479}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 4c0d43177810475fb65fed4602b6e033, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::Core.GameStates.Types.GameJoinRoom
+--- !u!4 &8127667653199610132 stripped
+Transform:
+  m_CorrespondingSourceObject: {fileID: 2096247140584867795, guid: 1cdb267681db8e349b1ada1178d78f1d, type: 3}
+  m_PrefabInstance: {fileID: 7916231939988129479}
+  m_PrefabAsset: {fileID: 0}
