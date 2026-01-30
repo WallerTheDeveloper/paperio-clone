@@ -1,22 +1,22 @@
 ﻿using System.Collections.Generic;
-using Core.DISystem;
+using Core.Services;
 using Game.Server;
 
 namespace Game.Data
 {
-    public class PlayersContainer : IDependency
+    public class PlayersContainer : IService
     {
         private readonly Dictionary<uint, PlayerData> _playersContainer = new();
-        
-        public void Initialize()
-        { }
 
-        public void Deinitialize()
+        public void Initialize(ServiceContainer services)
         { }
 
         public void Tick()
         { }
-        
+
+        public void Dispose()
+        { }
+
         public void Register(PlayerInfo playerInfo)
         {
             var newPlayer = new PlayerData
@@ -32,18 +32,13 @@ namespace Game.Data
         {
             return _playersContainer.Remove(playerID);
         }
-        /// <summary>
-        /// Get a specific player's data.
-        /// </summary>
+
         public PlayerData TryGetPlayerById(uint playerId)
         {
             _playersContainer.TryGetValue(playerId, out PlayerData player);
             return player;
         }
         
-        /// <summary>
-        /// Get all alive players.
-        /// </summary>
         public IEnumerable<PlayerData> GetAlivePlayers()
         {
             foreach (var player in _playersContainer.Values)

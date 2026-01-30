@@ -1,9 +1,9 @@
 using System;
+using Core.Services;
 using Game.Client;
 using Game.Paperio;
 using Game.Server;
 using Google.Protobuf;
-using MonoSingleton;
 using UnityEngine;
 
 namespace Network
@@ -13,7 +13,7 @@ namespace Network
     /// Think of this as a "switchboard operator" that routes messages
     /// to the right handlers and coordinates sending messages to the server.
     /// </summary>
-    public class MessageSender : MonoSingleton<MessageSender>, ISystem
+    public class MessageSender : MonoBehaviour, IService
     {
         [Header("Connection Settings")]
         [SerializeField] private string serverHost = "127.0.0.1";
@@ -65,8 +65,8 @@ namespace Network
         // Game-specific events (Paper.io)
         public event Action<PaperioState> OnPaperioStateReceived;
         public event Action<PaperioJoinResponse> OnPaperioJoinResponse;
-
-        public void Initialize()
+        
+        public void Initialize(ServiceContainer services)
         {
             // Ensure main thread dispatcher exists
             MainThreadDispatcher.Initialize();
@@ -77,23 +77,7 @@ namespace Network
             _udpClient.OnDisconnected += HandleDisconnected;
         }
 
-        public void Run()
-        {
-            
-        }
-        
-        private void OnDestroy()
-        {
-            if (_udpClient != null)
-            {
-                _udpClient.OnDataReceived -= HandleDataReceived;
-                _udpClient.OnError -= HandleNetworkError;
-                _udpClient.OnDisconnected -= HandleDisconnected;
-                _udpClient.Dispose();
-            }
-        }
-
-        private void Update()
+        public void Tick()
         {
             // Regular ping to keep connection alive and measure latency
             if (IsConnected && _isJoined)
@@ -112,6 +96,16 @@ namespace Network
             }
         }
 
+        public void Dispose()
+        {
+            if (_udpClient != null)
+            {
+                _udpClient.OnDataReceived -= HandleDataReceived;
+                _udpClient.OnError -= HandleNetworkError;
+                _udpClient.OnDisconnected -= HandleDisconnected;
+                _udpClient.Dispose();
+            }
+        }
         #region Public API - Connection
 
         public bool Connect()

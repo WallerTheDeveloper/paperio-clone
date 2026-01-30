@@ -1,19 +1,22 @@
-﻿using Core.DISystem;
+﻿using Core.Services;
 using Game.Data;
 using Game.Server;
 using UnityEngine;
 
 namespace Game
 {
-    public class RoomManager : MonoBehaviour, IDependentObject
+    public class RoomManager : MonoBehaviour, IService
     {
         private PlayersContainer _playersContainer;
-        public void InjectDependencies(IDependencyProvider provider)
+        public void Initialize(ServiceContainer services)
         {
-            _playersContainer = provider.GetDependency<PlayersContainer>();
+            _playersContainer = services.Get<PlayersContainer>();
         }
 
-        public void PostInjectionConstruct()
+        public void Tick()
+        { }
+
+        public void Dispose()
         { }
         
         public void UpdateRoom(RoomUpdate roomUpdate)
@@ -28,7 +31,6 @@ namespace Game
                 else
                 {
                     _playersContainer.Register(playerInfo);
-                    // OnPlayerJoined?.Invoke(newPlayer);
                 }
             }
         }
@@ -42,8 +44,6 @@ namespace Game
             {
                 _playersContainer.Register(playerInfo);
             }
-
-            // Debug.Log($"[GameRoomJoined] Joined room as player {_gameManager.LocalPlayerId}");
         }
     }
 }

@@ -1,9 +1,6 @@
 ﻿using System;
-using Core.DISystem;
-using Game;
-using MonoSingleton;
+using Core.Services;
 using Network;
-using UnityEngine;
 
 namespace Core.GameStates.Types
 {
@@ -11,9 +8,10 @@ namespace Core.GameStates.Types
     {
         private MessageSender _messageSender;
         public override Action TriggerStateSwitch { get; set; }
-        public override void Initialize(IDependencyContainer container)
+
+        public override void Initialize(ServiceContainer container)
         {
-            _messageSender = MonoSingletonRegistry.Get<MessageSender>();
+            _messageSender = container.Get<MessageSender>();
             
             ConnectToServer(_messageSender);
 

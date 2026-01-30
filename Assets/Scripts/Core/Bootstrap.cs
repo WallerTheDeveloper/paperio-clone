@@ -1,35 +1,40 @@
+using System;
 using Core.GameStates;
+using Core.Services;
 using Game;
-using MonoSingleton;
+using Game.Data;
 using Network;
 using UnityEngine;
 
 namespace Core
 {
-    public class Bootstrap : MonoSingleton<Bootstrap>
+    public class Bootstrap : MonoBehaviour
     {
         [SerializeField] private MessageSender messageSender;
         [SerializeField] private GameStatesManager gameStatesManager;
+        private PlayersContainer _playersContainer;
         
+        private ServiceContainer _services;
         private void Awake()
         {
-            MonoSingletonRegistry.InitializeSingletonsOnScene();
+            _services = new ServiceContainer();
+            
+            _playersContainer = new PlayersContainer();
+            _services.Register(_playersContainer);
+            _services.Register(messageSender);
+            _services.Register(gameStatesManager);
+            
+            _services.InitializeAll();
+        }
 
-            ISystem[] gameSystems =
-            {
-                messageSender,
-                gameStatesManager
-            };
-            
-            foreach (var system in gameSystems)
-            {
-                system.Initialize();
-            }
-            
-            foreach (var system in gameSystems)
-            {
-                system.Run();
-            }
+        private void Update()
+        {
+            _services.TickAll();
+        }
+
+        private void OnDestroy()
+        {
+            _services.DisposeAll();
         }
     }
 }
