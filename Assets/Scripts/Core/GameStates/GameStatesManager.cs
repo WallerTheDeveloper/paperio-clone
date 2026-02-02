@@ -10,6 +10,7 @@ namespace Core.GameStates
         [SerializeField] private GameInitialize gameInitialize;
         [SerializeField] private GameConnect gameConnect;
         [SerializeField] private GameJoinRoom gameJoinRoom;
+        [SerializeField] private GameRunning gameRunning;
         
         private HashSet<GameState> _gameStates;
         private Queue<GameState> _pendingStates;
@@ -20,12 +21,14 @@ namespace Core.GameStates
         public void Initialize(ServiceContainer services)
         {
             _serviceContainer = services;
+            
             // Must be in order of switching
             _gameStates = new HashSet<GameState>
             {
                 gameInitialize,
                 gameConnect,
-                gameJoinRoom
+                gameJoinRoom,
+                gameRunning
             };
 
             _pendingStates = new Queue<GameState>();
