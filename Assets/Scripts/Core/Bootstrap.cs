@@ -13,6 +13,7 @@ namespace Core
     {
         [SerializeField] private MessageSender messageSender;
         [SerializeField] private GameStatesManager gameStatesManager;
+        [SerializeField] private ServerStateHandler serverStateHandler;
         private PlayersContainer _playersContainer;
         private InputService _inputService;
         
@@ -25,6 +26,7 @@ namespace Core
             
             _services.Register(messageSender);
             _services.Register(_playersContainer);
+            _services.Register(serverStateHandler);
             _services.Register(gameStatesManager);
             _services.Register(_inputService);
             

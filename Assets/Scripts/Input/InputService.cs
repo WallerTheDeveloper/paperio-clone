@@ -1,45 +1,94 @@
-﻿using Core.Services;
+﻿using System;
+using Core.Services;
 using Game.Paperio;
 using Network;
 using UnityEngine;
+using UnityEngine.InputSystem;
 
 namespace Input
 {
     public class InputService : MonoBehaviour, IService
     {
-        private MessageSender _messageSender;
+        [SerializeField] private float inputCooldown = 0.05f;
+        
+        public event Action<Direction> OnDirectionChanged;
+        
+        private Direction _currentDirection = Direction.None;
         private Direction _lastSentDirection = Direction.None;
-    
+        private float _lastInputTime;
+        
+        private MessageSender _messageSender;
         private PlayerInputActions _playerInputActions;
-    
+        
         public void Initialize(ServiceContainer services)
         {
             _messageSender = services.Get<MessageSender>();
         
             _playerInputActions = new PlayerInputActions();
-            _playerInputActions.Enable();
+            _playerInputActions.Player.Enable();
+            
+            _playerInputActions.Player.Move.performed += OnMovePerformed;
         }
     
         public void Tick()
+        { }
+        
+        public void Dispose()
         {
-            if (!_messageSender.IsConnected)
+            if (_playerInputActions != null)
             {
-                return;
-            }
-        
-            var input = _playerInputActions.Player.Move.ReadValue<Vector2>();
-            var direction = ConvertToDirection(input);
-        
-            if (direction != _lastSentDirection)
-            {
-                _messageSender.SendDirection(direction);
-                _lastSentDirection = direction;
+                _playerInputActions.Player.Move.performed -= OnMovePerformed;
+                _playerInputActions.Dispose();
             }
         }
     
-        private Direction ConvertToDirection(Vector2 input)
+        private void OnMovePerformed(InputAction.CallbackContext context)
         {
-            if (input.magnitude < 0.1f) return Direction.None;
+            var input = context.ReadValue<Vector2>();
+            var newDirection = VectorToDirection(input);
+            
+            TryChangeDirection(newDirection);
+        }
+      
+        
+        private void TryChangeDirection(Direction newDirection)
+        {
+            if (newDirection == Direction.None)
+            {
+                return;
+            }
+            if (newDirection == _currentDirection)
+            {
+                return;
+            }
+            if (Time.time - _lastInputTime < inputCooldown)
+            {
+                return;
+            }
+            if (IsOppositeDirection(_currentDirection, newDirection))
+            {
+                return;
+            }
+            
+            _currentDirection = newDirection;
+            _lastInputTime = Time.time;
+            
+            OnDirectionChanged?.Invoke(newDirection);
+            
+            if (_messageSender != null && _messageSender.IsConnected && newDirection != _lastSentDirection)
+            {
+                _messageSender.SendDirection(newDirection);
+                _lastSentDirection = newDirection;
+                Debug.Log($"[InputService] Sent direction: {newDirection}");
+            }
+        }
+        
+        private Direction VectorToDirection(Vector2 input)
+        {
+            if (input.magnitude < 0.1f)
+            {
+                return Direction.None;
+            }
         
             if (Mathf.Abs(input.x) > Mathf.Abs(input.y))
             {
@@ -47,12 +96,13 @@ namespace Input
             }
             return input.y > 0 ? Direction.Up : Direction.Down;
         }
-    
-
-        public void Dispose()
+        
+        private bool IsOppositeDirection(Direction a, Direction b)
         {
-            _playerInputActions?.Player.Disable();
-            _playerInputActions?.Dispose();
+            return (a == Direction.Up && b == Direction.Down) ||
+                   (a == Direction.Down && b == Direction.Up) ||
+                   (a == Direction.Left && b == Direction.Right) ||
+                   (a == Direction.Right && b == Direction.Left);
         }
     }
 }

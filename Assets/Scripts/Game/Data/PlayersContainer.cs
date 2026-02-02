@@ -17,7 +17,7 @@ namespace Game.Data
         public void Dispose()
         { }
 
-        public void Register(PlayerInfo playerInfo)
+        public PlayerData Register(PlayerInfo playerInfo)
         {
             var newPlayer = new PlayerData
             {
@@ -26,6 +26,8 @@ namespace Game.Data
                 IsReady = playerInfo.Ready
             };
             _playersContainer[playerInfo.PlayerId] = newPlayer;
+            
+            return _playersContainer[playerInfo.PlayerId];
         }
 
         public bool Unregister(uint playerID)
