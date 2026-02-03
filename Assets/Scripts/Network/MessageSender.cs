@@ -62,7 +62,6 @@ namespace Network
         public event Action OnConnected;
         public event Action OnDisconnected;
 
-        // Game-specific events (Paper.io)
         public event Action<PaperioState> OnPaperioStateReceived;
         public event Action<PaperioJoinResponse> OnPaperioJoinResponse;
         

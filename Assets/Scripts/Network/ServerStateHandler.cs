@@ -18,6 +18,8 @@ namespace Network
         private uint _lastReceivedTick;
         private uint _localPlayerId;
         private uint _tickRateMs;
+        private uint _gridWidth;
+        private uint _gridHeight;
         private bool _hasJoinedGame;
         
         private PaperioState _currentState;
@@ -34,8 +36,7 @@ namespace Network
         }
 
         public void Tick()
-        {
-        }
+        { }
 
         public void Dispose()
         {
@@ -44,14 +45,16 @@ namespace Network
                 _messageSender.OnPaperioStateReceived -= HandleStateReceived;
                 _messageSender.OnPaperioJoinResponse -= HandleJoinResponse;
             }
+            
+            _hasJoinedGame = false;
+            _currentState = null;
         }
-        
         private void HandleStateReceived(PaperioState state)
         {
             // Ignore old states (can happen due to UDP packet reordering)
             if (state.Tick <= _lastReceivedTick && _lastReceivedTick != 0)
             {
-                Debug.LogWarning($"[GameStateManager] Received old state tick {state.Tick}, current {_lastReceivedTick}");
+                Debug.LogWarning($"[ServerStateHandler] Received old state: tick {state.Tick}, current {_lastReceivedTick}");
                 return;
             }
             
@@ -64,16 +67,20 @@ namespace Network
             _tickRateMs = response.TickRateMs;
             _hasJoinedGame = true;
             
-            Debug.Log($"[GameStateManager] Joined game as player {_localPlayerId}, tick rate: {_tickRateMs}ms");
-            
             if (response.InitialState != null)
             {
+                _gridWidth = response.InitialState.GridWidth;
+                _gridHeight = response.InitialState.GridHeight;
                 ApplyState(response.InitialState);
             }
             
+            Debug.Log($"[ServerStateHandler] Joined game: " +
+                      $"player={_localPlayerId}, " +
+                      $"grid={_gridWidth}x{_gridHeight}, " +
+                      $"tickRate={_tickRateMs}ms");
+            
             OnJoinedGame?.Invoke(response);
         }
-        
         private void ApplyState(PaperioState state)
         {
             var previousState = _currentState;
@@ -91,7 +98,7 @@ namespace Network
             
             if (state.Tick % 20 == 0)
             {
-                Debug.Log($"[GameStateManager] Tick {state.Tick}: {state.Players.Count} players");
+                Debug.Log($"[ServerStateHandler] Tick {state.Tick}: {state.Players.Count} players");
             }
         }
         
@@ -114,12 +121,12 @@ namespace Network
                         Name = protoPlayer.Name
                     };
                     playerData = _playersContainer.Register(info);
+                    Debug.Log($"[ServerStateHandler] New player registered: {protoPlayer.Name} (ID: {protoPlayer.PlayerId})");
                 }
                 
                 UpdatePlayerData(playerData, protoPlayer);
             }
             
-            // Remove players that are no longer in state
             if (previousState != null)
             {
                 foreach (var prevPlayer in previousState.Players)
@@ -127,6 +134,7 @@ namespace Network
                     if (!currentPlayerIds.Contains(prevPlayer.PlayerId))
                     {
                         _playersContainer.Unregister(prevPlayer.PlayerId);
+                        Debug.Log($"[ServerStateHandler] Player removed: {prevPlayer.Name} (ID: {prevPlayer.PlayerId})");
                     }
                 }
             }
@@ -139,7 +147,7 @@ namespace Network
                 playerData.GridPosition = new Vector2Int(protoPlayer.Position.X, protoPlayer.Position.Y);
             }
             
-            playerData.Direction = ConvertDirection(protoPlayer.Direction);
+            playerData.Direction = protoPlayer.Direction;
             
             playerData.Trail.Clear();
             foreach (var pos in protoPlayer.Trail)
@@ -150,26 +158,6 @@ namespace Network
             playerData.Alive = protoPlayer.Alive;
             playerData.Score = protoPlayer.Score;
             playerData.Color = UIntToColor(protoPlayer.Color);
-            
-            Color UIntToColor(uint color)
-            {
-                float r = ((color >> 24) & 0xFF) / 255f;
-                float g = ((color >> 16) & 0xFF) / 255f;
-                float b = ((color >> 8) & 0xFF) / 255f;
-                float a = (color & 0xFF) / 255f;
-                return new Color(r, g, b, a);
-            }
-            Direction ConvertDirection(Direction protoDir)
-            {
-                return protoDir switch
-                {
-                    Direction.Up => Direction.Up,
-                    Direction.Down => Direction.Down,
-                    Direction.Left => Direction.Left,
-                    Direction.Right => Direction.Right,
-                    _ => Direction.None
-                };
-            }
         }
         
         private void DetectStateChanges(PaperioState previous, PaperioState current)
@@ -186,14 +174,25 @@ namespace Network
                 {
                     if (prevPlayer.Alive && !player.Alive)
                     {
+                        Debug.Log($"[ServerStateHandler] Player {player.PlayerId} ({player.Name}) eliminated");
                         OnPlayerEliminated?.Invoke(player.PlayerId);
                     }
                     else if (!prevPlayer.Alive && player.Alive)
                     {
+                        Debug.Log($"[ServerStateHandler] Player {player.PlayerId} ({player.Name}) respawned");
                         OnPlayerRespawned?.Invoke(player.PlayerId);
                     }
                 }
             }
+        }
+        
+        private static Color UIntToColor(uint color)
+        {
+            float r = ((color >> 24) & 0xFF) / 255f;
+            float g = ((color >> 16) & 0xFF) / 255f;
+            float b = ((color >> 8) & 0xFF) / 255f;
+            float a = (color & 0xFF) / 255f;
+            return new Color(r, g, b, a);
         }
     }
 }
