@@ -127,9 +127,11 @@ namespace Game.Rendering
                 }
             }
             
-            _mesh = new Mesh();
-            _mesh.name = "TerritoryMesh";
-            
+            _mesh = new Mesh
+            {
+                name = "TerritoryMesh"
+            };
+
             if (vertexCount > 65535)
             {
                 _mesh.indexFormat = UnityEngine.Rendering.IndexFormat.UInt32;
@@ -305,13 +307,11 @@ namespace Game.Rendering
         {
             if (!IsInitialized) return;
             
-            // Draw grid bounds
             Gizmos.color = Color.green;
             Vector3 size = new Vector3(_width * _cellSize, 0.1f, _height * _cellSize);
             Vector3 center = size / 2f;
             Gizmos.DrawWireCube(center, size);
             
-            // Draw origin marker
             Gizmos.color = Color.red;
             Gizmos.DrawSphere(Vector3.zero, _cellSize * 0.5f);
         }

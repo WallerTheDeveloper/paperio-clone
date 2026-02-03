@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using Core.Services;
 using Game.Server;
 
@@ -8,6 +9,7 @@ namespace Game.Data
     {
         private readonly Dictionary<uint, PlayerData> _playersContainer = new();
 
+        public Action OnPlayerRegistered;
         public void Initialize(ServiceContainer services)
         { }
 
@@ -26,6 +28,7 @@ namespace Game.Data
                 IsReady = playerInfo.Ready
             };
             _playersContainer[playerInfo.PlayerId] = newPlayer;
+            OnPlayerRegistered?.Invoke();
             
             return _playersContainer[playerInfo.PlayerId];
         }

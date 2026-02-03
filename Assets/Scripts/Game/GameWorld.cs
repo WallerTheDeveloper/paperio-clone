@@ -27,16 +27,13 @@ namespace Game
 
     public class GameWorld : MonoBehaviour, IService
     {
-        [Header("Configuration")]
         [SerializeField] private GameWorldConfig config = new GameWorldConfig();
         
-        [Header("Renderer References")]
         [SerializeField] private TerritoryRenderer territoryRenderer;
+        [SerializeField] private PlayerVisualsManager playerVisualsManager;
         
-        [Header("Prefabs")]
-        
-        [Header("Debug")]
         [SerializeField] private bool logTerritoryUpdates = false;
+        [SerializeField] private bool logPlayerUpdates = false;
         
         private TerritoryData _territoryData;
         private uint _localPlayerId;
@@ -52,7 +49,7 @@ namespace Game
         public event Action OnGameEnded;
         public event Action<uint> OnLocalPlayerSpawned;
         public event Action<List<TerritoryChange>> OnTerritoryChanged;
-
+        
         public GameWorldConfig Config => config;
         public TerritoryData Territory => _territoryData;
         public uint LocalPlayerId => _localPlayerId;
@@ -60,6 +57,7 @@ namespace Game
         public int GridWidth => (int)_gridWidth;
         public int GridHeight => (int)_gridHeight;
         public uint TickRateMs => _tickRateMs;
+        public PlayerVisualsManager PlayerVisuals => playerVisualsManager;
         
         public float TickProgress
         {
@@ -71,6 +69,8 @@ namespace Game
                 return Mathf.Clamp01(elapsed / tickDuration);
             }
         }
+        
+        public PlayerVisual LocalPlayerVisual => playerVisualsManager?.LocalPlayerVisual;
 
         private ServerStateHandler _serverStateHandler;
         private PlayersContainer _playersContainer;
@@ -89,11 +89,20 @@ namespace Game
                 Debug.LogWarning("[GameWorld] TerritoryRenderer not assigned - territory won't render");
             }
             
+            if (playerVisualsManager == null)
+            {
+                Debug.LogWarning("[GameWorld] PlayerVisualsManager not assigned - players won't render");
+            }
+            
             Debug.Log("[GameWorld] Initialized - subscribed to server events");
         }
 
         public void Tick()
-        { }
+        {
+            if (!_isGameActive) return;
+            
+            playerVisualsManager?.UpdateInterpolation(TickProgress);
+        }
 
         public void Dispose()
         {
@@ -104,6 +113,8 @@ namespace Game
                 _serverStateHandler.OnPlayerEliminated -= HandlePlayerEliminated;
                 _serverStateHandler.OnPlayerRespawned -= HandlePlayerRespawned;
             }
+            
+            playerVisualsManager?.ClearAll();
             
             _territoryData?.Clear();
             _isGameActive = false;
@@ -163,6 +174,18 @@ namespace Game
                     }
                 }
             }
+            
+            if (playerVisualsManager != null)
+            {
+                playerVisualsManager.UpdateFromState(state);
+                
+                if (logPlayerUpdates && state.Tick % 20 == 0)
+                {
+                    Debug.Log($"[GameWorld] Tick {state.Tick}: " +
+                              $"{state.Players.Count} players, " +
+                              $"{playerVisualsManager.ActiveCount} visuals active");
+                }
+            }
         }
 
         private void HandlePlayerEliminated(uint playerId)
@@ -199,6 +222,13 @@ namespace Game
                 Debug.Log($"[GameWorld] TerritoryRenderer initialized: {width}x{height}");
             }
             
+            if (playerVisualsManager != null)
+            {
+                playerVisualsManager.Initialize(this, _playersContainer, _localPlayerId);
+                playerVisualsManager.UpdateFromState(initialState);
+                Debug.Log($"[GameWorld] PlayerVisualsManager initialized with {initialState.Players.Count} players");
+            }
+            
             if (logTerritoryUpdates)
             {
                 int cx = width / 2, cy = height / 2;
@@ -206,13 +236,12 @@ namespace Game
                           _territoryData.DebugRegion(cx - 5, cy - 5, 11, 11));
             }
         }
-
         public Vector3 GridToWorld(int gridX, int gridY, float height = 0f)
         {
             return new Vector3(
-                gridX * config.CellSize + config.CellSize * 0.5f, // Center of cell
+                gridX * config.CellSize + config.CellSize * 0.5f,
                 height,
-                gridY * config.CellSize + config.CellSize * 0.5f  // Center of cell
+                gridY * config.CellSize + config.CellSize * 0.5f
             );
         }
 
@@ -243,7 +272,7 @@ namespace Game
             var center = GetGridCenter();
             var size = new Vector3(
                 GridWidth * config.CellSize,
-                10f, // Arbitrary height for bounds
+                10f,
                 GridHeight * config.CellSize
             );
             return new Bounds(center, size);
@@ -322,6 +351,7 @@ namespace Game
 
             float myPercentage = _territoryData?.GetOwnershipPercentage(_localPlayerId) ?? 0f;
             int rendererUpdates = territoryRenderer?.TotalCellsUpdated ?? 0;
+            int activeVisuals = playerVisualsManager?.ActiveCount ?? 0;
             
             return $"Local Player: {_localPlayerId}\n" +
                    $"Grid: {GridWidth}x{GridHeight}\n" +
@@ -329,6 +359,7 @@ namespace Game
                    $"Tick Rate: {_tickRateMs}ms\n" +
                    $"Claimed Cells: {_territoryData?.ClaimedCells ?? 0}\n" +
                    $"My Territory: {myPercentage:F2}%\n" +
+                   $"Active Players: {activeVisuals}\n" +
                    $"Renderer Updates: {rendererUpdates}";
         }
 
