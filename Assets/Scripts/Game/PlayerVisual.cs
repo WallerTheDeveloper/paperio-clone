@@ -2,7 +2,7 @@
 using Game.Paperio;
 using UnityEngine;
 
-namespace Game.Rendering
+namespace Game
 {
     public class PlayerVisual : MonoBehaviour
     {

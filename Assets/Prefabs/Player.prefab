@@ -125,6 +125,7 @@ GameObject:
   - component: {fileID: 6016450547738157281}
   - component: {fileID: 987333232761617738}
   - component: {fileID: 3685808754199172389}
+  - component: {fileID: 8649220139272453707}
   m_Layer: 0
   m_Name: Camera
   m_TagString: Untagged
@@ -250,6 +251,33 @@ MonoBehaviour:
     m_VarianceClampScale: 0.9
     m_ContrastAdaptiveSharpening: 0
   m_Version: 2
+--- !u!114 &8649220139272453707
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 676632930113513324}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a41db2f6e7544ea19dea3d4f56150acf, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::Game.CameraController
+  target: {fileID: 0}
+  autoFindLocalPlayer: 1
+  height: 30
+  distance: 10
+  lookAheadDistance: 5
+  followSmoothTime: 0.15
+  rotationSmoothTime: 0.3
+  followDirection: 0
+  minHeight: 20
+  maxHeight: 50
+  zoomSmoothTime: 0.5
+  useBounds: 1
+  boundsPadding: 5
+  enableShake: 1
+  defaultShakeIntensity: 0.5
 --- !u!1 &5027895109322062317
 GameObject:
   m_ObjectHideFlags: 0

@@ -31,7 +31,9 @@ namespace Game
         
         [SerializeField] private TerritoryRenderer territoryRenderer;
         [SerializeField] private PlayerVisualsManager playerVisualsManager;
+        [SerializeField] private CameraController cameraController;
         
+        [Header("Debug")]
         [SerializeField] private bool logTerritoryUpdates = false;
         [SerializeField] private bool logPlayerUpdates = false;
         
@@ -49,7 +51,7 @@ namespace Game
         public event Action OnGameEnded;
         public event Action<uint> OnLocalPlayerSpawned;
         public event Action<List<TerritoryChange>> OnTerritoryChanged;
-        
+
         public GameWorldConfig Config => config;
         public TerritoryData Territory => _territoryData;
         public uint LocalPlayerId => _localPlayerId;
@@ -58,6 +60,7 @@ namespace Game
         public int GridHeight => (int)_gridHeight;
         public uint TickRateMs => _tickRateMs;
         public PlayerVisualsManager PlayerVisuals => playerVisualsManager;
+        public CameraController CameraController => cameraController;
         
         public float TickProgress
         {
@@ -92,6 +95,11 @@ namespace Game
             if (playerVisualsManager == null)
             {
                 Debug.LogWarning("[GameWorld] PlayerVisualsManager not assigned - players won't render");
+            }
+            
+            if (cameraController == null)
+            {
+                Debug.LogWarning("[GameWorld] CameraController not assigned - camera won't follow player");
             }
             
             Debug.Log("[GameWorld] Initialized - subscribed to server events");
@@ -193,6 +201,12 @@ namespace Game
             bool isLocal = playerId == _localPlayerId;
             Debug.Log($"[GameWorld] Player {playerId} eliminated" + 
                       (isLocal ? " (LOCAL PLAYER!)" : ""));
+            
+            if (isLocal && cameraController != null)
+            {
+                cameraController.Shake(1f, 0.5f);
+            }
+            
         }
 
         private void HandlePlayerRespawned(uint playerId)
@@ -200,7 +214,14 @@ namespace Game
             bool isLocal = playerId == _localPlayerId;
             Debug.Log($"[GameWorld] Player {playerId} respawned" +
                       (isLocal ? " (LOCAL PLAYER!)" : ""));
+            
+            if (isLocal && cameraController != null && LocalPlayerVisual != null)
+            {
+                cameraController.SetTarget(LocalPlayerVisual.transform);
+            }
         }
+
+
 
         private void InitializeFromState(PaperioState initialState)
         {
@@ -227,6 +248,12 @@ namespace Game
                 playerVisualsManager.Initialize(this, _playersContainer, _localPlayerId);
                 playerVisualsManager.UpdateFromState(initialState);
                 Debug.Log($"[GameWorld] PlayerVisualsManager initialized with {initialState.Players.Count} players");
+            }
+            
+            if (cameraController != null)
+            {
+                cameraController.Initialize(this);
+                Debug.Log("[GameWorld] CameraController initialized");
             }
             
             if (logTerritoryUpdates)
@@ -352,6 +379,7 @@ namespace Game
             float myPercentage = _territoryData?.GetOwnershipPercentage(_localPlayerId) ?? 0f;
             int rendererUpdates = territoryRenderer?.TotalCellsUpdated ?? 0;
             int activeVisuals = playerVisualsManager?.ActiveCount ?? 0;
+            bool cameraFollowing = cameraController?.IsFollowing ?? false;
             
             return $"Local Player: {_localPlayerId}\n" +
                    $"Grid: {GridWidth}x{GridHeight}\n" +
@@ -360,6 +388,7 @@ namespace Game
                    $"Claimed Cells: {_territoryData?.ClaimedCells ?? 0}\n" +
                    $"My Territory: {myPercentage:F2}%\n" +
                    $"Active Players: {activeVisuals}\n" +
+                   $"Camera Following: {cameraFollowing}\n" +
                    $"Renderer Updates: {rendererUpdates}";
         }
 
