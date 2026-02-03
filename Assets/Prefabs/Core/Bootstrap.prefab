@@ -32,6 +32,7 @@ Transform:
   - {fileID: 5389904514347866230}
   - {fileID: 1852845649723377440}
   - {fileID: 3454188067796519121}
+  - {fileID: 5564562108599315191}
   m_Father: {fileID: 6979031964787616009}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &4684858454388093765
@@ -82,6 +83,7 @@ MonoBehaviour:
   messageSender: {fileID: 8940812199700688171}
   gameStatesManager: {fileID: 8177559308879678143}
   serverStateHandler: {fileID: 7865251122124931354}
+  gameWorld: {fileID: 7520973812171661205}
 --- !u!1001 &557059054399378536
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -301,3 +303,76 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 0f7239d770ef95844ad56fb2b88ed1ae, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Game.Network.NetworkManager
+--- !u!1001 &9041281535014972033
+PrefabInstance:
+  m_ObjectHideFlags: 0
+  serializedVersion: 2
+  m_Modification:
+    serializedVersion: 3
+    m_TransformParent: {fileID: 6534864659616298208}
+    m_Modifications:
+    - target: {fileID: 3476882705138090102, guid: 9b5fd60fb9d2bce44a12a62f69e8a959, type: 3}
+      propertyPath: m_LocalPosition.x
+      value: 1.88541
+      objectReference: {fileID: 0}
+    - target: {fileID: 3476882705138090102, guid: 9b5fd60fb9d2bce44a12a62f69e8a959, type: 3}
+      propertyPath: m_LocalPosition.y
+      value: 5.93701
+      objectReference: {fileID: 0}
+    - target: {fileID: 3476882705138090102, guid: 9b5fd60fb9d2bce44a12a62f69e8a959, type: 3}
+      propertyPath: m_LocalPosition.z
+      value: -6.04684
+      objectReference: {fileID: 0}
+    - target: {fileID: 3476882705138090102, guid: 9b5fd60fb9d2bce44a12a62f69e8a959, type: 3}
+      propertyPath: m_LocalRotation.w
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 3476882705138090102, guid: 9b5fd60fb9d2bce44a12a62f69e8a959, type: 3}
+      propertyPath: m_LocalRotation.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 3476882705138090102, guid: 9b5fd60fb9d2bce44a12a62f69e8a959, type: 3}
+      propertyPath: m_LocalRotation.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 3476882705138090102, guid: 9b5fd60fb9d2bce44a12a62f69e8a959, type: 3}
+      propertyPath: m_LocalRotation.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 3476882705138090102, guid: 9b5fd60fb9d2bce44a12a62f69e8a959, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 3476882705138090102, guid: 9b5fd60fb9d2bce44a12a62f69e8a959, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 3476882705138090102, guid: 9b5fd60fb9d2bce44a12a62f69e8a959, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 8949950137729300784, guid: 9b5fd60fb9d2bce44a12a62f69e8a959, type: 3}
+      propertyPath: m_Name
+      value: Game World
+      objectReference: {fileID: 0}
+    m_RemovedComponents: []
+    m_RemovedGameObjects: []
+    m_AddedGameObjects: []
+    m_AddedComponents: []
+  m_SourcePrefab: {fileID: 100100000, guid: 9b5fd60fb9d2bce44a12a62f69e8a959, type: 3}
+--- !u!4 &5564562108599315191 stripped
+Transform:
+  m_CorrespondingSourceObject: {fileID: 3476882705138090102, guid: 9b5fd60fb9d2bce44a12a62f69e8a959, type: 3}
+  m_PrefabInstance: {fileID: 9041281535014972033}
+  m_PrefabAsset: {fileID: 0}
+--- !u!114 &7520973812171661205 stripped
+MonoBehaviour:
+  m_CorrespondingSourceObject: {fileID: 1524125919476479252, guid: 9b5fd60fb9d2bce44a12a62f69e8a959, type: 3}
+  m_PrefabInstance: {fileID: 9041281535014972033}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 8f362dd47b794e73834efa0a99f10fdd, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::Game.GameWorld
