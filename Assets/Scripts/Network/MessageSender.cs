@@ -183,7 +183,10 @@ namespace Network
         /// </summary>
         public void SendReady()
         {
-            if (!IsConnected || !_isJoined) return;
+            if (!IsConnected || !_isJoined)
+            {
+                return;
+            }
 
             var msg = new ClientMessage
             {
