@@ -22,20 +22,28 @@ namespace Core
         {
             _services = new ServiceContainer();
             _playersContainer = new PlayersContainer();
-            _inputService = FindFirstObjectByType<InputService>();
             
             _services.Register(messageSender);
             _services.Register(_playersContainer);
             _services.Register(serverStateHandler);
             _services.Register(gameWorld);
             _services.Register(gameStatesManager);
-            _services.Register(_inputService);
             
-            _services.InitializeAll();
+            _services.InitDanglingServices();
         }
-
+        
         private void Update()
         {
+            foreach (var alivePlayer in _playersContainer.GetAlivePlayers())
+            {
+                if (!alivePlayer.IsFinishedGamePreparation &&
+                    alivePlayer.InputService != null)
+                {
+                    _services.Register(alivePlayer.InputService);
+                    alivePlayer.IsFinishedGamePreparation = true;
+                    _services.InitDanglingServices();
+                }
+            }
             _services.TickAll();
         }
 

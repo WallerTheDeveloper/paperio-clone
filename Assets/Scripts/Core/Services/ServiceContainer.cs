@@ -4,82 +4,62 @@ using UnityEngine;
 
 namespace Core.Services
 {
+    public class ServiceData
+    {
+        public bool IsInitialized;
+    }
     public class ServiceContainer
     {
-        private readonly Dictionary<Type, IService> _services = new();
+        private readonly Dictionary<IService, ServiceData> _services = new();
         private readonly List<IService> _tickableServices = new();
         private bool _initialized;
 
         public ServiceContainer Register<T>(T service) where T : class, IService
         {
-            var type = typeof(T);
-            
-            if (_services.ContainsKey(type))
+            if (service == null)
             {
-                Debug.LogWarning($"[Services] Overwriting: {type.Name}");
+                throw new ArgumentNullException(nameof(service));
             }
             
-            _services[type] = service;
-            return this; // Fluent API for chaining
-        }
-
-        public ServiceContainer Register(Type asType, IService service)
-        {
-            if (_services.ContainsKey(asType))
-            {
-                Debug.LogWarning($"[Services] Overwriting: {asType.Name}");
-            }
-            
-            _services[asType] = service;
+            _initialized = false;
+            _services[service] = new ServiceData { IsInitialized = false };
             return this;
         }
 
         public T Get<T>() where T : class, IService
         {
-            var type = typeof(T);
-            
-            if (_services.TryGetValue(type, out var service))
-            {
-                return (T)service;
-            }
-            
-            throw new InvalidOperationException(
-                $"[Services] Not found: {type.Name}. Register it in Bootstrap.");
-        }
-
-        public bool TryGet<T>(out T service) where T : class, IService
-        {
-            var type = typeof(T);
-            
-            if (_services.TryGetValue(type, out var found))
-            {
-                service = (T)found;
-                return true;
-            }
-            
-            service = null;
-            return false;
-        }
-
-        public void InitializeAll()
-        {
-            if (_initialized)
-            {
-                Debug.LogWarning("[Services] Already initialized");
-                return;
-            }
-
             foreach (var kvp in _services)
             {
-                try
+                if (kvp.Key is T service)
                 {
-                    kvp.Value.Initialize(this);
-                    _tickableServices.Add(kvp.Value);
-                    Debug.Log($"[Services] Initialized: {kvp.Key.Name}");
+                    return service;
                 }
-                catch (Exception e)
+            }
+
+            throw new InvalidOperationException(
+                $"[Services] Not found: {typeof(T).Name}. Register it in Bootstrap.");
+        }
+
+        public void InitDanglingServices()
+        {
+            foreach (var kvp in _services)
+            {
+                IService service = kvp.Key;
+                ServiceData data = kvp.Value;
+
+                if (!data.IsInitialized)
                 {
-                    Debug.LogError($"[Services] Failed to initialize {kvp.Key.Name}: {e}");
+                    try
+                    {
+                        service.Initialize(this);
+                        data.IsInitialized = true;
+                        _tickableServices.Add(service);
+                        Debug.Log($"[Services] Initialized: {service.GetType().Name}");
+                    }
+                    catch (Exception e)
+                    {
+                        Debug.LogError($"[Services] Failed to initialize {service.GetType().Name}: {e}");
+                    }
                 }
             }
 
@@ -88,9 +68,9 @@ namespace Core.Services
 
         public void TickAll()
         {
-            foreach (var service in _tickableServices)
+            for (int i = 0; i < _tickableServices.Count; i++)
             {
-                service.Tick();
+                _tickableServices[i].Tick();
             }
         }
 
@@ -100,18 +80,17 @@ namespace Core.Services
             {
                 try
                 {
-                    kvp.Value.Dispose();
+                    kvp.Key.Dispose();
                 }
                 catch (Exception e)
                 {
-                    Debug.LogError($"[Services] Failed to dispose {kvp.Key.Name}: {e}");
+                    Debug.LogError($"[Services] Failed to dispose {kvp.Key.GetType().Name}: {e}");
                 }
             }
-            
+
             _services.Clear();
             _tickableServices.Clear();
             _initialized = false;
         }
-
     }
 }
