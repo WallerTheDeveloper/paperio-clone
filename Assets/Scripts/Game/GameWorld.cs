@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using Core.Services;
 using Game.Data;
 using Game.Paperio;
+using Game.Rendering;
 using Network;
 using UnityEngine;
 
@@ -11,21 +12,31 @@ namespace Game
     [Serializable]
     public class GameWorldConfig
     {
+        [Tooltip("Size of each grid cell in world units")]
         public float CellSize = 1.0f;
         
+        [Tooltip("Height offset for players above the territory")]
         public float PlayerHeight = 0.5f;
         
+        [Tooltip("Height offset for trails above the territory")]
         public float TrailHeight = 0.1f;
         
-        public Color NeutralTerritoryColor = new Color(0.15f, 0.15f, 0.15f, 1f);
+        [Tooltip("Neutral territory color (unclaimed cells)")]
+        public Color NeutralColor = new Color(0.15f, 0.15f, 0.15f, 1f);
     }
+
     public class GameWorld : MonoBehaviour, IService
     {
         [Header("Configuration")]
         [SerializeField] private GameWorldConfig config = new GameWorldConfig();
         
-        [Header("Renderer References (Assigned in Scene)")]
-        [SerializeField] private Transform worldRoot;
+        [Header("Renderer References")]
+        [SerializeField] private TerritoryRenderer territoryRenderer;
+        
+        [Header("Prefabs")]
+        
+        [Header("Debug")]
+        [SerializeField] private bool logTerritoryUpdates = false;
         
         private TerritoryData _territoryData;
         private uint _localPlayerId;
@@ -42,9 +53,13 @@ namespace Game
         public event Action<uint> OnLocalPlayerSpawned;
         public event Action<List<TerritoryChange>> OnTerritoryChanged;
 
+        public GameWorldConfig Config => config;
+        public TerritoryData Territory => _territoryData;
+        public uint LocalPlayerId => _localPlayerId;
+        public bool IsGameActive => _isGameActive;
         public int GridWidth => (int)_gridWidth;
-        
         public int GridHeight => (int)_gridHeight;
+        public uint TickRateMs => _tickRateMs;
         
         public float TickProgress
         {
@@ -68,6 +83,13 @@ namespace Game
             _serverStateHandler.OnStateUpdated += HandleStateUpdated;
             _serverStateHandler.OnPlayerEliminated += HandlePlayerEliminated;
             _serverStateHandler.OnPlayerRespawned += HandlePlayerRespawned;
+            
+            if (territoryRenderer == null)
+            {
+                Debug.LogWarning("[GameWorld] TerritoryRenderer not assigned - territory won't render");
+            }
+            
+            Debug.Log("[GameWorld] Initialized - subscribed to server events");
         }
 
         public void Tick()
@@ -85,7 +107,10 @@ namespace Game
             
             _territoryData?.Clear();
             _isGameActive = false;
+            
+            Debug.Log("[GameWorld] Disposed");
         }
+
         private void HandleJoinedGame(PaperioJoinResponse response)
         {
             _localPlayerId = response.YourPlayerId;
@@ -123,9 +148,14 @@ namespace Game
                 
                 if (changes.Count > 0)
                 {
+                    if (territoryRenderer != null && territoryRenderer.IsInitialized)
+                    {
+                        territoryRenderer.UpdateTerritory(changes);
+                    }
+                    
                     OnTerritoryChanged?.Invoke(changes);
                     
-                    if (state.Tick % 20 == 0)
+                    if (logTerritoryUpdates && state.Tick % 20 == 0)
                     {
                         Debug.Log($"[GameWorld] Tick {state.Tick}: " +
                                   $"{changes.Count} territory changes, " +
@@ -159,13 +189,24 @@ namespace Game
             if (initialState.Territory != null)
             {
                 var changes = _territoryData.ApplyFullState(initialState.Territory);
-                Debug.Log($"[GameWorld] Initial territory: {_territoryData.ClaimedCells} cells claimed across {changes.Count} changes");
+                Debug.Log($"[GameWorld] Initial territory: {_territoryData.ClaimedCells} cells claimed");
             }
             
-            int cx = width / 2, cy = height / 2;
-            Debug.Log($"[GameWorld] Territory around center ({cx},{cy}):\n" + 
-                      _territoryData.DebugRegion(cx - 5, cy - 5, 11, 11));
+            if (territoryRenderer != null)
+            {
+                territoryRenderer.Initialize(width, height, config.CellSize, this);
+                territoryRenderer.ApplyFullState(_territoryData);
+                Debug.Log($"[GameWorld] TerritoryRenderer initialized: {width}x{height}");
+            }
+            
+            if (logTerritoryUpdates)
+            {
+                int cx = width / 2, cy = height / 2;
+                Debug.Log($"[GameWorld] Territory around center ({cx},{cy}):\n" + 
+                          _territoryData.DebugRegion(cx - 5, cy - 5, 11, 11));
+            }
         }
+
         public Vector3 GridToWorld(int gridX, int gridY, float height = 0f)
         {
             return new Vector3(
@@ -187,6 +228,7 @@ namespace Game
                 Mathf.FloorToInt(worldPos.z / config.CellSize)
             );
         }
+
         public Vector3 GetGridCenter()
         {
             return new Vector3(
@@ -231,7 +273,7 @@ namespace Game
         {
             if (playerId == 0)
             {
-                return config.NeutralTerritoryColor;
+                return config.NeutralColor;
             }
             
             var playerData = _playersContainer?.TryGetPlayerById(playerId);
@@ -248,11 +290,10 @@ namespace Game
         {
             if (ownerId == 0)
             {
-                return config.NeutralTerritoryColor;
+                return config.NeutralColor;
             }
             
             Color playerColor = GetPlayerColor(ownerId);
-            // Darken by 30% for territory
             return new Color(
                 playerColor.r * 0.7f,
                 playerColor.g * 0.7f,
@@ -272,16 +313,33 @@ namespace Game
             );
         }
 
+        public string GetDebugInfo()
+        {
+            if (!_isGameActive)
+            {
+                return "Game not active";
+            }
+
+            float myPercentage = _territoryData?.GetOwnershipPercentage(_localPlayerId) ?? 0f;
+            int rendererUpdates = territoryRenderer?.TotalCellsUpdated ?? 0;
+            
+            return $"Local Player: {_localPlayerId}\n" +
+                   $"Grid: {GridWidth}x{GridHeight}\n" +
+                   $"Tick: {_lastTick} (progress: {TickProgress:F2})\n" +
+                   $"Tick Rate: {_tickRateMs}ms\n" +
+                   $"Claimed Cells: {_territoryData?.ClaimedCells ?? 0}\n" +
+                   $"My Territory: {myPercentage:F2}%\n" +
+                   $"Renderer Updates: {rendererUpdates}";
+        }
+
         private void OnDrawGizmosSelected()
         {
             if (!_isGameActive || _territoryData == null) return;
             
-            // Draw grid bounds
             var bounds = GetGridBounds();
             Gizmos.color = Color.yellow;
             Gizmos.DrawWireCube(bounds.center, bounds.size);
             
-            // Draw grid center
             Gizmos.color = Color.red;
             Gizmos.DrawSphere(GetGridCenter(), 1f);
         }
