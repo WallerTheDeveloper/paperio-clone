@@ -12,7 +12,7 @@ namespace Core.GameStates.Types
             TriggerStateSwitch?.Invoke();
         }
 
-        public override void TickState()
+        public override void Tick()
         { }
 
         public override void Stop()

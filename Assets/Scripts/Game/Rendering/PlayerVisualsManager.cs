@@ -49,24 +49,13 @@ namespace Game.Rendering
         {
             _playersContainer = services.Get<PlayersContainer>();
             
-            // Create container for players if not assigned
+            // Create container for player game objects if not assigned
             if (visualsContainer == null)
             {
                 var containerGO = new GameObject("PlayerVisuals");
                 containerGO.transform.SetParent(transform);
                 visualsContainer = containerGO.transform;
             }
-            
-            if (usePooling)
-            {
-                for (int i = 0; i < initialPoolSize; i++)
-                {
-                    var visual = CreateNewVisual();
-                    visual.gameObject.SetActive(false);
-                    _pool.Enqueue(visual);
-                }
-            }
-            
             Debug.Log($"[PlayerVisualsManager] Initialized with pool size {_pool.Count}");
         }
 
@@ -87,7 +76,19 @@ namespace Game.Rendering
             }
         }
 
-        private void SpawnOrUpdatePlayer(PaperioPlayer protoPlayer)
+        public void SpawnPlayers()
+        {
+            if (usePooling)
+            {
+                for (int i = 0; i < initialPoolSize; i++)
+                {
+                    var visual = CreateNewVisual();
+                    visual.gameObject.SetActive(false);
+                    _pool.Enqueue(visual);
+                }
+            }
+        }
+        private void ActivateOrUpdatePlayer(PaperioPlayer protoPlayer)
         {
             uint playerId = protoPlayer.PlayerId;
             
@@ -97,11 +98,11 @@ namespace Game.Rendering
             }
             else
             {
-                SpawnPlayer(protoPlayer); 
+                ActivatePlayer(protoPlayer); 
             }
         }
 
-        private void SpawnPlayer(PaperioPlayer protoPlayer)
+        private void ActivatePlayer(PaperioPlayer protoPlayer)
         {
             if (playerVisualPrefab == null)
             {
@@ -132,7 +133,7 @@ namespace Game.Rendering
                 _localPlayerVisual = visual;
             }
             
-            Debug.Log($"[PlayerVisualsManager] Spawned player: {protoPlayer.Name} (ID: {protoPlayer.PlayerId})" +
+            Debug.Log($"[PlayerVisualsManager] Activated player: {protoPlayer.Name} (ID: {protoPlayer.PlayerId})" +
                       (isLocal ? " [LOCAL]" : ""));
         }
 
@@ -197,7 +198,7 @@ namespace Game.Rendering
             foreach (var protoPlayer in state.Players)
             {
                 currentPlayers.Add(protoPlayer.PlayerId);
-                SpawnOrUpdatePlayer(protoPlayer);
+                ActivateOrUpdatePlayer(protoPlayer);
             }
             
             var toRemove = new List<uint>();

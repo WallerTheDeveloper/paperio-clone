@@ -53,7 +53,7 @@ namespace Core.GameStates
                 Debug.Log("Current state is null. Did you forget to trigger state switch?");
                 return;
             }
-            _currentState.TickState();
+            _currentState.Tick();
         }
 
         public void Dispose()

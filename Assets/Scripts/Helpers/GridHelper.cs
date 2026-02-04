@@ -59,7 +59,7 @@ namespace Helpers
         public static Bounds GetGridBounds(uint gridWidth, uint gridHeight, float cellSize)
         {
             var center = GetGridCenter(gridWidth, gridHeight, cellSize);
-            var size = new Vector3(gridWidth * cellSize, 0f, gridHeight * cellSize);
+            var size = new Vector3(gridWidth * cellSize, 10f, gridHeight * cellSize);
             return new Bounds(center, size);
         }
 

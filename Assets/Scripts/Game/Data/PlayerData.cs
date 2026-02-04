@@ -32,8 +32,10 @@ namespace Game.Data
         public uint Score { get; set; }
         public Color Color { get; set; } = Color.white;
         public bool IsReady { get; set; }
-        public InputService InputService { get; set; }
         public bool IsFinishedGamePreparation { get; set; }
+ 
+        // Services
+        public InputService InputService { get; set; }
         
         /// <summary>
         /// Get interpolated world position for smooth movement.

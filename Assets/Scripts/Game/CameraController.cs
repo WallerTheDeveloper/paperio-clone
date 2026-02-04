@@ -1,4 +1,7 @@
-﻿using UnityEngine;
+﻿using Core.Services;
+using Game.Data;
+using Helpers;
+using UnityEngine;
 
 namespace Game
 {
@@ -6,7 +9,6 @@ namespace Game
     {
         [Header("Target")]
         [SerializeField] private Transform target;
-        [SerializeField] private bool autoFindLocalPlayer = true;
         [SerializeField] private float height = 30f;
         [SerializeField] private float distance = 10f;
         [SerializeField] private float lookAheadDistance = 5f;
@@ -24,7 +26,6 @@ namespace Game
         
         [SerializeField] private float defaultShakeIntensity = 0.5f;
         
-        private GameWorld _gameWorld;
         private Camera _camera;
         private Transform _transform;
         
@@ -44,42 +45,21 @@ namespace Game
         private bool _isInitialized;
         private Vector3 _initialOffset;
 
-        public Transform Target => target;
-        
         public bool IsFollowing => target != null && _isInitialized;
         
-        public float CurrentHeight => height;
-        
-        public Camera Camera => _camera;
-        
-        private void Awake()
+        public void Initialize(IGameWorldDataProvider gameWorldData)
         {
             _transform = transform;
             _camera = GetComponent<Camera>();
             
-            if (_camera == null)
-            {
-                _camera = gameObject.AddComponent<Camera>();
-            }
-            
             _targetHeight = height;
             _currentYaw = _transform.eulerAngles.y;
-        }
 
-        public void Initialize(GameWorld gameWorld)
-        {
-            _gameWorld = gameWorld;
-            
-            if (_gameWorld != null)
+            _gameBounds = GridHelper.GetGridBounds(gameWorldData.GridWidth, gameWorldData.GridHeight, gameWorldData.Config.CellSize);
+
+            if (_gameBounds != null)
             {
-                _gameBounds = _gameWorld.GetGridBounds();
                 _hasBounds = true;
-            }
-            
-            if (autoFindLocalPlayer && _gameWorld != null)
-            {
-                _gameWorld.OnLocalPlayerSpawned += OnLocalPlayerSpawned;
-                _gameWorld.OnGameStarted += OnGameStarted;
             }
             
             _isInitialized = true;
@@ -87,89 +67,12 @@ namespace Game
             Debug.Log($"[CameraController] Initialized - Height: {height}, Distance: {distance}");
         }
 
-        private void OnGameStarted()
+        public void TickLate()
         {
-            if (_gameWorld != null)
+            if (!_isInitialized)
             {
-                _gameBounds = _gameWorld.GetGridBounds();
-                _hasBounds = true;
-                
-                Vector3 center = _gameWorld.GetGridCenter();
-                SnapToPosition(center);
+                return;
             }
-        }
-
-        private void OnLocalPlayerSpawned(uint playerId)
-        {
-            if (_gameWorld?.LocalPlayerVisual != null)
-            {
-                SetTarget(_gameWorld.LocalPlayerVisual.transform);
-                Debug.Log($"[CameraController] Now following local player {playerId}");
-            }
-        }
-        public void SetTarget(Transform newTarget)
-        {
-            target = newTarget;
-            
-            if (target != null)
-            {
-                SnapToTarget();
-            }
-        }
-
-        public void ClearTarget()
-        {
-            target = null;
-        }
-
-        public void SnapToTarget()
-        {
-            if (target == null) return;
-            
-            Vector3 targetPos = CalculateTargetPosition(target.position);
-            _transform.position = targetPos;
-            _currentVelocity = Vector3.zero;
-            
-            LookAtTarget();
-        }
-
-        public void SnapToPosition(Vector3 worldPosition)
-        {
-            Vector3 targetPos = CalculateTargetPosition(worldPosition);
-            _transform.position = targetPos;
-            _currentVelocity = Vector3.zero;
-            
-            Vector3 lookTarget = worldPosition + Vector3.down * lookAheadDistance;
-            _transform.LookAt(lookTarget);
-        }
-
-        public void SetHeight(float newHeight)
-        {
-            _targetHeight = Mathf.Clamp(newHeight, minHeight, maxHeight);
-        }
-
-        public void AdjustHeight(float delta)
-        {
-            _targetHeight = Mathf.Clamp(_targetHeight + delta, minHeight, maxHeight);
-        }
-
-        public void Shake(float intensity = -1f, float duration = 0.3f)
-        {
-            if (!enableShake) return;
-            
-            _shakeIntensity = intensity < 0 ? defaultShakeIntensity : intensity;
-            _shakeDuration = duration;
-            _shakeTimer = duration;
-        }
-
-        public void StopShake()
-        {
-            _shakeTimer = 0f;
-        }
-
-        private void LateUpdate()
-        {
-            if (!_isInitialized) return;
             
             height = Mathf.SmoothDamp(height, _targetHeight, ref _currentZoomVelocity, zoomSmoothTime);
             
@@ -184,6 +87,39 @@ namespace Game
             }
         }
 
+        public void Dispose()
+        { }
+        
+        public void SetTarget(Transform newTarget)
+        {
+            target = newTarget;
+            
+            if (target != null)
+            {
+                SnapToTarget();
+            }
+        }
+
+        public void SnapToTarget()
+        {
+            if (target == null) return;
+            
+            Vector3 targetPos = CalculateTargetPosition(target.position);
+            _transform.position = targetPos;
+            _currentVelocity = Vector3.zero;
+            
+            LookAtTarget();
+        }
+
+        public void Shake(float intensity = -1f, float duration = 0.3f)
+        {
+            if (!enableShake) return;
+            
+            _shakeIntensity = intensity < 0 ? defaultShakeIntensity : intensity;
+            _shakeDuration = duration;
+            _shakeTimer = duration;
+        }
+        
         private void UpdateFollowPosition()
         {
             Vector3 targetWorldPos = target.position;
@@ -294,15 +230,6 @@ namespace Game
             );
             
             _transform.position += shakeOffset;
-        }
-
-        private void OnDestroy()
-        {
-            if (_gameWorld != null)
-            {
-                _gameWorld.OnLocalPlayerSpawned -= OnLocalPlayerSpawned;
-                _gameWorld.OnGameStarted -= OnGameStarted;
-            }
         }
 
         private void OnDrawGizmosSelected()

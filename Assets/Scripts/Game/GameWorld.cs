@@ -9,12 +9,10 @@ using UnityEngine;
 
 namespace Game
 {
-    public class GameWorld : MonoBehaviour, IService
+    public class GameWorld : MonoBehaviour, IService, IGameWorldDataProvider
     {
         [SerializeField] private GameWorldConfig config;
-        
         [SerializeField] private TerritoryRenderer territoryRenderer;
-        [SerializeField] private CameraController cameraController;
         
         [Header("Debug")]
         [SerializeField] private bool logTerritoryUpdates = false;
@@ -43,7 +41,7 @@ namespace Game
         public uint GridHeight => _gridHeight;
         public uint TickRateMs => _tickRateMs;
         
-        public float TickProgress
+        private float TickProgress
         {
             get
             {
@@ -58,27 +56,17 @@ namespace Game
         }
         
         public PlayerVisual LocalPlayerVisual => _playerVisualsManager?.LocalPlayerVisual;
-
+        
+        private CameraController _cameraController;
         private PlayerVisualsManager _playerVisualsManager;
         public void Initialize(ServiceContainer services)
         {
             _playerVisualsManager = services.Get<PlayerVisualsManager>();
+            
             if (territoryRenderer == null)
             {
                 Debug.LogWarning("[GameWorld] TerritoryRenderer not assigned - territory won't render");
             }
-            
-            if (_playerVisualsManager == null)
-            {
-                Debug.LogWarning("[GameWorld] PlayerVisualsManager not assigned - players won't render");
-            }
-            
-            if (cameraController == null)
-            {
-                Debug.LogWarning("[GameWorld] CameraController not assigned - camera won't follow player");
-            }
-            
-            Debug.Log("[GameWorld] Initialized - subscribed to server events");
         }
 
         public void Tick()
@@ -88,16 +76,25 @@ namespace Game
                 return;
             }
             
-            _playerVisualsManager?.UpdateInterpolation(TickProgress);
+            _playerVisualsManager.UpdateInterpolation(TickProgress);
+        }
+
+        public void TickLate()
+        {
+            if(_cameraController != null)
+            {
+                _cameraController.TickLate();
+            }
         }
 
         public void Dispose()
         {
-            _playerVisualsManager?.ClearAll();
+            _playerVisualsManager.ClearAll();
             
             _territoryData?.Clear();
             _isGameActive = false;
             
+            _cameraController.Dispose();
             Debug.Log("[GameWorld] Disposed");
         }
 
@@ -110,11 +107,21 @@ namespace Game
             {
                 _gridWidth = response.InitialState.GridWidth;
                 _gridHeight = response.InitialState.GridHeight;
+                
+                _playerVisualsManager.UpdateFromState(response.InitialState, _localPlayerId);
+                _playerVisualsManager.SpawnPlayers();
+                
+                _cameraController = FindFirstObjectByType<CameraController>();
+                _cameraController.Initialize(this as IGameWorldDataProvider);
+                
+                Debug.Log($"[GameWorld] PlayerVisualsManager initialized with {response.InitialState.Players.Count} players");
+                
                 InitializeFromState(response.InitialState);
             }
             
             _isGameActive = true;
             _lastTickTime = Time.time;
+            
             
             Debug.Log($"[GameWorld] Game started! " +
                       $"LocalPlayer={_localPlayerId}, " +
@@ -176,9 +183,9 @@ namespace Game
             Debug.Log($"[GameWorld] Player {playerId} eliminated" + 
                       (isLocal ? " (LOCAL PLAYER!)" : ""));
             
-            if (isLocal && cameraController != null)
+            if (isLocal && _cameraController != null)
             {
-                cameraController.Shake(1f, 0.5f);
+                _cameraController.Shake(1f, 0.5f);
             }
             
         }
@@ -189,9 +196,9 @@ namespace Game
             Debug.Log($"[GameWorld] Player {playerId} respawned" +
                       (isLocal ? " (LOCAL PLAYER!)" : ""));
             
-            if (isLocal && cameraController != null && LocalPlayerVisual != null)
+            if (isLocal && _cameraController != null && LocalPlayerVisual != null)
             {
-                cameraController.SetTarget(LocalPlayerVisual.transform);
+                _cameraController.SetTarget(LocalPlayerVisual.transform);
             }
         }
 
@@ -217,18 +224,6 @@ namespace Game
                 Debug.Log($"[GameWorld] TerritoryRenderer initialized: {width}x{height}");
             }
             
-            if (_playerVisualsManager != null)
-            {
-                _playerVisualsManager.UpdateFromState(initialState, _localPlayerId);
-                Debug.Log($"[GameWorld] PlayerVisualsManager initialized with {initialState.Players.Count} players");
-            }
-            
-            if (cameraController != null)
-            {
-                cameraController.Initialize(this);
-                Debug.Log("[GameWorld] CameraController initialized");
-            }
-            
             if (logTerritoryUpdates)
             {
                 int cx = width / 2, cy = height / 2;
@@ -244,7 +239,7 @@ namespace Game
                 gridY * config.CellSize + config.CellSize * 0.5f
             );
         }
-
+        
         public Bounds GetGridBounds()
         {
             var center = GridHelper.GetGridCenter(GridWidth, GridHeight, config.CellSize);
@@ -290,7 +285,6 @@ namespace Game
                 0.9f
             );
         }
-
         public string GetDebugInfo()
         {
             if (!_isGameActive)
@@ -301,7 +295,7 @@ namespace Game
             float myPercentage = _territoryData?.GetOwnershipPercentage(_localPlayerId) ?? 0f;
             int rendererUpdates = territoryRenderer?.TotalCellsUpdated ?? 0;
             int activeVisuals = _playerVisualsManager?.ActiveCount ?? 0;
-            bool cameraFollowing = cameraController?.IsFollowing ?? false;
+            bool cameraFollowing = _cameraController?.IsFollowing ?? false;
             
             return $"Local Player: {_localPlayerId}\n" +
                    $"Grid: {GridWidth}x{GridHeight}\n" +

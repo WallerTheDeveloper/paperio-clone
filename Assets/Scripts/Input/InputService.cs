@@ -29,9 +29,6 @@ namespace Input
             
             _playerInputActions.Player.Move.performed += OnMovePerformed;
         }
-    
-        public void Tick()
-        { }
         
         public void Dispose()
         {

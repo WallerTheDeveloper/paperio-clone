@@ -39,7 +39,7 @@ namespace Core.GameStates.Types
             _serverStateHandler.OnPlayerRespawned += _gameWorld.OnPlayerRespawned;
         }
 
-        public override void TickState()
+        public override void Tick()
         { }
 
         public override void Stop()

@@ -1,3 +1,4 @@
+using System;
 using Core.GameStates;
 using Core.Services;
 using Game;
@@ -29,9 +30,9 @@ namespace Core
             _services.Register(messageSender);
             _services.Register(_playersContainer);
             _services.Register(serverStateHandler);
-            _services.Register(gameWorld);
-            _services.Register(gameStatesManager);
+            _services.Register(gameStatesManager); 
             _services.Register(playerVisualsManager);
+            _services.Register(gameWorld);
             
             _services.InitDanglingServices();
         }
@@ -44,11 +45,18 @@ namespace Core
                     alivePlayer.InputService != null)
                 {
                     _services.Register(alivePlayer.InputService);
+                    
                     alivePlayer.IsFinishedGamePreparation = true;
                     _services.InitDanglingServices();
+                    
                 }
             }
             _services.TickAll();
+        }
+
+        private void LateUpdate()
+        {
+            _services.TickLateAll();
         }
 
         private void OnDestroy()

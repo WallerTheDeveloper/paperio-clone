@@ -18,7 +18,7 @@ namespace Core.GameStates.Types
             _messageSender.OnConnected += OnConnected;
         }
 
-        public override void TickState()
+        public override void Tick()
         {}
 
         public override void Stop()

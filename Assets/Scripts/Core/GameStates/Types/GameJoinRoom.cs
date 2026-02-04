@@ -1,5 +1,6 @@
 ﻿using System;
 using Core.Services;
+using Game.Rendering;
 using Network;
 
 namespace Core.GameStates.Types
@@ -18,7 +19,7 @@ namespace Core.GameStates.Types
              TriggerStateSwitch?.Invoke();
         }
 
-        public override void TickState()
+        public override void Tick()
         { }
 
         public override void Stop()

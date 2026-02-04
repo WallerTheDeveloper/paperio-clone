@@ -8,7 +8,7 @@ namespace Core.GameStates
     {
         public abstract Action TriggerStateSwitch { get; set; }
         public abstract void Initialize(ServiceContainer container);
-        public abstract void TickState();
+        public abstract void Tick();
         public abstract void Stop();
     }
 }

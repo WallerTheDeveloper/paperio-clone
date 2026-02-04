@@ -71,12 +71,20 @@ namespace Core.Services
 
         public void TickAll()
         {
-            for (int i = 0; i < _tickableServices.Count; i++)
+            foreach (var service in _tickableServices)
             {
-                _tickableServices[i].Tick();
+                service.Tick();
             }
         }
 
+        public void TickLateAll()
+        {
+            foreach (var service in _tickableServices)
+            {
+                service.TickLate();
+            }
+        }
+        
         public void DisposeAll()
         {
             foreach (var kvp in _services)
