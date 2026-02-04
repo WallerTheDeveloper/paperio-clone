@@ -44,7 +44,7 @@ namespace Helpers
         /// <summary>
         /// Get the center of the grid in world coordinates.
         /// </summary>
-        public static Vector3 GetGridCenter(int gridWidth, int gridHeight, float cellSize)
+        public static Vector3 GetGridCenter(uint gridWidth, uint gridHeight, float cellSize)
         {
             return new Vector3(
                 (gridWidth * cellSize) / 2f,
@@ -56,7 +56,7 @@ namespace Helpers
         /// <summary>
         /// Get the world bounds of the grid.
         /// </summary>
-        public static Bounds GetGridBounds(int gridWidth, int gridHeight, float cellSize)
+        public static Bounds GetGridBounds(uint gridWidth, uint gridHeight, float cellSize)
         {
             var center = GetGridCenter(gridWidth, gridHeight, cellSize);
             var size = new Vector3(gridWidth * cellSize, 0f, gridHeight * cellSize);

@@ -2,6 +2,7 @@ using Core.GameStates;
 using Core.Services;
 using Game;
 using Game.Data;
+using Game.Rendering;
 using Input;
 using Network;
 using UnityEngine;
@@ -14,6 +15,8 @@ namespace Core
         [SerializeField] private GameStatesManager gameStatesManager;
         [SerializeField] private ServerStateHandler serverStateHandler;
         [SerializeField] private GameWorld gameWorld;
+        [SerializeField] private PlayerVisualsManager playerVisualsManager;
+        
         private PlayersContainer _playersContainer;
         private InputService _inputService;
         
@@ -28,6 +31,7 @@ namespace Core
             _services.Register(serverStateHandler);
             _services.Register(gameWorld);
             _services.Register(gameStatesManager);
+            _services.Register(playerVisualsManager);
             
             _services.InitDanglingServices();
         }

@@ -1,13 +1,18 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
+using Core.Services;
 using Game.Data;
 using Game.Paperio;
+using Helpers;
 using Input;
 using UnityEngine;
 
 namespace Game.Rendering
 {
-    public class PlayerVisualsManager : MonoBehaviour
+    public class PlayerVisualsManager : MonoBehaviour, IService
     {
+        [SerializeField] private GameWorldConfig config;
+        [SerializeField] private PlayerConfig playerConfig;
         [SerializeField] private PlayerVisual playerVisualPrefab;
         
         [SerializeField] private Transform visualsContainer;
@@ -19,21 +24,32 @@ namespace Game.Rendering
         
         private readonly Queue<PlayerVisual> _pool = new();
         
-        private uint _localPlayerId;
         private PlayerVisual _localPlayerVisual;
         
+        private uint _localPlayerId;
+
         public int ActiveCount => _activeVisuals.Count;
         public PlayerVisual LocalPlayerVisual => _localPlayerVisual;
         
-        private GameWorld _gameWorld;
-        private PlayersContainer _playersContainer;
-        public void Initialize(GameWorld gameWorld, PlayersContainer playersContainer, uint localPlayerId)
+        private readonly Color32[] _playerColors = new Color32[]
         {
-            _gameWorld = gameWorld;
-            _playersContainer = playersContainer;
-            _localPlayerId = localPlayerId;
+            new(255, 77, 77, 255),   // Red
+            new(77, 153, 255, 255),  // Blue  
+            new(77, 255, 77, 255),   // Green
+            new(255, 255, 77, 255),  // Yellow
+            new(255, 77, 255, 255),  // Magenta
+            new(77, 255, 255, 255),  // Cyan
+            new(255, 153, 77, 255),  // Orange
+            new(153, 77, 255, 255),  // Purple
+        };
+        
+        private PlayersContainer _playersContainer;
+
+        public void Initialize(ServiceContainer services)
+        {
+            _playersContainer = services.Get<PlayersContainer>();
             
-            // Create container if not assigned
+            // Create container for players if not assigned
             if (visualsContainer == null)
             {
                 var containerGO = new GameObject("PlayerVisuals");
@@ -54,7 +70,24 @@ namespace Game.Rendering
             Debug.Log($"[PlayerVisualsManager] Initialized with pool size {_pool.Count}");
         }
 
-        public void SpawnOrUpdatePlayer(PaperioPlayer protoPlayer)
+        public void Tick()
+        { }
+
+        public void Dispose()
+        {
+            ClearAll();
+            
+            while (_pool.Count > 0)
+            {
+                var pooled = _pool.Dequeue();
+                if (pooled != null)
+                {
+                    Destroy(pooled.gameObject);
+                }
+            }
+        }
+
+        private void SpawnOrUpdatePlayer(PaperioPlayer protoPlayer)
         {
             uint playerId = protoPlayer.PlayerId;
             
@@ -64,7 +97,7 @@ namespace Game.Rendering
             }
             else
             {
-                SpawnPlayer(protoPlayer);
+                SpawnPlayer(protoPlayer); 
             }
         }
 
@@ -79,10 +112,8 @@ namespace Game.Rendering
             PlayerVisual visual = GetFromPoolOrCreate();
             
             Vector3 worldPos = CalculateWorldPosition(protoPlayer);
-            
-            Color color = _gameWorld != null 
-                ? _gameWorld.GetPlayerColor(protoPlayer.PlayerId) 
-                : Color.white;
+
+            Color color = GetPlayerColor(protoPlayer.PlayerId);
             
             bool isLocal = protoPlayer.PlayerId == _localPlayerId;
             
@@ -105,6 +136,22 @@ namespace Game.Rendering
                       (isLocal ? " [LOCAL]" : ""));
         }
 
+        public Color GetPlayerColor(uint playerId)
+        {
+            if (playerId == 0)
+            {
+                return config.NeutralColor;
+            }
+            
+            var playerData = _playersContainer?.TryGetPlayerById(playerId);
+            if (playerData != null && playerData.Color != default)
+            {
+                return playerData.Color;
+            }
+            
+            int index = (int)((playerId - 1) % _playerColors.Length);
+            return _playerColors[index];
+        }
         public void DespawnPlayer(uint playerId)
         {
             if (!_activeVisuals.TryGetValue(playerId, out var visual))
@@ -142,8 +189,9 @@ namespace Game.Rendering
             visual.UpdateFromData(playerData, worldPos);
         }
 
-        public void UpdateFromState(PaperioState state)
+        public void UpdateFromState(PaperioState state, uint localPlayerId)
         {
+            _localPlayerId = localPlayerId;
             var currentPlayers = new HashSet<uint>();
             
             foreach (var protoPlayer in state.Players)
@@ -175,17 +223,39 @@ namespace Game.Rendering
             }
         }
 
+        public void ClearAll()
+        {
+            foreach (var visual in _activeVisuals.Values)
+            {
+                if (usePooling)
+                {
+                    visual.ResetForPool();
+                    _pool.Enqueue(visual);
+                }
+                else
+                {
+                    Destroy(visual.gameObject);
+                }
+            }
+            
+            _activeVisuals.Clear();
+            _localPlayerVisual = null;
+            
+            Debug.Log("[PlayerVisualsManager] Cleared all visuals");
+        }
+        
         private Vector3 CalculateWorldPosition(PaperioPlayer protoPlayer)
         {
-            if (_gameWorld == null || protoPlayer.Position == null)
+            if (protoPlayer.Position == null)
             {
                 return Vector3.zero;
             }
-            
-            return _gameWorld.GridToWorld(
+
+            return GridHelper.GridToWorld(
                 protoPlayer.Position.X,
                 protoPlayer.Position.Y,
-                _gameWorld.Config.PlayerHeight
+                config.CellSize + config.CellSize * 0.5f,
+                playerConfig.PlayerHeight
             );
         }
 
@@ -213,52 +283,6 @@ namespace Game.Rendering
                 }
             }
             return createdPlayer.GetComponent<PlayerVisual>();
-        }
-
-        public PlayerVisual GetVisual(uint playerId)
-        {
-            _activeVisuals.TryGetValue(playerId, out var visual);
-            return visual;
-        }
-
-        public bool HasVisual(uint playerId)
-        {
-            return _activeVisuals.ContainsKey(playerId);
-        }
-
-        public void ClearAll()
-        {
-            foreach (var visual in _activeVisuals.Values)
-            {
-                if (usePooling)
-                {
-                    visual.ResetForPool();
-                    _pool.Enqueue(visual);
-                }
-                else
-                {
-                    Destroy(visual.gameObject);
-                }
-            }
-            
-            _activeVisuals.Clear();
-            _localPlayerVisual = null;
-            
-            Debug.Log("[PlayerVisualsManager] Cleared all visuals");
-        }
-
-        private void OnDestroy()
-        {
-            ClearAll();
-            
-            while (_pool.Count > 0)
-            {
-                var pooled = _pool.Dequeue();
-                if (pooled != null)
-                {
-                    Destroy(pooled.gameObject);
-                }
-            }
         }
     }
 }

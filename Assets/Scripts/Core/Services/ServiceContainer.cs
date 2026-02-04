@@ -40,6 +40,9 @@ namespace Core.Services
                 $"[Services] Not found: {typeof(T).Name}. Register it in Bootstrap.");
         }
 
+        /// <summary>
+        /// Initialize services that haven't been initialized after registration
+        /// </summary>
         public void InitDanglingServices()
         {
             foreach (var kvp in _services)
