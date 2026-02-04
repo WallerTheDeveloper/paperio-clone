@@ -10,7 +10,6 @@ namespace Input
     public class InputService : MonoBehaviour, IService
     {
         [SerializeField] private float inputCooldown = 0.05f;
-        
         public event Action<Direction> OnDirectionChanged;
         
         private Direction _currentDirection = Direction.None;
@@ -91,7 +90,7 @@ namespace Input
             {
                 return input.x > 0 ? Direction.Right : Direction.Left;
             }
-            return input.y > 0 ? Direction.Up : Direction.Down;
+            return input.y > 0 ? Direction.Down : Direction.Up;
         }
         
         private bool IsOppositeDirection(Direction a, Direction b)
