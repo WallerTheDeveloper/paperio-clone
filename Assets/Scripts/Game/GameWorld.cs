@@ -12,13 +12,13 @@ namespace Game
     public class GameWorld : MonoBehaviour, IService, IGameWorldDataProvider
     {
         [SerializeField] private GameWorldConfig config;
-        [SerializeField] private TerritoryRenderer territoryRenderer;
         
         [Header("Debug")]
         [SerializeField] private bool logTerritoryUpdates = false;
         [SerializeField] private bool logPlayerUpdates = false;
         
         private TerritoryData _territoryData;
+        private Dictionary<uint, Color> _playerColors;
         private uint _localPlayerId;
         private uint _gridWidth;
         private uint _gridHeight;
@@ -35,6 +35,7 @@ namespace Game
 
         public GameWorldConfig Config => config;
         public TerritoryData Territory => _territoryData;
+        public Dictionary<uint, Color> PlayerColors => _playerColors;
         public uint LocalPlayerId => _localPlayerId;
         public bool IsGameActive => _isGameActive;
         public uint GridWidth => _gridWidth;
@@ -59,14 +60,12 @@ namespace Game
         
         private CameraController _cameraController;
         private PlayerVisualsManager _playerVisualsManager;
+        private TerritoryRenderer _territoryRenderer;
         public void Initialize(ServiceContainer services)
         {
             _playerVisualsManager = services.Get<PlayerVisualsManager>();
             
-            if (territoryRenderer == null)
-            {
-                Debug.LogWarning("[GameWorld] TerritoryRenderer not assigned - territory won't render");
-            }
+            _territoryRenderer = services.Get<TerritoryRenderer>();
         }
 
         public void Tick()
@@ -114,8 +113,6 @@ namespace Game
                 _cameraController = FindFirstObjectByType<CameraController>();
                 _cameraController.Initialize(this as IGameWorldDataProvider);
                 
-                Debug.Log($"[GameWorld] PlayerVisualsManager initialized with {response.InitialState.Players.Count} players");
-                
                 InitializeFromState(response.InitialState);
             }
             
@@ -141,17 +138,20 @@ namespace Game
             
             _lastTick = state.Tick;
             _lastTickTime = Time.time;
-            
+
+            foreach (var player in state.Players)
+            {
+                var playerColor = _playerVisualsManager.GetPlayerColor(player.PlayerId);
+                _playerColors.Add(player.PlayerId, playerColor);
+            }
+
             if (_territoryData != null && state.Territory != null)
             {
                 var changes = _territoryData.ApplyServerState(state.Territory);
                 
                 if (changes.Count > 0)
                 {
-                    if (territoryRenderer != null && territoryRenderer.IsInitialized)
-                    {
-                        territoryRenderer.UpdateTerritory(changes);
-                    }
+                    _territoryRenderer.UpdateTerritory(changes);
                     
                     OnTerritoryChanged?.Invoke(changes);
                     
@@ -201,8 +201,7 @@ namespace Game
                 _cameraController.SetTarget(LocalPlayerVisual.transform);
             }
         }
-
-
+        
 
         private void InitializeFromState(PaperioState initialState)
         {
@@ -217,12 +216,7 @@ namespace Game
                 Debug.Log($"[GameWorld] Initial territory: {_territoryData.ClaimedCells} cells claimed");
             }
             
-            if (territoryRenderer != null)
-            {
-                territoryRenderer.Initialize(width, height, config.CellSize, this);
-                territoryRenderer.ApplyFullState(_territoryData);
-                Debug.Log($"[GameWorld] TerritoryRenderer initialized: {width}x{height}");
-            }
+            _territoryRenderer.ApplyFullState(_territoryData);
             
             if (logTerritoryUpdates)
             {
@@ -231,16 +225,8 @@ namespace Game
                           _territoryData.DebugRegion(cx - 5, cy - 5, 11, 11));
             }
         }
-        public Vector3 GridToWorld(int gridX, int gridY, float height = 0f)
-        {
-            return new Vector3(
-                gridX * config.CellSize + config.CellSize * 0.5f,
-                height,
-                gridY * config.CellSize + config.CellSize * 0.5f
-            );
-        }
         
-        public Bounds GetGridBounds()
+        private Bounds GetGridBounds()
         {
             var center = GridHelper.GetGridCenter(GridWidth, GridHeight, config.CellSize);
             var size = new Vector3(
@@ -249,30 +235,6 @@ namespace Game
                 GridHeight * config.CellSize
             );
             return new Bounds(center, size);
-        }
-
-        public (Vector3 min, Vector3 max) GetGridCorners()
-        {
-            return (
-                new Vector3(0, 0, 0),
-                new Vector3(GridWidth * config.CellSize, 0, GridHeight * config.CellSize)
-            );
-        }
-
-        public Color GetTerritoryColor(uint ownerId)
-        {
-            if (ownerId == 0)
-            {
-                return config.NeutralColor;
-            }
-            
-            Color playerColor = _playerVisualsManager.GetPlayerColor(ownerId);
-            return new Color(
-                playerColor.r * 0.7f,
-                playerColor.g * 0.7f,
-                playerColor.b * 0.7f,
-                1f
-            );
         }
 
         public Color GetTrailColor(uint playerId)
@@ -284,28 +246,6 @@ namespace Game
                 Mathf.Min(1f, playerColor.b * 1.2f),
                 0.9f
             );
-        }
-        public string GetDebugInfo()
-        {
-            if (!_isGameActive)
-            {
-                return "Game not active";
-            }
-
-            float myPercentage = _territoryData?.GetOwnershipPercentage(_localPlayerId) ?? 0f;
-            int rendererUpdates = territoryRenderer?.TotalCellsUpdated ?? 0;
-            int activeVisuals = _playerVisualsManager?.ActiveCount ?? 0;
-            bool cameraFollowing = _cameraController?.IsFollowing ?? false;
-            
-            return $"Local Player: {_localPlayerId}\n" +
-                   $"Grid: {GridWidth}x{GridHeight}\n" +
-                   $"Tick: {_lastTick} (progress: {TickProgress:F2})\n" +
-                   $"Tick Rate: {_tickRateMs}ms\n" +
-                   $"Claimed Cells: {_territoryData?.ClaimedCells ?? 0}\n" +
-                   $"My Territory: {myPercentage:F2}%\n" +
-                   $"Active Players: {activeVisuals}\n" +
-                   $"Camera Following: {cameraFollowing}\n" +
-                   $"Renderer Updates: {rendererUpdates}";
         }
 
         private void OnDrawGizmosSelected()

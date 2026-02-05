@@ -17,9 +17,9 @@ namespace Core
         [SerializeField] private ServerStateHandler serverStateHandler;
         [SerializeField] private GameWorld gameWorld;
         [SerializeField] private PlayerVisualsManager playerVisualsManager;
+        [SerializeField] private TerritoryRenderer territoryRenderer;
         
         private PlayersContainer _playersContainer;
-        private InputService _inputService;
         
         private ServiceContainer _services;
         private void Awake()
@@ -33,6 +33,7 @@ namespace Core
             _services.Register(gameStatesManager); 
             _services.Register(playerVisualsManager);
             _services.Register(gameWorld);
+            _services.Register(territoryRenderer);
             
             _services.InitDanglingServices();
         }

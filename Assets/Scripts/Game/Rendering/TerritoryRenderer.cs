@@ -1,11 +1,12 @@
 ﻿using System.Collections.Generic;
+using Core.Services;
 using Game.Data;
 using UnityEngine;
 
 namespace Game.Rendering
 {
     [RequireComponent(typeof(MeshFilter), typeof(MeshRenderer))]
-    public class TerritoryRenderer : MonoBehaviour
+    public class TerritoryRenderer : MonoBehaviour, IService
     {
         [Header("Configuration")]
         [SerializeField] private Material territoryMaterial;
@@ -20,137 +21,41 @@ namespace Game.Rendering
         private Color32[] _colors;
         private Vector2[] _uvs;
 
-        private int _width;
-        private int _height;
-        private float _cellSize;
-        
-        private GameWorld _gameWorld;
-        
         private uint[] _cellOwners;
         
         private int _totalCellsUpdated;
         
-        public int Width => _width;
-        public int Height => _height;
-        public float CellSize => _cellSize;
         public int TotalCellsUpdated => _totalCellsUpdated;
         public bool IsInitialized => _mesh != null;
 
-        public void Initialize(int width, int height, float cellSize, GameWorld gameWorld)
+        private IGameWorldDataProvider _gameWorldData;
+        public void Initialize(ServiceContainer services)
         {
-            _width = width;
-            _height = height;
-            _cellSize = cellSize;
-            _gameWorld = gameWorld;
+            _gameWorldData = services.Get<GameWorld>();
             
             _meshFilter = GetComponent<MeshFilter>();
             _meshRenderer = GetComponent<MeshRenderer>();
-            
-            if (_meshFilter == null)
-            {
-                _meshFilter = gameObject.AddComponent<MeshFilter>();
-            }
-            
-            if (_meshRenderer == null)
-            {
-                _meshRenderer = gameObject.AddComponent<MeshRenderer>();
-            }
             
             if (territoryMaterial != null)
             {
                 _meshRenderer.material = territoryMaterial;
             }
-            else
-            {
-                Debug.LogWarning("[TerritoryRenderer] No material assigned, using default");
-                _meshRenderer.material = new Material(Shader.Find("Sprites/Default"));
-            }
             
             CreateMesh();
             
-            Debug.Log($"[TerritoryRenderer] Initialized: {width}x{height} grid, " +
+            Debug.Log($"[TerritoryRenderer] Initialized: {_gameWorldData.GridWidth}x{_gameWorldData.GridHeight} grid, " +
                       $"{_vertices.Length} vertices, {_triangles.Length / 3} triangles");
         }
-        private void CreateMesh()
+
+        public void Dispose()
         {
-            int cellCount = _width * _height;
-            int vertexCount = cellCount * 4;  // 4 vertices per cell
-            int triangleCount = cellCount * 6; // 6 indices per cell (2 triangles)
-            
-            _vertices = new Vector3[vertexCount];
-            _triangles = new int[triangleCount];
-            _colors = new Color32[vertexCount];
-            _uvs = new Vector2[vertexCount];
-            _cellOwners = new uint[cellCount];
-            
-            Color32 neutralColor = _gameWorld != null 
-                ? (Color32)_gameWorld.Config.NeutralColor 
-                : new Color32(40, 40, 40, 255);
-            
-            for (int y = 0; y < _height; y++)
+            if (_mesh != null)
             {
-                for (int x = 0; x < _width; x++)
-                {
-                    int cellIndex = y * _width + x;
-                    int vertexBase = cellIndex * 4;
-                    int triangleBase = cellIndex * 6;
-                    
-                    float x0 = x * _cellSize;
-                    float x1 = (x + 1) * _cellSize;
-                    float z0 = y * _cellSize;
-                    float z1 = (y + 1) * _cellSize;
-                    
-                    _vertices[vertexBase + 0] = new Vector3(x0, 0, z1); // Top-left
-                    _vertices[vertexBase + 1] = new Vector3(x1, 0, z1); // Top-right
-                    _vertices[vertexBase + 2] = new Vector3(x0, 0, z0); // Bottom-left
-                    _vertices[vertexBase + 3] = new Vector3(x1, 0, z0); // Bottom-right
-
-                    _uvs[vertexBase + 0] = new Vector2(0, 1);
-                    _uvs[vertexBase + 1] = new Vector2(1, 1);
-                    _uvs[vertexBase + 2] = new Vector2(0, 0);
-                    _uvs[vertexBase + 3] = new Vector2(1, 0);
-                    
-                    _triangles[triangleBase + 0] = vertexBase + 0;
-                    _triangles[triangleBase + 1] = vertexBase + 2;
-                    _triangles[triangleBase + 2] = vertexBase + 1;
-                    
-                    _triangles[triangleBase + 3] = vertexBase + 1;
-                    _triangles[triangleBase + 4] = vertexBase + 2;
-                    _triangles[triangleBase + 5] = vertexBase + 3;
-                    
-                    _colors[vertexBase + 0] = neutralColor;
-                    _colors[vertexBase + 1] = neutralColor;
-                    _colors[vertexBase + 2] = neutralColor;
-                    _colors[vertexBase + 3] = neutralColor;
-
-                    _cellOwners[cellIndex] = 0;
-                }
+                Destroy(_mesh);
+                _mesh = null;
             }
-            
-            _mesh = new Mesh
-            {
-                name = "TerritoryMesh"
-            };
-
-            if (vertexCount > 65535)
-            {
-                _mesh.indexFormat = UnityEngine.Rendering.IndexFormat.UInt32;
-            }
-            
-            _mesh.vertices = _vertices;
-            _mesh.triangles = _triangles;
-            _mesh.colors32 = _colors;
-            _mesh.uv = _uvs;
-            
-            _mesh.RecalculateNormals();
-            
-            _mesh.MarkDynamic();
-            
-            _mesh.RecalculateBounds();
-            
-            _meshFilter.mesh = _mesh;
         }
-
+        
         public void ApplyFullState(TerritoryData territoryData)
         {
             if (!IsInitialized)
@@ -159,10 +64,10 @@ namespace Game.Rendering
                 return;
             }
             
-            if (territoryData.Width != _width || territoryData.Height != _height)
+            if (territoryData.Width != _gameWorldData.GridWidth || territoryData.Height != _gameWorldData.GridHeight)
             {
                 Debug.LogError($"[TerritoryRenderer] Size mismatch: " +
-                               $"renderer={_width}x{_height}, data={territoryData.Width}x{territoryData.Height}");
+                               $"renderer={_gameWorldData.GridWidth}x{_gameWorldData.GridHeight}, data={territoryData.Width}x{territoryData.Height}");
                 return;
             }
             
@@ -204,7 +109,7 @@ namespace Game.Rendering
                     continue;
                 }
                 
-                int cellIndex = change.Y * _width + change.X;
+                long cellIndex = change.Y * _gameWorldData.GridWidth + change.X;
                 _cellOwners[cellIndex] = change.NewOwner;
                 SetCellColor(cellIndex, change.NewOwner);
             }
@@ -218,102 +123,138 @@ namespace Game.Rendering
                 Debug.Log($"[TerritoryRenderer] Updated {changes.Count} cells");
             }
         }
+        
+        private void CreateMesh()
+        {
+            uint cellCount = _gameWorldData.GridWidth * _gameWorldData.GridHeight;
+            uint vertexCount = cellCount * 4;  // 4 vertices per cell
+            uint triangleCount = cellCount * 6; // 6 indices per cell (2 triangles)
+            
+            _vertices = new Vector3[vertexCount];
+            _triangles = new int[triangleCount];
+            _colors = new Color32[vertexCount];
+            _uvs = new Vector2[vertexCount];
+            _cellOwners = new uint[cellCount];
 
-        private void SetCellColor(int cellIndex, uint ownerId)
+            Color32 neutralColor = _gameWorldData.Config.NeutralColor;
+            
+            for (int y = 0; y < _gameWorldData.GridHeight; y++)
+            {
+                for (int x = 0; x < _gameWorldData.GridWidth; x++)
+                {
+                    long cellIndex = y * _gameWorldData.GridWidth + x;
+                    long vertexBase = cellIndex * 4;
+                    long triangleBase = cellIndex * 6;
+                    
+                    float x0 = x * _gameWorldData.Config.CellSize;
+                    float x1 = (x + 1) * _gameWorldData.Config.CellSize;
+                    float z0 = y * _gameWorldData.Config.CellSize;
+                    float z1 = (y + 1) * _gameWorldData.Config.CellSize;
+                    
+                    _vertices[vertexBase + 0] = new Vector3(x0, 0, z1); // Top-left
+                    _vertices[vertexBase + 1] = new Vector3(x1, 0, z1); // Top-right
+                    _vertices[vertexBase + 2] = new Vector3(x0, 0, z0); // Bottom-left
+                    _vertices[vertexBase + 3] = new Vector3(x1, 0, z0); // Bottom-right
+
+                    _uvs[vertexBase + 0] = new Vector2(0, 1);
+                    _uvs[vertexBase + 1] = new Vector2(1, 1);
+                    _uvs[vertexBase + 2] = new Vector2(0, 0);
+                    _uvs[vertexBase + 3] = new Vector2(1, 0);
+                    
+                    _triangles[triangleBase + 0] = (int)vertexBase + 0;
+                    _triangles[triangleBase + 1] = (int)vertexBase + 2;
+                    _triangles[triangleBase + 2] = (int)vertexBase + 1;
+                    
+                    _triangles[triangleBase + 3] = (int)vertexBase + 1;
+                    _triangles[triangleBase + 4] = (int)vertexBase + 2;
+                    _triangles[triangleBase + 5] = (int)vertexBase + 3;
+                    
+                    _colors[vertexBase + 0] = neutralColor;
+                    _colors[vertexBase + 1] = neutralColor;
+                    _colors[vertexBase + 2] = neutralColor;
+                    _colors[vertexBase + 3] = neutralColor;
+
+                    _cellOwners[cellIndex] = 0;
+                }
+            }
+            
+            _mesh = new Mesh
+            {
+                name = "TerritoryMesh"
+            };
+
+            if (vertexCount > 65535)
+            {
+                _mesh.indexFormat = UnityEngine.Rendering.IndexFormat.UInt32;
+            }
+            
+            _mesh.vertices = _vertices;
+            _mesh.triangles = _triangles;
+            _mesh.colors32 = _colors;
+            _mesh.uv = _uvs;
+            
+            _mesh.RecalculateNormals();
+            
+            _mesh.MarkDynamic();
+            
+            _mesh.RecalculateBounds();
+            
+            _meshFilter.mesh = _mesh;
+        }
+        
+        private void SetCellColor(long cellIndex, uint ownerId)
         {
             Color32 color = GetColorForOwner(ownerId);
             
-            int vertexBase = cellIndex * 4;
+            long vertexBase = cellIndex * 4;
             _colors[vertexBase + 0] = color;
             _colors[vertexBase + 1] = color;
             _colors[vertexBase + 2] = color;
             _colors[vertexBase + 3] = color;
         }
-
+        
         private Color32 GetColorForOwner(uint ownerId)
         {
-            if (_gameWorld != null)
-            {
-                return _gameWorld.GetTerritoryColor(ownerId);
-            }
-            
             if (ownerId == 0)
             {
-                return new Color32(40, 40, 40, 255); // Neutral gray
+                return _gameWorldData.Config.NeutralColor;
             }
-            
-            return GetFallbackColor(ownerId);
+
+            return GetTerritoryColor(ownerId);
         }
 
-        private Color32 GetFallbackColor(uint playerId)
+        private Color GetTerritoryColor(uint ownerId)
         {
-            float hue = (playerId * 0.618033988749895f) % 1.0f;
-            Color color = Color.HSVToRGB(hue, 0.7f, 0.6f);
-            return color;
+            if (ownerId == 0)
+            {
+                return _gameWorldData.Config.NeutralColor;
+            }
+            _gameWorldData.PlayerColors.TryGetValue(ownerId, out Color playerColor);
+            // Color playerColor = _playerVisualsManager.GetPlayerColor(ownerId);
+            return new Color(
+                playerColor.r * 0.7f,
+                playerColor.g * 0.7f,
+                playerColor.b * 0.7f,
+                1f
+            );
         }
-
+        
         private bool IsValidCell(int x, int y)
         {
-            return x >= 0 && x < _width && y >= 0 && y < _height;
+            return x >= 0 && x < _gameWorldData.GridWidth && y >= 0 && y < _gameWorldData.GridHeight;
         }
-
-        public void RefreshAllColors(TerritoryData territoryData)
-        {
-            ApplyFullState(territoryData);
-        }
-
-        public Vector3 GetCellCenter(int x, int y)
-        {
-            return new Vector3(
-                (x + 0.5f) * _cellSize,
-                0,
-                (y + 0.5f) * _cellSize
-            );
-        }
-
-        public Vector2Int GetCellAt(Vector3 worldPos)
-        {
-            return new Vector2Int(
-                Mathf.FloorToInt(worldPos.x / _cellSize),
-                Mathf.FloorToInt(worldPos.z / _cellSize)
-            );
-        }
-
-        public void DebugHighlightCell(int x, int y, Color32 color)
-        {
-            if (!IsValidCell(x, y)) return;
-            
-            int cellIndex = y * _width + x;
-            int vertexBase = cellIndex * 4;
-            
-            _colors[vertexBase + 0] = color;
-            _colors[vertexBase + 1] = color;
-            _colors[vertexBase + 2] = color;
-            _colors[vertexBase + 3] = color;
-            
-            _mesh.colors32 = _colors;
-        }
-
-        private void OnDestroy()
-        {
-            if (_mesh != null)
-            {
-                Destroy(_mesh);
-                _mesh = null;
-            }
-        }
-
+        
         private void OnDrawGizmosSelected()
         {
             if (!IsInitialized) return;
             
             Gizmos.color = Color.green;
-            Vector3 size = new Vector3(_width * _cellSize, 0.1f, _height * _cellSize);
+            Vector3 size = new Vector3(_gameWorldData.GridWidth * _gameWorldData.Config.CellSize, 0.1f,  _gameWorldData.GridHeight * _gameWorldData.Config.CellSize);
             Vector3 center = size / 2f;
             Gizmos.DrawWireCube(center, size);
             
             Gizmos.color = Color.red;
-            Gizmos.DrawSphere(Vector3.zero, _cellSize * 0.5f);
+            Gizmos.DrawSphere(Vector3.zero, _gameWorldData.Config.CellSize * 0.5f);
         }
     }
 }
