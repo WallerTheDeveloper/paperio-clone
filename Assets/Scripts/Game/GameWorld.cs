@@ -190,7 +190,9 @@ namespace Game
                       (isLocal ? " (LOCAL PLAYER!)" : ""));
             
             var playerData = _playerVisualsManager.PlayersContainer.TryGetPlayerById(playerId);
-            _effectsManager.PlayDeathEffect(playerData.WorldPosition, playerData.Color);
+            var playerCurrentPosition =
+                GridHelper.GridToWorld(playerData.GridPosition.x, playerData.GridPosition.y, Config.CellSize);
+            _effectsManager.PlayDeathEffect(playerCurrentPosition, playerData.Color);
             
             if (isLocal && _cameraController != null)
             {
@@ -205,7 +207,8 @@ namespace Game
             Debug.Log($"[GameWorld] Player {playerId} respawned" +
                       (isLocal ? " (LOCAL PLAYER!)" : ""));
             var playerData = _playerVisualsManager.PlayersContainer.TryGetPlayerById(playerId);
-            _effectsManager.PlayRespawnEffect(playerData.WorldPosition, playerData.Color);
+            var playerCurrentPosition = GridHelper.GridToWorld(playerData.GridPosition.x, playerData.GridPosition.y, Config.CellSize);
+            _effectsManager.PlayRespawnEffect(playerCurrentPosition, playerData.Color);
             
             if (isLocal && _cameraController != null && LocalPlayerVisual != null)
             {

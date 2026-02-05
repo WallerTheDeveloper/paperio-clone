@@ -30,7 +30,7 @@ namespace Game.Effects
         private static readonly int RingRadius = Shader.PropertyToID("_Radius");
         private static readonly int RingAlpha = Shader.PropertyToID("_Alpha");
 
-        private void OnEnable()
+        private void Awake()
         {
             CreateGlowParticles();
             
@@ -197,7 +197,7 @@ namespace Game.Effects
             }
         }
 
-        private void OnDisable()
+        private void OnDestroy()
         {
             if (_ringMaterialInstance != null)
             {

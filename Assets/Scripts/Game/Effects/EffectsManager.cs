@@ -1,7 +1,6 @@
 ﻿using System.Collections.Generic;
 using Core.Services;
 using Game.Data;
-using Game.Rendering;
 using UnityEngine;
 
 namespace Game.Effects

@@ -265,13 +265,13 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::Game.CameraController
   target: {fileID: 8865656648508316433}
   height: 10
-  distance: 10
+  distance: 6
   lookAheadDistance: 5
   followSmoothTime: 0.15
   rotationSmoothTime: 0.3
   followDirection: 0
-  minHeight: 20
-  maxHeight: 50
+  minHeight: 9
+  maxHeight: 10
   zoomSmoothTime: 0.5
   useBounds: 1
   boundsPadding: 5

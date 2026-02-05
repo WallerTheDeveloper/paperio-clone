@@ -23,7 +23,7 @@ namespace Game.Effects
         private ParticleSystemRenderer _particleRenderer;
         private Material _particleMaterial;
 
-        private void OnEnable()
+        private void Awake()
         {
             CreateParticleSystem();
         }
@@ -144,7 +144,7 @@ namespace Game.Effects
 
         public bool IsPlaying => _particleSystem != null && _particleSystem.isPlaying;
 
-        private void OnDisable()
+        private void OnDestroy()
         {
             if (_particleMaterial != null)
             {
