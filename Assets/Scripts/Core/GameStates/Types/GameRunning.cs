@@ -2,6 +2,7 @@
 using System.Collections;
 using Core.Services;
 using Game;
+using Game.Effects;
 using Network;
 
 namespace Core.GameStates.Types
@@ -11,6 +12,7 @@ namespace Core.GameStates.Types
         private MessageSender _messageSender;
         private ServerStateHandler _serverStateHandler;
         private GameWorld _gameWorld;
+        private EffectsManager _effectsManager;
         public override Action TriggerStateSwitch { get; set; }
 
         public override void Initialize(ServiceContainer container)

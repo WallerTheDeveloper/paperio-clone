@@ -30,9 +30,9 @@ namespace Game.Rendering
 
         public int ActiveCount => _activeVisuals.Count;
         public PlayerVisual LocalPlayerVisual => _localPlayerVisual;
+        public PlayersContainer PlayersContainer { get; private set; }
         
-        private readonly Color32[] _playerColors = new Color32[]
-        {
+        private readonly Color32[] _playerColors = {
             new(255, 77, 77, 255),   // Red
             new(77, 153, 255, 255),  // Blue  
             new(77, 255, 77, 255),   // Green
@@ -44,10 +44,10 @@ namespace Game.Rendering
         };
         
         private PlayersContainer _playersContainer;
-
         public void Initialize(ServiceContainer services)
         {
             _playersContainer = services.Get<PlayersContainer>();
+            PlayersContainer = _playersContainer;
             
             // Create container for player game objects if not assigned
             if (visualsContainer == null)
@@ -182,8 +182,11 @@ namespace Game.Rendering
 
         private void UpdateVisualFromProto(PlayerVisual visual, PaperioPlayer protoPlayer)
         {
-            var playerData = _playersContainer?.TryGetPlayerById(protoPlayer.PlayerId);
-            if (playerData == null) return;
+            var playerData = _playersContainer.TryGetPlayerById(protoPlayer.PlayerId);
+            if (playerData == null)
+            {
+                return;
+            }
             
             Vector3 worldPos = CalculateWorldPosition(protoPlayer);
             

@@ -3,6 +3,7 @@ using Core.GameStates;
 using Core.Services;
 using Game;
 using Game.Data;
+using Game.Effects;
 using Game.Rendering;
 using Input;
 using Network;
@@ -17,6 +18,7 @@ namespace Core
         [SerializeField] private ServerStateHandler serverStateHandler;
         [SerializeField] private GameWorld gameWorld;
         [SerializeField] private PlayerVisualsManager playerVisualsManager;
+        [SerializeField] private EffectsManager effectsManager;
         [SerializeField] private TerritoryRenderer territoryRenderer;
         
         private PlayersContainer _playersContainer;
@@ -33,6 +35,7 @@ namespace Core
             _services.Register(gameStatesManager); 
             _services.Register(playerVisualsManager);
             _services.Register(gameWorld);
+            _services.Register(effectsManager);
             _services.Register(territoryRenderer);
             
             _services.InitDanglingServices();

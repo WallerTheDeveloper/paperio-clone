@@ -35,16 +35,6 @@ namespace Game.Rendering
             
             _meshFilter = GetComponent<MeshFilter>();
             _meshRenderer = GetComponent<MeshRenderer>();
-            
-            if (territoryMaterial != null)
-            {
-                _meshRenderer.material = territoryMaterial;
-            }
-            
-            CreateMesh();
-            
-            Debug.Log($"[TerritoryRenderer] Initialized: {_gameWorldData.GridWidth}x{_gameWorldData.GridHeight} grid, " +
-                      $"{_vertices.Length} vertices, {_triangles.Length / 3} triangles");
         }
 
         public void Dispose()
@@ -56,6 +46,18 @@ namespace Game.Rendering
             }
         }
         
+        public void CreateTerritory()
+        {
+            if (territoryMaterial != null)
+            {
+                _meshRenderer.material = territoryMaterial;
+            }
+            
+            CreateMesh();
+            
+            Debug.Log($"[TerritoryRenderer] Initialized: {_gameWorldData.GridWidth}x{_gameWorldData.GridHeight} grid, " +
+                      $"{_vertices.Length} vertices, {_triangles.Length / 3} triangles");
+        }
         public void ApplyFullState(TerritoryData territoryData)
         {
             if (!IsInitialized)
@@ -230,7 +232,6 @@ namespace Game.Rendering
                 return _gameWorldData.Config.NeutralColor;
             }
             _gameWorldData.PlayerColors.TryGetValue(ownerId, out Color playerColor);
-            // Color playerColor = _playerVisualsManager.GetPlayerColor(ownerId);
             return new Color(
                 playerColor.r * 0.7f,
                 playerColor.g * 0.7f,

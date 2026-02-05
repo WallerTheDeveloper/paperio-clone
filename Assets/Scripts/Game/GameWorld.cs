@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using Core.Services;
 using Game.Data;
+using Game.Effects;
 using Game.Paperio;
 using Game.Rendering;
 using Helpers;
@@ -18,7 +19,7 @@ namespace Game
         [SerializeField] private bool logPlayerUpdates = false;
         
         private TerritoryData _territoryData;
-        private Dictionary<uint, Color> _playerColors;
+        private readonly Dictionary<uint, Color> _playerColors = new();
         private uint _localPlayerId;
         private uint _gridWidth;
         private uint _gridHeight;
@@ -60,11 +61,12 @@ namespace Game
         
         private CameraController _cameraController;
         private PlayerVisualsManager _playerVisualsManager;
+        private EffectsManager _effectsManager;
         private TerritoryRenderer _territoryRenderer;
         public void Initialize(ServiceContainer services)
         {
             _playerVisualsManager = services.Get<PlayerVisualsManager>();
-            
+            _effectsManager = services.Get<EffectsManager>();
             _territoryRenderer = services.Get<TerritoryRenderer>();
         }
 
@@ -94,7 +96,6 @@ namespace Game
             _isGameActive = false;
             
             _cameraController.Dispose();
-            Debug.Log("[GameWorld] Disposed");
         }
 
         public void OnJoinedGame(PaperioJoinResponse response)
@@ -106,6 +107,8 @@ namespace Game
             {
                 _gridWidth = response.InitialState.GridWidth;
                 _gridHeight = response.InitialState.GridHeight;
+                
+                _territoryRenderer.CreateTerritory();
                 
                 _playerVisualsManager.UpdateFromState(response.InitialState, _localPlayerId);
                 _playerVisualsManager.SpawnPlayers();
@@ -183,6 +186,9 @@ namespace Game
             Debug.Log($"[GameWorld] Player {playerId} eliminated" + 
                       (isLocal ? " (LOCAL PLAYER!)" : ""));
             
+            var playerData = _playerVisualsManager.PlayersContainer.TryGetPlayerById(playerId);
+            _effectsManager.PlayDeathEffect(playerData.WorldPosition, playerData.Color);
+            
             if (isLocal && _cameraController != null)
             {
                 _cameraController.Shake(1f, 0.5f);
@@ -195,6 +201,8 @@ namespace Game
             bool isLocal = playerId == _localPlayerId;
             Debug.Log($"[GameWorld] Player {playerId} respawned" +
                       (isLocal ? " (LOCAL PLAYER!)" : ""));
+            var playerData = _playerVisualsManager.PlayersContainer.TryGetPlayerById(playerId);
+            _effectsManager.PlayRespawnEffect(playerData.WorldPosition, playerData.Color);
             
             if (isLocal && _cameraController != null && LocalPlayerVisual != null)
             {

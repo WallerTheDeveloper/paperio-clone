@@ -25,8 +25,8 @@ namespace Game.Data
         public Direction Direction { get; set; } = Direction.None;
         
         // Trail in both coordinate systems
-        public List<Vector2Int> Trail { get; set; } = new List<Vector2Int>();
-        public List<Vector3> TrailWorld { get; set; } = new List<Vector3>();
+        public List<Vector2Int> Trail { get; set; } = new();
+        public List<Vector3> TrailWorld { get; set; } = new();
         
         public bool Alive { get; set; } = true;
         public uint Score { get; set; }

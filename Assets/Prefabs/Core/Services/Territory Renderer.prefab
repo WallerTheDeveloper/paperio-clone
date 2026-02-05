@@ -104,4 +104,4 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Game.Rendering.TerritoryRenderer
   territoryMaterial: {fileID: 2100000, guid: 1ca3e071a48de084e8035c9ce1e5fe5b, type: 2}
-  debugLogUpdates: 0
+  debugLogUpdates: 1
