@@ -57,6 +57,11 @@ namespace Game
             _playerColor = color;
             _isAlive = true;
             
+            _isPlayingDeathAnimation = false;
+            _isPlayingRespawnAnimation = false;
+            _deathAnimationProgress = 0f;
+            _respawnAnimationProgress = 0f;
+            
             _previousPosition = worldPosition;
             _targetPosition = worldPosition;
             _transform.position = worldPosition;

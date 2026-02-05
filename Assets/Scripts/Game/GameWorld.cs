@@ -145,7 +145,10 @@ namespace Game
             foreach (var player in state.Players)
             {
                 var playerColor = _playerVisualsManager.GetPlayerColor(player.PlayerId);
-                _playerColors.Add(player.PlayerId, playerColor);
+                if (!_playerColors.ContainsKey(player.PlayerId))
+                {
+                    _playerColors.Add(player.PlayerId, playerColor);
+                }
             }
 
             if (_territoryData != null && state.Territory != null)

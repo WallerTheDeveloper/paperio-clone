@@ -258,7 +258,7 @@ namespace Game.Rendering
             return GridHelper.GridToWorld(
                 protoPlayer.Position.X,
                 protoPlayer.Position.Y,
-                config.CellSize + config.CellSize * 0.5f,
+                config.CellSize,
                 playerConfig.PlayerHeight
             );
         }
