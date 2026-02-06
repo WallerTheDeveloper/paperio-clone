@@ -24,17 +24,19 @@ namespace Game.Data
 
     public class TerritoryData
     {
-        private readonly uint[] _cells;
         public int Width { get; }
         public int Height { get; }
-        public int TotalCells => Width * Height;
+        public MeshFilter MeshFilter { get; private set; }
         public int ClaimedCells { get; private set; }
-        public TerritoryData(int width, int height)
+        public int TotalCells => Width * Height;
+        private readonly uint[] _cells;
+        public TerritoryData(int width, int height, MeshFilter meshFilter)
         {
             Width = width;
             Height = height;
-            _cells = new uint[width * height];
+            MeshFilter = meshFilter;
             ClaimedCells = 0;
+            _cells = new uint[width * height];
         }
         public uint GetOwner(int x, int y)
         {

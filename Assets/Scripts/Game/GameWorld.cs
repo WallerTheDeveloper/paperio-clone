@@ -92,7 +92,7 @@ namespace Game
         {
             _playerVisualsManager.ClearAll();
             
-            _territoryData?.Clear();
+            _territoryData.Clear();
             _isGameActive = false;
             
             _cameraController.Dispose();
@@ -192,7 +192,10 @@ namespace Game
             var playerData = _playerVisualsManager.PlayersContainer.TryGetPlayerById(playerId);
             var playerCurrentPosition =
                 GridHelper.GridToWorld(playerData.GridPosition.x, playerData.GridPosition.y, Config.CellSize);
-            _effectsManager.PlayDeathEffect(playerCurrentPosition, playerData.Color);
+
+            var effectData = new EffectData(position: playerCurrentPosition, color: playerData.Color);
+            
+            _effectsManager.PlayEffect(Effect.Death, effectData);
             
             if (isLocal && _cameraController != null)
             {
@@ -208,8 +211,9 @@ namespace Game
                       (isLocal ? " (LOCAL PLAYER!)" : ""));
             var playerData = _playerVisualsManager.PlayersContainer.TryGetPlayerById(playerId);
             var playerCurrentPosition = GridHelper.GridToWorld(playerData.GridPosition.x, playerData.GridPosition.y, Config.CellSize);
-            _effectsManager.PlayRespawnEffect(playerCurrentPosition, playerData.Color);
             
+            var effectData = new EffectData(position: playerCurrentPosition, color: playerData.Color);
+            _effectsManager.PlayEffect(Effect.Respawn, effectData);
             if (isLocal && _cameraController != null && LocalPlayerVisual != null)
             {
                 _cameraController.SetTarget(LocalPlayerVisual.transform);
@@ -222,7 +226,7 @@ namespace Game
             int width = (int)initialState.GridWidth;
             int height = (int)initialState.GridHeight;
             
-            _territoryData = new TerritoryData(width, height);
+            _territoryData = new TerritoryData(width, height, _territoryRenderer.MeshFilter);
             
             if (initialState.Territory != null)
             {

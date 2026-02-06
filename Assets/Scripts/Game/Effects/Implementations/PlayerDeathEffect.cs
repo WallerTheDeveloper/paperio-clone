@@ -1,9 +1,12 @@
-﻿using UnityEngine;
+﻿using Game.Data;
+using UnityEngine;
 
-namespace Game.Effects
+namespace Game.Effects.Implementations
 {
-    public class PlayerDeathEffect : MonoBehaviour
+    public class PlayerDeathEffect : MonoBehaviour, IEffect
     {
+        [SerializeField] private Effect type;
+        
         [Header("Particle Settings")]
         [SerializeField] private int burstCount = 20;
         [SerializeField] private float particleSpeed = 5f;
@@ -23,9 +26,40 @@ namespace Game.Effects
         private ParticleSystemRenderer _particleRenderer;
         private Material _particleMaterial;
 
-        private void Awake()
+        public Effect Type => type;
+        public GameObject GameObject { get; }
+        public bool IsPlaying => _particleSystem != null && _particleSystem.isPlaying;
+        public void Prepare(IGameWorldDataProvider gameData)
         {
             CreateParticleSystem();
+        }
+
+        public void Play(EffectData data)
+        {
+            var position = data.Position;
+            var playerColor = data.Color;
+            
+            transform.position = position;
+            
+            if (_particleMaterial != null)
+            {
+                _particleMaterial.SetColor("_Color", playerColor);
+                _particleMaterial.SetColor("_EmissionColor", playerColor * 2f);
+            }
+
+            var main = _particleSystem.main;
+            main.startColor = playerColor;
+
+            _particleSystem.Clear();
+            _particleSystem.Play();
+        }
+
+        public void Stop()
+        {
+            if (_particleMaterial != null)
+            {
+                Destroy(_particleMaterial);
+            }
         }
 
         private void CreateParticleSystem()
@@ -78,59 +112,6 @@ namespace Game.Effects
             _particleRenderer.renderMode = ParticleSystemRenderMode.Billboard;
         }
 
-        private void Play(Vector3 position, Color playerColor)
-        {
-            transform.position = position;
-            
-            if (_particleMaterial != null)
-            {
-                _particleMaterial.SetColor("_Color", playerColor);
-                _particleMaterial.SetColor("_EmissionColor", playerColor * 2f);
-            }
-
-            var main = _particleSystem.main;
-            main.startColor = playerColor;
-
-            _particleSystem.Clear();
-            _particleSystem.Play();
-        }
-
-        public void PlayWithTarget(Vector3 position, Color playerColor, Transform target)
-        {
-            Play(position, playerColor);
-            
-            if (target != null)
-            {
-                StartCoroutine(ShakeTarget(target));
-            }
-        }
-
-        private System.Collections.IEnumerator ShakeTarget(Transform target)
-        {
-            if (target == null) yield break;
-
-            Vector3 originalPosition = target.localPosition;
-            float elapsed = 0f;
-
-            while (elapsed < shakeDuration)
-            {
-                elapsed += Time.deltaTime;
-                float progress = elapsed / shakeDuration;
-                float intensity = shakeIntensity * (1f - progress);
-
-                Vector3 offset = new Vector3(
-                    Random.Range(-1f, 1f) * intensity,
-                    Random.Range(-1f, 1f) * intensity * 0.5f,
-                    Random.Range(-1f, 1f) * intensity
-                );
-
-                target.localPosition = originalPosition + offset;
-                yield return null;
-            }
-
-            target.localPosition = originalPosition;
-        }
-
         public DeathAnimationData GetAnimationData()
         {
             return new DeathAnimationData
@@ -140,16 +121,6 @@ namespace Game.Effects
                 ShakeIntensity = shakeIntensity,
                 ShakeDuration = shakeDuration
             };
-        }
-
-        public bool IsPlaying => _particleSystem != null && _particleSystem.isPlaying;
-
-        private void OnDestroy()
-        {
-            if (_particleMaterial != null)
-            {
-                Destroy(_particleMaterial);
-            }
         }
     }
 

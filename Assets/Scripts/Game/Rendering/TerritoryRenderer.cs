@@ -24,7 +24,8 @@ namespace Game.Rendering
         private uint[] _cellOwners;
         
         private int _totalCellsUpdated;
-        
+
+        public MeshFilter MeshFilter => _meshFilter;
         public int TotalCellsUpdated => _totalCellsUpdated;
         public bool IsInitialized => _mesh != null;
 

@@ -44,7 +44,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 49bb4631ffc74bf386ec76c03ea4a070, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Game.Effects.EffectsManager
-  deathEffectPrefab: {fileID: 563908419327468641, guid: 8d6755a4fc8e92b4c91b799a47a96714, type: 3}
-  respawnEffectPrefab: {fileID: 6728019407975979065, guid: 25ab888afeb27124a883e6140e25833c, type: 3}
-  deathEffectPoolSize: 4
-  respawnEffectPoolSize: 4
+  effects:
+  - EffectObject: {fileID: 296501444222409543, guid: 8d6755a4fc8e92b4c91b799a47a96714, type: 3}
+  - EffectObject: {fileID: 1271245118405517731, guid: 25ab888afeb27124a883e6140e25833c, type: 3}
+  - EffectObject: {fileID: 6798381851907656087, guid: 3871d3207d8c1114993bb47f861b000b, type: 3}
+  effectsPoolSize: 4

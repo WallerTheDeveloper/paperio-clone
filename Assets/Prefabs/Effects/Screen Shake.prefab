@@ -1,6 +1,6 @@
 %YAML 1.1
 %TAG !u! tag:unity3d.com,2011:
---- !u!1 &1271245118405517731
+--- !u!1 &6798381851907656087
 GameObject:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -8,22 +8,22 @@ GameObject:
   m_PrefabAsset: {fileID: 0}
   serializedVersion: 6
   m_Component:
-  - component: {fileID: 4450529905192087188}
-  - component: {fileID: 6728019407975979065}
+  - component: {fileID: 4910305688419705247}
+  - component: {fileID: 7341176535530114949}
   m_Layer: 0
-  m_Name: Player Respawn
+  m_Name: Screen Shake
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
   m_IsActive: 1
---- !u!4 &4450529905192087188
+--- !u!4 &4910305688419705247
 Transform:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1271245118405517731}
+  m_GameObject: {fileID: 6798381851907656087}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
@@ -32,22 +32,23 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!114 &6728019407975979065
+--- !u!114 &7341176535530114949
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1271245118405517731}
+  m_GameObject: {fileID: 6798381851907656087}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 91b915d8ffce482295f057d01efe9516, type: 3}
+  m_Script: {fileID: 11500000, guid: 3d637510993a4a0384b191993a7611a4, type: 3}
   m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::Game.Effects.PlayerRespawnEffect
-  type: 1
-  glowDuration: 0.6
-  glowIntensity: 3
-  glowCurve:
+  m_EditorClassIdentifier: Assembly-CSharp::Game.Effects.ScreenShake
+  type: 3
+  defaultIntensity: 0.5
+  defaultDuration: 0.3
+  defaultFrequency: 25
+  decayCurve:
     serializedVersion: 2
     m_Curve:
     - serializedVersion: 3
@@ -71,15 +72,7 @@ MonoBehaviour:
     m_PreInfinity: 2
     m_PostInfinity: 2
     m_RotationOrder: 4
-  scaleDuration: 0.4
-  startScale: 0
-  scaleCurve:
-    serializedVersion: 2
-    m_Curve: []
-    m_PreInfinity: 2
-    m_PostInfinity: 2
-    m_RotationOrder: 4
-  useRingEffect: 1
-  ringExpandDuration: 0.5
-  ringMaxRadius: 3
-  ringMaterial: {fileID: 0}
+  shakeX: 1
+  shakeY: 1
+  shakeZ: 1
+  maxOffset: 2

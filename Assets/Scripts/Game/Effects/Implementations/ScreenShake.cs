@@ -1,9 +1,13 @@
-﻿using UnityEngine;
+﻿using Game.Data;
+using UnityEngine;
+using Random = UnityEngine.Random;
 
-namespace Game.Effects
+namespace Game.Effects.Implementations
 {
-    public class ScreenShakeController : MonoBehaviour
+    public class ScreenShake : MonoBehaviour, IEffect
     {
+        [SerializeField] private Effect type;
+        
         [Header("Default Settings")]
         [SerializeField] private float defaultIntensity = 0.5f;
         [SerializeField] private float defaultDuration = 0.3f;
@@ -27,37 +31,33 @@ namespace Game.Effects
         private bool _isShaking;
         private int _seed;
 
-        public bool IsShaking => _isShaking;
-
-        private void Awake()
+        public Effect Type => type;
+        public GameObject GameObject => this.gameObject;
+        public bool IsPlaying => _isShaking;
+        public void Prepare(IGameWorldDataProvider gameData)
         {
             _targetTransform = transform;
             _originalLocalPosition = _targetTransform.localPosition;
             _seed = Random.Range(0, 1000);
         }
 
-        public void SetTarget(Transform target)
-        {
-            _targetTransform = target;
-            _originalLocalPosition = _targetTransform.localPosition;
-        }
-
-        public void Shake()
+        public void Play(EffectData data)
         {
             Shake(defaultIntensity, defaultDuration, defaultFrequency);
         }
-
-        public void Shake(float intensity)
+        
+        public void Stop()
         {
-            Shake(intensity, defaultDuration, defaultFrequency);
+            _isShaking = false;
+            _elapsed = 0f;
+            
+            if (_targetTransform != null)
+            {
+                _targetTransform.localPosition = _originalLocalPosition;
+            }
         }
 
-        public void Shake(float intensity, float duration)
-        {
-            Shake(intensity, duration, defaultFrequency);
-        }
-
-        public void Shake(float intensity, float duration, float frequency)
+        private void Shake(float intensity, float duration, float frequency)
         {
             if (intensity > _currentIntensity || !_isShaking)
             {
@@ -67,35 +67,6 @@ namespace Game.Effects
                 _elapsed = 0f;
                 _isShaking = true;
                 _seed = Random.Range(0, 1000);
-            }
-        }
-
-        public void ShakeOnce(Vector3 direction, float intensity)
-        {
-            if (_targetTransform == null) return;
-
-            Vector3 offset = direction.normalized * intensity;
-            offset = ClampOffset(offset);
-            
-            _targetTransform.localPosition = _originalLocalPosition + offset;
-            
-            if (!_isShaking)
-            {
-                _currentIntensity = intensity * 0.5f;
-                _currentDuration = 0.15f;
-                _elapsed = 0f;
-                _isShaking = true;
-            }
-        }
-
-        public void Stop()
-        {
-            _isShaking = false;
-            _elapsed = 0f;
-            
-            if (_targetTransform != null)
-            {
-                _targetTransform.localPosition = _originalLocalPosition;
             }
         }
 
@@ -139,20 +110,6 @@ namespace Game.Effects
                 Mathf.Clamp(offset.y, -maxOffset, maxOffset),
                 Mathf.Clamp(offset.z, -maxOffset, maxOffset)
             );
-        }
-
-        public void UpdateOriginalPosition(Vector3 position)
-        {
-            _originalLocalPosition = position;
-        }
-
-        private void OnDisable()
-        {
-            if (_targetTransform != null && _isShaking)
-            {
-                _targetTransform.localPosition = _originalLocalPosition;
-            }
-            _isShaking = false;
         }
     }
 }

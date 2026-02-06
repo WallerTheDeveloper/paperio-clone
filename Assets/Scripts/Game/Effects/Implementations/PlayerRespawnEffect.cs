@@ -1,9 +1,12 @@
-﻿using UnityEngine;
+﻿using Game.Data;
+using UnityEngine;
 
-namespace Game.Effects
+namespace Game.Effects.Implementations
 {
-    public class PlayerRespawnEffect : MonoBehaviour
+    public class PlayerRespawnEffect : MonoBehaviour, IEffect
     {
+        [SerializeField] private Effect type;
+        
         [Header("Glow Settings")]
         [SerializeField] private float glowDuration = 0.6f;
         [SerializeField] private float glowIntensity = 3f;
@@ -30,7 +33,20 @@ namespace Game.Effects
         private static readonly int RingRadius = Shader.PropertyToID("_Radius");
         private static readonly int RingAlpha = Shader.PropertyToID("_Alpha");
 
-        private void Awake()
+        public Effect Type => type;
+        public GameObject GameObject { get; }
+
+        public bool IsPlaying
+        {
+            get
+            {
+                if (_glowParticles != null && _glowParticles.isPlaying) return true;
+                if (_ringCoroutine != null) return true;
+                return false;
+            }
+        }
+
+        public void Prepare(IGameWorldDataProvider gameData)
         {
             CreateGlowParticles();
             
@@ -47,6 +63,42 @@ namespace Game.Effects
                     new Keyframe(0.7f, 0.9f),
                     new Keyframe(1f, 1f)
                 );
+            }
+        }
+
+        public void Play(EffectData data)
+        {
+            var position = data.Position;
+            var playerColor = data.Color;
+            
+            transform.position = position;
+
+            if (_glowParticles != null)
+            {
+                var main = _glowParticles.main;
+                Color glowColor = playerColor * glowIntensity;
+                glowColor.a = 1f;
+                main.startColor = glowColor;
+                
+                _glowParticles.Clear();
+                _glowParticles.Play();
+            }
+
+            if (useRingEffect && _ringObject != null)
+            {
+                if (_ringCoroutine != null)
+                {
+                    StopCoroutine(_ringCoroutine);
+                }
+                _ringCoroutine = StartCoroutine(AnimateRing(playerColor));
+            }
+        }
+
+        public void Stop()
+        {
+            if (_ringMaterialInstance != null)
+            {
+                Destroy(_ringMaterialInstance);
             }
         }
 
@@ -105,7 +157,10 @@ namespace Game.Effects
             _ringObject.transform.localScale = new Vector3(0f, 0.02f, 0f);
 
             var collider = _ringObject.GetComponent<Collider>();
-            if (collider != null) Destroy(collider);
+            if (collider != null)
+            {
+                Destroy(collider);
+            }
 
             _ringRenderer = _ringObject.GetComponent<MeshRenderer>();
             
@@ -120,31 +175,6 @@ namespace Game.Effects
             
             _ringRenderer.material = _ringMaterialInstance;
             _ringObject.SetActive(false);
-        }
-
-        public void Play(Vector3 position, Color playerColor)
-        {
-            transform.position = position;
-
-            if (_glowParticles != null)
-            {
-                var main = _glowParticles.main;
-                Color glowColor = playerColor * glowIntensity;
-                glowColor.a = 1f;
-                main.startColor = glowColor;
-                
-                _glowParticles.Clear();
-                _glowParticles.Play();
-            }
-
-            if (useRingEffect && _ringObject != null)
-            {
-                if (_ringCoroutine != null)
-                {
-                    StopCoroutine(_ringCoroutine);
-                }
-                _ringCoroutine = StartCoroutine(AnimateRing(playerColor));
-            }
         }
 
         private System.Collections.IEnumerator AnimateRing(Color color)
@@ -185,24 +215,6 @@ namespace Game.Effects
                 GlowDuration = glowDuration,
                 GlowIntensity = glowIntensity
             };
-        }
-
-        public bool IsPlaying
-        {
-            get
-            {
-                if (_glowParticles != null && _glowParticles.isPlaying) return true;
-                if (_ringCoroutine != null) return true;
-                return false;
-            }
-        }
-
-        private void OnDestroy()
-        {
-            if (_ringMaterialInstance != null)
-            {
-                Destroy(_ringMaterialInstance);
-            }
         }
     }
 

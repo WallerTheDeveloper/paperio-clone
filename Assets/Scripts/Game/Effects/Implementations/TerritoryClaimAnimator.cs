@@ -1,13 +1,13 @@
 ﻿using System.Collections.Generic;
-using Core.Services;
 using Game.Data;
-using Game.Rendering;
 using UnityEngine;
 
-namespace Game.Effects
+namespace Game.Effects.Implementations
 {
-    public class TerritoryClaimAnimator : MonoBehaviour
+    public class TerritoryClaimAnimator : MonoBehaviour, IEffect
     {
+        [SerializeField] private Effect type;
+        
         [Header("Animation Settings")]
         [SerializeField] private float waveDuration = 0.4f;
         [SerializeField] private float waveSpeed = 30f;
@@ -25,7 +25,7 @@ namespace Game.Effects
             public float MaxDistance;
         }
 
-        private readonly List<ClaimWave> _activeWaves = new List<ClaimWave>();
+        private readonly List<ClaimWave> _activeWaves = new();
         private readonly Dictionary<long, CellAnimState> _animatingCells = new();
 
         private struct CellAnimState
@@ -44,18 +44,17 @@ namespace Game.Effects
         private float _cellSize;
         private bool _isInitialized;
 
-        private IGameWorldDataProvider _gameWorldData;
-        private TerritoryRenderer _territoryRenderer;
-        public void Initialize(ServiceContainer services)
+        public Effect Type => type;
+        public GameObject GameObject { get; }
+        public bool IsPlaying { get; private set; }
+
+        public void Prepare(IGameWorldDataProvider gameData)
         {
-            _gameWorldData = services.Get<GameWorld>();
-            _territoryRenderer = services.Get<TerritoryRenderer>();
+            _width = gameData.GridWidth;
+            _height = gameData.GridHeight;
+            _cellSize = gameData.Config.CellSize;
             
-            _width = _gameWorldData.GridWidth;
-            _height = _gameWorldData.GridHeight;
-            _cellSize = _gameWorldData.Config.CellSize;
-            
-            var meshFilter = _territoryRenderer.GetComponent<MeshFilter>();
+            var meshFilter = gameData.Territory.MeshFilter;
             if (meshFilter != null && meshFilter.sharedMesh != null)
             {
                 _mesh = meshFilter.sharedMesh;
@@ -68,7 +67,66 @@ namespace Game.Effects
             _isInitialized = _mesh != null;
         }
 
-        public void Tick()
+        public void Play(EffectData data)
+        {
+            var changes = data.TerritoryChange;
+            var playerId = data.PlayerId;
+            var playerColor = data.Color;
+
+            IsPlaying = true;
+            if (!_isInitialized || changes == null || changes.Count == 0)
+            {
+                return;
+            }
+
+            Vector2Int origin = CalculateOrigin(changes);
+            float maxDist = CalculateMaxDistance(changes, origin);
+
+            var wave = new ClaimWave
+            {
+                Origin = origin,
+                StartTime = Time.time,
+                PlayerId = playerId,
+                PlayerColor = playerColor,
+                AffectedCells = new List<Vector2Int>(changes.Count),
+                MaxDistance = maxDist
+            };
+
+            Color highlight = new Color(
+                Mathf.Min(1f, playerColor.r * brightnessBoost),
+                Mathf.Min(1f, playerColor.g * brightnessBoost),
+                Mathf.Min(1f, playerColor.b * brightnessBoost),
+                1f
+            );
+
+            foreach (var change in changes)
+            {
+                if (change.NewOwner != playerId) continue;
+                
+                wave.AffectedCells.Add(new Vector2Int(change.X, change.Y));
+                
+                long cellIndex = change.Y *  _width + change.X;
+                if (!_animatingCells.ContainsKey(cellIndex))
+                {
+                    _animatingCells[cellIndex] = new CellAnimState
+                    {
+                        Progress = 0f,
+                        TargetColor = playerColor,
+                        HighlightColor = highlight
+                    };
+                }
+            }
+
+            _activeWaves.Add(wave);
+        }
+        
+        public void Stop()
+        {
+            IsPlaying = false;
+            ClearAllAnimations();
+        }
+        
+        public void Update()
         {
             if (!_isInitialized || _activeWaves.Count == 0)
             {
@@ -127,58 +185,6 @@ namespace Game.Effects
             }
         }
 
-        public void Dispose()
-        {
-        }
-
-        public void PlayClaimAnimation(List<TerritoryChange> changes, uint playerId, Color playerColor)
-        {
-            if (!_isInitialized || changes == null || changes.Count == 0)
-            {
-                return;
-            }
-
-            Vector2Int origin = CalculateOrigin(changes);
-            float maxDist = CalculateMaxDistance(changes, origin);
-
-            var wave = new ClaimWave
-            {
-                Origin = origin,
-                StartTime = Time.time,
-                PlayerId = playerId,
-                PlayerColor = playerColor,
-                AffectedCells = new List<Vector2Int>(changes.Count),
-                MaxDistance = maxDist
-            };
-
-            Color highlight = new Color(
-                Mathf.Min(1f, playerColor.r * brightnessBoost),
-                Mathf.Min(1f, playerColor.g * brightnessBoost),
-                Mathf.Min(1f, playerColor.b * brightnessBoost),
-                1f
-            );
-
-            foreach (var change in changes)
-            {
-                if (change.NewOwner != playerId) continue;
-                
-                wave.AffectedCells.Add(new Vector2Int(change.X, change.Y));
-                
-                long cellIndex = change.Y * _width + change.X;
-                if (!_animatingCells.ContainsKey(cellIndex))
-                {
-                    _animatingCells[cellIndex] = new CellAnimState
-                    {
-                        Progress = 0f,
-                        TargetColor = playerColor,
-                        HighlightColor = highlight
-                    };
-                }
-            }
-
-            _activeWaves.Add(wave);
-        }
-
         private void ApplyCellAnimation(long cellIndex, float progress, Color targetColor)
         {
             float easedProgress = Easing.SineOut(progress);
@@ -187,7 +193,10 @@ namespace Game.Effects
 
             long vertexBase = cellIndex * 4;
             
-            if (vertexBase + 3 >= _animatedVertices.Length) return;
+            if (vertexBase + 3 >= _animatedVertices.Length)
+            {
+                return;
+            }
 
             for (int i = 0; i < 4; i++)
             {
@@ -217,7 +226,10 @@ namespace Game.Effects
         {
             long vertexBase = cellIndex * 4;
             
-            if (vertexBase + 3 >= _animatedVertices.Length) return;
+            if (vertexBase + 3 >= _animatedVertices.Length)
+            {
+                return;
+            }
 
             for (int i = 0; i < 4; i++)
             {
@@ -233,7 +245,10 @@ namespace Game.Effects
 
         private void ApplyMeshChanges()
         {
-            if (_mesh == null) return;
+            if (_mesh == null)
+            {
+                return;
+            }
             
             _mesh.vertices = _animatedVertices;
             _mesh.colors32 = _colors;
@@ -264,7 +279,7 @@ namespace Game.Effects
             return maxDist;
         }
 
-        public void ClearAllAnimations()
+        private void ClearAllAnimations()
         {
             _activeWaves.Clear();
             _animatingCells.Clear();
