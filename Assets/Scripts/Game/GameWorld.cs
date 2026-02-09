@@ -64,11 +64,13 @@ namespace Game
         private PlayerVisualsManager _playerVisualsManager;
         private EffectsManager _effectsManager;
         private TerritoryRenderer _territoryRenderer;
+        private TrailVisualsManager _trailVisualsManager;
         public void Initialize(ServiceContainer services)
         {
             _playerVisualsManager = services.Get<PlayerVisualsManager>();
             _effectsManager = services.Get<EffectsManager>();
             _territoryRenderer = services.Get<TerritoryRenderer>();
+            _trailVisualsManager = services.Get<TrailVisualsManager>();
         }
 
         public void Tick()
@@ -187,6 +189,20 @@ namespace Game
                               $"{_playerVisualsManager.ActiveCount} visuals active");
                 }
             }
+            if (_trailVisualsManager != null)
+            {
+                foreach (var player in state.Players)
+                {
+                    var gridPoints = new List<Vector2Int>();
+                    foreach (var trailPos in player.Trail)
+                    {
+                        gridPoints.Add(new Vector2Int(trailPos.X, trailPos.Y));
+                    }
+            
+                    Color playerColor = _playerVisualsManager.GetPlayerColor(player.PlayerId);
+                    _trailVisualsManager.UpdatePlayerTrail(player.PlayerId, gridPoints, playerColor);
+                }
+            }
         }
 
         public void OnPlayerEliminated(uint playerId)
@@ -199,6 +215,8 @@ namespace Game
             var playerCurrentPosition =
                 GridHelper.GridToWorld(playerData.GridPosition.x, playerData.GridPosition.y, Config.CellSize);
 
+            _trailVisualsManager.RemoveTrail(playerId);
+            
             var effectData = new EffectData(position: playerCurrentPosition, color: playerData.Color);
             
             _effectsManager.PlayEffect(Effect.Death, effectData);

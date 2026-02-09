@@ -98,7 +98,7 @@ namespace Game.Rendering
             trail.UpdateTrailFromGrid(gridPoints, trailHeightOffset);
         }
 
-        private void RemoveTrail(uint playerId)
+        public void RemoveTrail(uint playerId)
         {
             if (!_activeTrails.TryGetValue(playerId, out var trail)) return;
 
