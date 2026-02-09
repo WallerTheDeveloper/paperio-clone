@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using Core.Services;
 using Game.Data;
+using Unity.VisualScripting;
 using UnityEngine;
 
 namespace Game.Effects
@@ -79,12 +80,22 @@ namespace Game.Effects
         private List<IEffect> InstantiateEffects()
         {
             var instantiatedEffects = new List<IEffect>();
-            foreach (var effect in effects)
+            foreach (var effectWrapper in effects)
             {
-                var effectObject = Instantiate(effect.EffectObject, _effectsContainer);
-                instantiatedEffects.Add(effectObject as IEffect);
-            }
+                var instance = Instantiate(effectWrapper.EffectObject, _effectsContainer);
+        
+                IEffect effectInterface = (instance as GameObject)?.GetComponent<IEffect>() 
+                                          ?? (instance as Component)?.GetComponent<IEffect>();
 
+                if (effectInterface != null)
+                {
+                    instantiatedEffects.Add(effectInterface);
+                }
+                else
+                {
+                    Debug.LogError($"Object {instance.name} does not implement IEffect!");
+                }
+            }
             return instantiatedEffects;
         }
         

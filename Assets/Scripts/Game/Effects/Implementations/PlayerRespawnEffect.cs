@@ -34,7 +34,7 @@ namespace Game.Effects.Implementations
         private static readonly int RingAlpha = Shader.PropertyToID("_Alpha");
 
         public Effect Type => type;
-        public GameObject GameObject { get; }
+        public GameObject GameObject => this.gameObject;
 
         public bool IsPlaying
         {

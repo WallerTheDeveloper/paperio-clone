@@ -4,7 +4,7 @@ using UnityEngine;
 
 namespace Game.Effects.Implementations
 {
-    public class TerritoryClaimAnimator : MonoBehaviour, IEffect
+    public class TerritoryClaim : MonoBehaviour, IEffect
     {
         [SerializeField] private Effect type;
         
@@ -45,7 +45,7 @@ namespace Game.Effects.Implementations
         private bool _isInitialized;
 
         public Effect Type => type;
-        public GameObject GameObject { get; }
+        public GameObject GameObject => this.gameObject;
         public bool IsPlaying { get; private set; }
 
         public void Prepare(IGameWorldDataProvider gameData)

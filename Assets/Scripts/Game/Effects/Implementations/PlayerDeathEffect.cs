@@ -27,7 +27,7 @@ namespace Game.Effects.Implementations
         private Material _particleMaterial;
 
         public Effect Type => type;
-        public GameObject GameObject { get; }
+        public GameObject GameObject => this.gameObject;
         public bool IsPlaying => _particleSystem != null && _particleSystem.isPlaying;
         public void Prepare(IGameWorldDataProvider gameData)
         {
