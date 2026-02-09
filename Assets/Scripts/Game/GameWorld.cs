@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using Core.Services;
 using Game.Data;
 using Game.Effects;
@@ -158,7 +159,12 @@ namespace Game
                 if (changes.Count > 0)
                 {
                     _territoryRenderer.UpdateTerritory(changes);
+
+                    var playerData = _playerVisualsManager.PlayersContainer.TryGetPlayerById(changes[0].NewOwner);
                     
+                    var effectData = new EffectData(territoryChange: changes, color: playerData.Color, playerId: playerData.PlayerId);
+                    
+                    _effectsManager.PlayEffect(Effect.TerritoryClaim, effectData);
                     OnTerritoryChanged?.Invoke(changes);
                     
                     if (logTerritoryUpdates && state.Tick % 20 == 0)
@@ -242,6 +248,8 @@ namespace Game
                 Debug.Log($"[GameWorld] Territory around center ({cx},{cy}):\n" + 
                           _territoryData.DebugRegion(cx - 5, cy - 5, 11, 11));
             }
+            
+            _effectsManager.PreparePools();
         }
         
         private Bounds GetGridBounds()

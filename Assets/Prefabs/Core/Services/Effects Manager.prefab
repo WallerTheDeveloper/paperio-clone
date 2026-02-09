@@ -48,4 +48,5 @@ MonoBehaviour:
   - EffectObject: {fileID: 296501444222409543, guid: 8d6755a4fc8e92b4c91b799a47a96714, type: 3}
   - EffectObject: {fileID: 1271245118405517731, guid: 25ab888afeb27124a883e6140e25833c, type: 3}
   - EffectObject: {fileID: 6798381851907656087, guid: 3871d3207d8c1114993bb47f861b000b, type: 3}
-  effectsPoolSize: 1
+  - EffectObject: {fileID: 7254870920488274704, guid: f3b445bd421df5b4fb1ccfe1dc43190a, type: 3}
+  effectsPoolSize: 2

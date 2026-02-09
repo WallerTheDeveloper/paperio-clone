@@ -42,7 +42,6 @@ namespace Game.Effects.Implementations
         private uint _width;
         private uint _height;
         private float _cellSize;
-        private bool _isInitialized;
 
         public Effect Type => type;
         public GameObject GameObject => this.gameObject;
@@ -63,8 +62,6 @@ namespace Game.Effects.Implementations
                 _originalVertices.CopyTo(_animatedVertices, 0);
                 _colors = _mesh.colors32;
             }
-
-            _isInitialized = _mesh != null;
         }
 
         public void Play(EffectData data)
@@ -74,7 +71,7 @@ namespace Game.Effects.Implementations
             var playerColor = data.Color;
 
             IsPlaying = true;
-            if (!_isInitialized || changes == null || changes.Count == 0)
+            if (changes == null || changes.Count == 0)
             {
                 return;
             }
@@ -128,7 +125,7 @@ namespace Game.Effects.Implementations
         
         public void Update()
         {
-            if (!_isInitialized || _activeWaves.Count == 0)
+            if (_activeWaves.Count == 0)
             {
                 return;
             }
@@ -284,7 +281,7 @@ namespace Game.Effects.Implementations
             _activeWaves.Clear();
             _animatingCells.Clear();
             
-            if (_isInitialized && _originalVertices != null)
+            if (_originalVertices != null)
             {
                 _originalVertices.CopyTo(_animatedVertices, 0);
                 _mesh.vertices = _animatedVertices;

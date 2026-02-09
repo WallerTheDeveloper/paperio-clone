@@ -72,7 +72,10 @@ namespace Game.Effects.Implementations
 
         private void LateUpdate()
         {
-            if (!_isShaking || _targetTransform == null) return;
+            if (!_isShaking || _targetTransform == null)
+            {
+                return;
+            }
 
             _elapsed += Time.deltaTime;
             

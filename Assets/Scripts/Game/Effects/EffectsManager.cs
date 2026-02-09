@@ -1,9 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
 using Core.Services;
 using Game.Data;
-using Unity.VisualScripting;
 using UnityEngine;
 
 namespace Game.Effects
@@ -32,10 +30,8 @@ namespace Game.Effects
             
            _effectsContainer = new GameObject("EffectsContainer").transform;
            _effectsContainer.SetParent(transform, false);
-
-           InitializePools();
         }
-
+        
         public void Tick()
         {
             CleanupFinishedEffects();
@@ -44,6 +40,11 @@ namespace Game.Effects
         public void Dispose()
         {
             ClearAllEffects();
+        }
+
+        public void PreparePools()
+        {
+            InitializePools();
         }
         
         private void InitializePools()
