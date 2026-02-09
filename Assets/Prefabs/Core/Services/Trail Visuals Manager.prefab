@@ -1,6 +1,6 @@
 %YAML 1.1
 %TAG !u! tag:unity3d.com,2011:
---- !u!1 &2700235761041796583
+--- !u!1 &8453699181861999059
 GameObject:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -8,22 +8,22 @@ GameObject:
   m_PrefabAsset: {fileID: 0}
   serializedVersion: 6
   m_Component:
-  - component: {fileID: 273489093693388443}
-  - component: {fileID: 1675495698243241509}
+  - component: {fileID: 7562146598923071424}
+  - component: {fileID: 6351044955516780296}
   m_Layer: 0
-  m_Name: Effects Manager
+  m_Name: Trail Visuals Manager
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
   m_IsActive: 1
---- !u!4 &273489093693388443
+--- !u!4 &7562146598923071424
 Transform:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 2700235761041796583}
+  m_GameObject: {fileID: 8453699181861999059}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
@@ -32,20 +32,22 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!114 &1675495698243241509
+--- !u!114 &6351044955516780296
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 2700235761041796583}
+  m_GameObject: {fileID: 8453699181861999059}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 49bb4631ffc74bf386ec76c03ea4a070, type: 3}
+  m_Script: {fileID: 11500000, guid: 6fa54df69a10457eba4fac938615a3ea, type: 3}
   m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::Game.Effects.EffectsManager
-  effects:
-  - EffectObject: {fileID: 296501444222409543, guid: 8d6755a4fc8e92b4c91b799a47a96714, type: 3}
-  - EffectObject: {fileID: 1271245118405517731, guid: 25ab888afeb27124a883e6140e25833c, type: 3}
-  - EffectObject: {fileID: 6798381851907656087, guid: 3871d3207d8c1114993bb47f861b000b, type: 3}
-  effectsPoolSize: 1
+  m_EditorClassIdentifier: Assembly-CSharp::Game.Rendering.TrailVisualsManager
+  trailMaterial: {fileID: 2100000, guid: e18f89a2bcf4f734bb4a09d5e6381ba5, type: 2}
+  initialPoolSize: 8
+  trailHeightOffset: 0.15
+  baseEmission: 1.5
+  pulseSpeed: 2
+  pulseIntensity: 0.5
+  enablePulse: 1

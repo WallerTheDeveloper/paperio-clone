@@ -80,11 +80,6 @@ namespace Game
             {
                 UpdateFollowPosition();
             }
-            
-            if (_shakeTimer > 0)
-            {
-                ApplyShake();
-            }
         }
 
         public void Dispose()
@@ -109,15 +104,6 @@ namespace Game
             _currentVelocity = Vector3.zero;
             
             LookAtTarget();
-        }
-
-        public void Shake(float intensity = -1f, float duration = 0.3f)
-        {
-            if (!enableShake) return;
-            
-            _shakeIntensity = intensity < 0 ? defaultShakeIntensity : intensity;
-            _shakeDuration = duration;
-            _shakeTimer = duration;
         }
         
         private void UpdateFollowPosition()
@@ -208,28 +194,6 @@ namespace Game
             }
             
             return position;
-        }
-
-        private void ApplyShake()
-        {
-            _shakeTimer -= Time.deltaTime;
-            
-            if (_shakeTimer <= 0)
-            {
-                _shakeTimer = 0;
-                return;
-            }
-            
-            float progress = _shakeTimer / _shakeDuration;
-            float currentIntensity = _shakeIntensity * progress;
-            
-            Vector3 shakeOffset = new Vector3(
-                Random.Range(-1f, 1f) * currentIntensity,
-                Random.Range(-1f, 1f) * currentIntensity * 0.5f,
-                Random.Range(-1f, 1f) * currentIntensity
-            );
-            
-            _transform.position += shakeOffset;
         }
 
         private void OnDrawGizmosSelected()

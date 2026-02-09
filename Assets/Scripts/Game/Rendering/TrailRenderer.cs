@@ -19,12 +19,12 @@ namespace Game.Rendering
         private MeshFilter _meshFilter;
         private MeshRenderer _meshRenderer;
 
-        private readonly List<Vector3> _vertices = new List<Vector3>();
-        private readonly List<int> _triangles = new List<int>();
-        private readonly List<Vector2> _uvs = new List<Vector2>();
-        private readonly List<Color32> _colors = new List<Color32>();
+        private readonly List<Vector3> _vertices = new();
+        private readonly List<int> _triangles = new();
+        private readonly List<Vector2> _uvs = new();
+        private readonly List<Color32> _colors = new();
 
-        private List<Vector3> _currentPoints = new List<Vector3>();
+        private List<Vector3> _currentPoints = new();
         private Color32 _currentColor = Color.white;
         private float _cellSize = 1f;
         private bool _isDirty;

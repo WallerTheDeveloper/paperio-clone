@@ -20,6 +20,7 @@ namespace Core
         [SerializeField] private PlayerVisualsManager playerVisualsManager;
         [SerializeField] private EffectsManager effectsManager;
         [SerializeField] private TerritoryRenderer territoryRenderer;
+        [SerializeField] private TrailVisualsManager trailVisualsManager;
         
         private PlayersContainer _playersContainer;
         
@@ -35,6 +36,7 @@ namespace Core
             _services.Register(gameStatesManager); 
             _services.Register(playerVisualsManager);
             _services.Register(gameWorld);
+            _services.Register(trailVisualsManager);
             _services.Register(effectsManager);
             _services.Register(territoryRenderer);
             

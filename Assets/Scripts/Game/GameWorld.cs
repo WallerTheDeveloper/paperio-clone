@@ -197,9 +197,9 @@ namespace Game
             
             _effectsManager.PlayEffect(Effect.Death, effectData);
             
-            if (isLocal && _cameraController != null)
+            if (isLocal)
             {
-                _cameraController.Shake(1f, 0.5f);
+                _effectsManager.PlayEffect(Effect.CameraShake, effectData);
             }
             
         }

@@ -1,9 +1,10 @@
 ﻿using System.Collections.Generic;
+using Core.Services;
 using UnityEngine;
 
 namespace Game.Rendering
 {
-    public class TrailVisualsManager : MonoBehaviour
+    public class TrailVisualsManager : MonoBehaviour, IService
     {
         [Header("Configuration")]
         [SerializeField] private Material trailMaterial;
@@ -20,13 +21,13 @@ namespace Game.Rendering
         private readonly Queue<TrailRenderer> _pool = new();
         private Transform _container;
         private float _cellSize;
-        private bool _isInitialized;
 
         public int ActiveTrailCount => _activeTrails.Count;
 
-        public void Initialize(float cellSize)
+        public void Initialize(ServiceContainer services)
         {
-            _cellSize = cellSize;
+            var gameData = services.Get<GameWorld>();
+            _cellSize = gameData.Config.CellSize;
             
             _container = new GameObject("TrailContainer").transform;
             _container.SetParent(transform, false);
@@ -37,13 +38,14 @@ namespace Game.Rendering
                 trail.gameObject.SetActive(false);
                 _pool.Enqueue(trail);
             }
-
-            _isInitialized = true;
         }
 
-        private void Update()
+        public void Tick()
         {
-            if (!_isInitialized || !enablePulse) return;
+            if (!enablePulse)
+            {
+                return;
+            }
 
             float pulse = baseEmission + Mathf.Sin(Time.time * pulseSpeed) * pulseIntensity;
             
@@ -56,10 +58,22 @@ namespace Game.Rendering
             }
         }
 
+        public void Dispose()
+        {
+            ClearAllTrails();
+            
+            while (_pool.Count > 0)
+            {
+                var trail = _pool.Dequeue();
+                if (trail != null)
+                {
+                    Destroy(trail.gameObject);
+                }
+            }
+        }
+
         public void UpdatePlayerTrail(uint playerId, List<Vector2Int> gridPoints, Color playerColor)
         {
-            if (!_isInitialized) return;
-
             if (gridPoints == null || gridPoints.Count < 2)
             {
                 RemoveTrail(playerId);
@@ -84,7 +98,7 @@ namespace Game.Rendering
             trail.UpdateTrailFromGrid(gridPoints, trailHeightOffset);
         }
 
-        public void RemoveTrail(uint playerId)
+        private void RemoveTrail(uint playerId)
         {
             if (!_activeTrails.TryGetValue(playerId, out var trail)) return;
 
@@ -94,7 +108,7 @@ namespace Game.Rendering
             _activeTrails.Remove(playerId);
         }
 
-        public void ClearAllTrails()
+        private void ClearAllTrails()
         {
             foreach (var kvp in _activeTrails)
             {
@@ -137,20 +151,6 @@ namespace Game.Rendering
         {
             _activeTrails.TryGetValue(playerId, out var trail);
             return trail;
-        }
-
-        private void OnDestroy()
-        {
-            ClearAllTrails();
-            
-            while (_pool.Count > 0)
-            {
-                var trail = _pool.Dequeue();
-                if (trail != null)
-                {
-                    Destroy(trail.gameObject);
-                }
-            }
         }
     }
 }

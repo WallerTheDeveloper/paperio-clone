@@ -10,7 +10,7 @@ namespace Game.Effects
         public uint PlayerId;
         public Color Color;
         public Vector3 Position;
-
+        
         public EffectData(
             List<TerritoryChange> territoryChange = null,
             uint playerId = default,
