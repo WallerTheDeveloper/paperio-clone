@@ -15,7 +15,7 @@ Material:
   m_InvalidKeywords: []
   m_LightmapFlags: 4
   m_EnableInstancingVariants: 0
-  m_DoubleSidedGI: 0
+  m_DoubleSidedGI: 1
   m_CustomRenderQueue: -1
   stringTagMap: {}
   disabledShaderPasses: []
@@ -25,15 +25,15 @@ Material:
     m_TexEnvs: []
     m_Ints: []
     m_Floats:
-    - _Alpha: 0.9
-    - _EmissionStrength: 1.5
-    - _FresnelIntensity: 0.5
-    - _FresnelPower: 2
-    - _PulseIntensity: 0.3
-    - _PulseSpeed: 2
+    - _Alpha: 0.077
+    - _EmissionStrength: 4.862
+    - _FresnelIntensity: 0.718
+    - _FresnelPower: 5.22
+    - _PulseIntensity: 0.326
+    - _PulseSpeed: 5.99
     m_Colors:
     - _BaseColor: {r: 1, g: 1, b: 1, a: 1}
     - _Color: {r: 1, g: 1, b: 1, a: 1}
-    - _EmissionColor: {r: 1, g: 1, b: 1, a: 1}
+    - _EmissionColor: {r: 1, g: 0, b: 0, a: 1}
   m_BuildTextureStacks: []
   m_AllowLocking: 1
