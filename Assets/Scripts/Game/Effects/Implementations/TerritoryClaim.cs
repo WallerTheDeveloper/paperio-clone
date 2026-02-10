@@ -47,12 +47,19 @@ namespace Game.Effects.Implementations
         public GameObject GameObject => this.gameObject;
         public bool IsPlaying { get; private set; }
 
+        private IGameWorldDataProvider _gameData;
         public void Prepare(IGameWorldDataProvider gameData)
         {
             _width = gameData.GridWidth;
             _height = gameData.GridHeight;
             _cellSize = gameData.Config.CellSize;
-            
+
+            _gameData = gameData;
+            RebuildMeshData(_gameData);
+        }
+
+        private void RebuildMeshData(IGameWorldDataProvider gameData)
+        {
             var meshFilter = gameData.Territory.MeshFilter;
             if (meshFilter != null && meshFilter.sharedMesh != null)
             {
@@ -63,9 +70,10 @@ namespace Game.Effects.Implementations
                 _colors = _mesh.colors32;
             }
         }
-
         public void Play(EffectData data)
         {
+            RebuildMeshData(_gameData);
+            
             var changes = data.TerritoryChange;
             var playerId = data.PlayerId;
             var playerColor = data.Color;
