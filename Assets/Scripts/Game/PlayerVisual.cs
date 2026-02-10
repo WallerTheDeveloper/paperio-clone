@@ -43,15 +43,12 @@ namespace Game
         public bool IsAlive => _isAlive;
         public Color PlayerColor => _playerColor;
         
-        private void Awake()
+        public void Initialize(uint playerId, string playerName, Color color, Vector3 worldPosition, bool isLocalPlayer)
         {
             _transform = transform;
             _propertyBlock = new MaterialPropertyBlock();
             _baseScale = bodyScale;
-        }
-
-        public void Initialize(uint playerId, string playerName, Color color, Vector3 worldPosition, bool isLocalPlayer)
-        {
+            
             _playerId = playerId;
             _isLocalPlayer = isLocalPlayer;
             _playerColor = color;
