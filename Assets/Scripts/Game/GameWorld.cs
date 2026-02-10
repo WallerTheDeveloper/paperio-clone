@@ -14,6 +14,7 @@ namespace Game
     public class GameWorld : MonoBehaviour, IService, IGameWorldDataProvider
     {
         [SerializeField] private GameWorldConfig config;
+        [SerializeField] private TerritoryClaim territoryClaim;
         
         [Header("Debug")]
         [SerializeField] private bool logTerritoryUpdates = false;
@@ -93,6 +94,7 @@ namespace Game
 
         public void Dispose()
         {
+            territoryClaim.FinishAllImmediately();
             _playerVisualsManager.ClearAll();
             
             _territoryData.Clear();
@@ -163,10 +165,8 @@ namespace Game
                     _territoryRenderer.UpdateTerritory(changes);
 
                     var playerData = _playerVisualsManager.PlayersContainer.TryGetPlayerById(changes[0].NewOwner);
+                    territoryClaim.AddWave(changes, playerData.PlayerId, playerData.Color);
                     
-                    var effectData = new EffectData(territoryChange: changes, color: playerData.Color, playerId: playerData.PlayerId);
-                    
-                    _effectsManager.PlayEffect(Effect.TerritoryClaim, effectData);
                     OnTerritoryChanged?.Invoke(changes);
                     
                     if (logTerritoryUpdates && state.Tick % 20 == 0)
@@ -268,6 +268,7 @@ namespace Game
             }
             
             _effectsManager.PreparePools();
+            territoryClaim.Prepare(this as IGameWorldDataProvider);
         }
         
         private Bounds GetGridBounds()
