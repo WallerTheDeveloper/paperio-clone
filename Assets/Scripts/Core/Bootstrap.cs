@@ -21,6 +21,7 @@ namespace Core
         [SerializeField] private EffectsManager effectsManager;
         [SerializeField] private TerritoryRenderer territoryRenderer;
         [SerializeField] private TrailVisualsManager trailVisualsManager;
+        [SerializeField] private TerritoryClaim territoryClaim;
         
         private PlayersContainer _playersContainer;
         
@@ -39,6 +40,7 @@ namespace Core
             _services.Register(trailVisualsManager);
             _services.Register(effectsManager);
             _services.Register(territoryRenderer);
+            _services.Register(territoryClaim);
             
             _services.InitDanglingServices();
         }

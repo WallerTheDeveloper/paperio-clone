@@ -93,6 +93,7 @@ MonoBehaviour:
   effectsManager: {fileID: 5479998780784154576}
   territoryRenderer: {fileID: 2683847928825510723}
   trailVisualsManager: {fileID: 2964248837408592466}
+  territoryClaim: {fileID: 8024467393430731447}
 --- !u!1001 &132887165304699107
 PrefabInstance:
   m_ObjectHideFlags: 0

@@ -14,7 +14,6 @@ namespace Game
     public class GameWorld : MonoBehaviour, IService, IGameWorldDataProvider
     {
         [SerializeField] private GameWorldConfig config;
-        [SerializeField] private TerritoryClaim territoryClaim;
         
         [Header("Debug")]
         [SerializeField] private bool logTerritoryUpdates = false;
@@ -66,12 +65,15 @@ namespace Game
         private EffectsManager _effectsManager;
         private TerritoryRenderer _territoryRenderer;
         private TrailVisualsManager _trailVisualsManager;
+        private TerritoryClaim _territoryClaim;
+        
         public void Initialize(ServiceContainer services)
         {
             _playerVisualsManager = services.Get<PlayerVisualsManager>();
             _effectsManager = services.Get<EffectsManager>();
             _territoryRenderer = services.Get<TerritoryRenderer>();
             _trailVisualsManager = services.Get<TrailVisualsManager>();
+            _territoryClaim = services.Get<TerritoryClaim>();
         }
 
         public void Tick()
@@ -94,7 +96,7 @@ namespace Game
 
         public void Dispose()
         {
-            territoryClaim.FinishAllImmediately();
+            _territoryClaim.FinishAllImmediately();
             _playerVisualsManager.ClearAll();
             
             _territoryData.Clear();
@@ -165,7 +167,7 @@ namespace Game
                     _territoryRenderer.UpdateTerritory(changes);
 
                     var playerData = _playerVisualsManager.PlayersContainer.TryGetPlayerById(changes[0].NewOwner);
-                    territoryClaim.AddWave(changes, playerData.PlayerId, playerData.Color);
+                    _territoryClaim.AddWave(changes, playerData.PlayerId, playerData.Color);
                     
                     OnTerritoryChanged?.Invoke(changes);
                     
@@ -268,7 +270,7 @@ namespace Game
             }
             
             _effectsManager.PreparePools();
-            territoryClaim.Prepare(this as IGameWorldDataProvider);
+            _territoryClaim.Prepare();
         }
         
         private Bounds GetGridBounds()

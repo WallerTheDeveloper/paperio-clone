@@ -1,11 +1,12 @@
 ﻿using System.Collections.Generic;
+using Core.Services;
 using Game.Data;
 using Game.Effects;
 using UnityEngine;
 
 namespace Game.Rendering
 {
-    public class TerritoryClaim : MonoBehaviour
+    public class TerritoryClaim : MonoBehaviour, IService
     {
         [Header("Animation Settings")]
         [SerializeField] private float waveDuration = 0.4f;
@@ -40,70 +41,20 @@ namespace Game.Rendering
         public bool IsAnimating => _activeWaves.Count > 0;
 
         private IGameWorldDataProvider _gameData;
-
-        public void Prepare(IGameWorldDataProvider gameData)
+        public void Initialize(ServiceContainer services)
         {
-            _gameData = gameData;
-            _width = gameData.GridWidth;
-            _height = gameData.GridHeight;
+            _gameData = services.Get<GameWorld>();
+        }
+
+        public void Prepare()
+        {
+            _width = _gameData.GridWidth;
+            _height = _gameData.GridHeight;
 
             CaptureOriginalMesh();
         }
-
-        private void CaptureOriginalMesh()
-        {
-            var meshFilter = _gameData.Territory.MeshFilter;
-            if (meshFilter == null || meshFilter.sharedMesh == null) return;
-
-            _mesh = meshFilter.sharedMesh;
-
-            _originalVertices = _mesh.vertices;
-            _animatedVertices = _mesh.vertices;
-            _originalColors = _mesh.colors32;
-            _colors = _mesh.colors32;
-            _isInitialized = true;
-        }
-
-        public void AddWave(List<TerritoryChange> changes, uint playerId, Color playerColor)
-        {
-            if (!_isInitialized || changes == null || changes.Count == 0) return;
-
-            _originalColors = _mesh.colors32;
-
-            int waveIndex = _activeWaves.Count;
-
-            var wave = new ClaimWave
-            {
-                Origin = CalculateOrigin(changes),
-                StartTime = Time.time,
-                PlayerColor = playerColor,
-                AffectedCells = new List<Vector2Int>(changes.Count),
-            };
-
-            foreach (var change in changes)
-            {
-                if (change.NewOwner != playerId) continue;
-
-                var cell = new Vector2Int(change.X, change.Y);
-                wave.AffectedCells.Add(cell);
-
-                long cellIndex = (long)change.Y * _width + change.X;
-
-                if (_cellToWaveIndex.TryGetValue(cellIndex, out int oldWaveIdx))
-                {
-                    if (oldWaveIdx < _activeWaves.Count)
-                    {
-                        ResetCellToFinal(cellIndex);
-                    }
-                }
-
-                _cellToWaveIndex[cellIndex] = waveIndex;
-            }
-
-            _activeWaves.Add(wave);
-        }
-
-        private void Update()
+        
+        public void Tick()
         {
             if (_activeWaves.Count == 0) return;
 
@@ -167,6 +118,64 @@ namespace Game.Rendering
             {
                 _cellToWaveIndex.Clear();
             }
+        }
+
+        public void Dispose()
+        {
+            FinishAllImmediately();
+        }
+
+        private void CaptureOriginalMesh()
+        {
+            var meshFilter = _gameData.Territory.MeshFilter;
+            if (meshFilter == null || meshFilter.sharedMesh == null) return;
+
+            _mesh = meshFilter.sharedMesh;
+
+            _originalVertices = _mesh.vertices;
+            _animatedVertices = _mesh.vertices;
+            _originalColors = _mesh.colors32;
+            _colors = _mesh.colors32;
+            _isInitialized = true;
+        }
+
+        public void AddWave(List<TerritoryChange> changes, uint playerId, Color playerColor)
+        {
+            if (!_isInitialized || changes == null || changes.Count == 0) return;
+
+            _originalColors = _mesh.colors32;
+
+            int waveIndex = _activeWaves.Count;
+
+            var wave = new ClaimWave
+            {
+                Origin = CalculateOrigin(changes),
+                StartTime = Time.time,
+                PlayerColor = playerColor,
+                AffectedCells = new List<Vector2Int>(changes.Count),
+            };
+
+            foreach (var change in changes)
+            {
+                if (change.NewOwner != playerId) continue;
+
+                var cell = new Vector2Int(change.X, change.Y);
+                wave.AffectedCells.Add(cell);
+
+                long cellIndex = (long)change.Y * _width + change.X;
+
+                if (_cellToWaveIndex.TryGetValue(cellIndex, out int oldWaveIdx))
+                {
+                    if (oldWaveIdx < _activeWaves.Count)
+                    {
+                        ResetCellToFinal(cellIndex);
+                    }
+                }
+
+                _cellToWaveIndex[cellIndex] = waveIndex;
+            }
+
+            _activeWaves.Add(wave);
         }
 
         private void AnimateCell(long cellIndex, float progress, Color targetColor)
@@ -259,7 +268,7 @@ namespace Game.Rendering
                 _cellToWaveIndex.Remove(key);
 
             foreach (var key in keysToUpdate)
-                _cellToWaveIndex[key] = _cellToWaveIndex[key] - 1;
+                _cellToWaveIndex[key] -= 1;
         }
 
         private static Vector2Int CalculateOrigin(List<TerritoryChange> changes)
