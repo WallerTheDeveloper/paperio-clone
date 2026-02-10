@@ -34,6 +34,7 @@ namespace Game.Effects.Implementations
         public Effect Type => type;
         public GameObject GameObject => this.gameObject;
         public bool IsPlaying => _isShaking;
+        
         public void Prepare(IGameWorldDataProvider gameData)
         {
             _targetTransform = transform;
@@ -50,6 +51,20 @@ namespace Game.Effects.Implementations
         {
             _isShaking = false;
             _elapsed = 0f;
+            
+            if (_targetTransform != null)
+            {
+                _targetTransform.localPosition = _originalLocalPosition;
+            }
+        }
+
+        public void Reset()
+        {
+            _isShaking = false;
+            _elapsed = 0f;
+            _currentDuration = 0f;
+            _currentIntensity = 0f;
+            _currentFrequency = 0f;
             
             if (_targetTransform != null)
             {

@@ -42,18 +42,19 @@ namespace Game.Effects.Implementations
         private uint _width;
         private uint _height;
         private float _cellSize;
+        private bool _isInitialized;
 
         public Effect Type => type;
         public GameObject GameObject => this.gameObject;
         public bool IsPlaying { get; private set; }
 
         private IGameWorldDataProvider _gameData;
+        
         public void Prepare(IGameWorldDataProvider gameData)
         {
             _width = gameData.GridWidth;
             _height = gameData.GridHeight;
             _cellSize = gameData.Config.CellSize;
-
             _gameData = gameData;
             RebuildMeshData(_gameData);
         }
@@ -68,8 +69,10 @@ namespace Game.Effects.Implementations
                 _animatedVertices = new Vector3[_originalVertices.Length];
                 _originalVertices.CopyTo(_animatedVertices, 0);
                 _colors = _mesh.colors32;
+                _isInitialized = true;
             }
         }
+        
         public void Play(EffectData data)
         {
             RebuildMeshData(_gameData);
@@ -110,7 +113,7 @@ namespace Game.Effects.Implementations
                 
                 wave.AffectedCells.Add(new Vector2Int(change.X, change.Y));
                 
-                long cellIndex = change.Y *  _width + change.X;
+                long cellIndex = change.Y * _width + change.X;
                 if (!_animatingCells.ContainsKey(cellIndex))
                 {
                     _animatingCells[cellIndex] = new CellAnimState
@@ -124,13 +127,27 @@ namespace Game.Effects.Implementations
 
             _activeWaves.Add(wave);
         }
-        
+
         public void Stop()
         {
             IsPlaying = false;
             ClearAllAnimations();
         }
-        
+
+        public void Reset()
+        {
+            _activeWaves.Clear();
+            _animatingCells.Clear();
+            IsPlaying = false;
+            
+            // Restore mesh to unmodified state
+            if (_isInitialized && _originalVertices != null && _animatedVertices != null)
+            {
+                _originalVertices.CopyTo(_animatedVertices, 0);
+                ApplyMeshChanges();
+            }
+        }
+
         public void Update()
         {
             if (_activeWaves.Count == 0)
@@ -145,7 +162,6 @@ namespace Game.Effects.Implementations
             {
                 var wave = _activeWaves[w];
                 float elapsed = currentTime - wave.StartTime;
-                float waveRadius = elapsed * waveSpeed;
 
                 bool waveComplete = true;
 
@@ -188,20 +204,22 @@ namespace Game.Effects.Implementations
             {
                 ApplyMeshChanges();
             }
+
+            // Mark as done when all waves finished
+            if (_activeWaves.Count == 0)
+            {
+                IsPlaying = false;
+            }
         }
 
         private void ApplyCellAnimation(long cellIndex, float progress, Color targetColor)
         {
-            float easedProgress = Easing.SineOut(progress);
             float brightnessFactor = brightnessCurve.Evaluate(Easing.PingPong(progress));
             float heightOffset = heightPulse * Easing.Spike(progress, 0.3f);
 
-            long vertexBase = cellIndex * 4;
+            int vertexBase = (int)(cellIndex * 4);
             
-            if (vertexBase + 3 >= _animatedVertices.Length)
-            {
-                return;
-            }
+            if (_animatedVertices == null || vertexBase + 3 >= _animatedVertices.Length) return;
 
             for (int i = 0; i < 4; i++)
             {
@@ -229,12 +247,9 @@ namespace Game.Effects.Implementations
 
         private void ResetCellAnimation(long cellIndex, Color finalColor)
         {
-            long vertexBase = cellIndex * 4;
+            int vertexBase = (int)(cellIndex * 4);
             
-            if (vertexBase + 3 >= _animatedVertices.Length)
-            {
-                return;
-            }
+            if (_animatedVertices == null || vertexBase + 3 >= _animatedVertices.Length) return;
 
             for (int i = 0; i < 4; i++)
             {
@@ -250,13 +265,22 @@ namespace Game.Effects.Implementations
 
         private void ApplyMeshChanges()
         {
-            if (_mesh == null)
-            {
-                return;
-            }
+            if (_mesh == null || _animatedVertices == null) return;
             
             _mesh.vertices = _animatedVertices;
             _mesh.colors32 = _colors;
+        }
+
+        private void ClearAllAnimations()
+        {
+            _activeWaves.Clear();
+            _animatingCells.Clear();
+            
+            if (_isInitialized && _originalVertices != null && _animatedVertices != null)
+            {
+                _originalVertices.CopyTo(_animatedVertices, 0);
+                ApplyMeshChanges();
+            }
         }
 
         private Vector2Int CalculateOrigin(List<TerritoryChange> changes)
@@ -282,18 +306,6 @@ namespace Game.Effects.Implementations
                 if (dist > maxDist) maxDist = dist;
             }
             return maxDist;
-        }
-
-        private void ClearAllAnimations()
-        {
-            _activeWaves.Clear();
-            _animatingCells.Clear();
-            
-            if (_originalVertices != null)
-            {
-                _originalVertices.CopyTo(_animatedVertices, 0);
-                _mesh.vertices = _animatedVertices;
-            }
         }
     }
 }

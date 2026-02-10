@@ -11,6 +11,7 @@ namespace Game.Effects
         public bool IsPlaying { get; }
         void Prepare(IGameWorldDataProvider gameData);
         void Play(EffectData data);
+        void Reset();
         void Stop();
     }
 }

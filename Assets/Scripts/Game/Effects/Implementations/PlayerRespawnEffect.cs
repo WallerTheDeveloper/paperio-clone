@@ -66,16 +66,63 @@ namespace Game.Effects.Implementations
 
         public void Stop()
         {
-            if (_ringMaterialInstance != null)
+            if (_ringCoroutine != null)
             {
-                Destroy(_ringMaterialInstance);
+                StopCoroutine(_ringCoroutine);
+                _ringCoroutine = null;
             }
+            
+            if (_glowParticles != null && _glowParticles.isPlaying)
+            {
+                _glowParticles.Stop(true, ParticleSystemStopBehavior.StopEmittingAndClear);
+            }
+
+            if (ringObject != null)
+            {
+                ringObject.SetActive(false);
+            }
+        }
+
+        public void Reset()
+        {
+            if (_ringCoroutine != null)
+            {
+                StopCoroutine(_ringCoroutine);
+                _ringCoroutine = null;
+            }
+            
+            if (_glowParticles != null)
+            {
+                _glowParticles.Stop(true, ParticleSystemStopBehavior.StopEmittingAndClear);
+                _glowParticles.Clear();
+            }
+
+            if (ringObject != null)
+            {
+                ringObject.SetActive(false);
+                ringObject.transform.localScale = Vector3.one;
+            }
+
+            transform.position = Vector3.zero;
         }
 
         private System.Collections.IEnumerator AnimateRing(Color color)
         {
             ringObject.SetActive(true);
-            _ringMaterialInstance.color = new Color(color.r, color.g, color.b, 0.5f);
+            
+            if (_ringMaterialInstance == null)
+            {
+                _ringRenderer = ringObject.GetComponent<MeshRenderer>();
+                if (_ringRenderer != null)
+                {
+                    _ringMaterialInstance = _ringRenderer.material;
+                }
+            }
+            
+            if (_ringMaterialInstance != null)
+            {
+                _ringMaterialInstance.color = new Color(color.r, color.g, color.b, 0.5f);
+            }
 
             float elapsed = 0f;
             while (elapsed < ringExpandDuration)
@@ -89,9 +136,12 @@ namespace Game.Effects.Implementations
 
                 ringObject.transform.localScale = new Vector3(radius * 2f, 0.02f, radius * 2f);
                 
-                Color ringColor = _ringMaterialInstance.color;
-                ringColor.a = alpha * 0.5f;
-                _ringMaterialInstance.color = ringColor;
+                if (_ringMaterialInstance != null)
+                {
+                    Color ringColor = _ringMaterialInstance.color;
+                    ringColor.a = alpha * 0.5f;
+                    _ringMaterialInstance.color = ringColor;
+                }
 
                 yield return null;
             }

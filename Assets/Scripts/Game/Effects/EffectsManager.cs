@@ -3,139 +3,198 @@ using System.Collections.Generic;
 using Core.Services;
 using Game.Data;
 using UnityEngine;
+using UnityEngine.Pool;
 
 namespace Game.Effects
 {
     [Serializable]
-    public struct EffectWrapper
+    public struct EffectPrefab
     {
-        [SerializeField] public UnityEngine.Object EffectObject;
-        
-        public IEffect Effect => EffectObject as IEffect;
+        [SerializeField] public UnityEngine.Object Prefab;
+        public IEffect Effect => Prefab as IEffect;
     }
+    
     public class EffectsManager : MonoBehaviour, IService
     {
-        [SerializeField] private List<EffectWrapper> effects = new();
-        [SerializeField] private int effectsPoolSize = 4;
+        [SerializeField] private List<EffectPrefab> effectPrefabs = new();
+        [SerializeField] private int defaultPoolSize = 4;
+        [SerializeField] private int maxPoolSize = 16;
 
-        private readonly Queue<IEffect> _effectsPool = new();
+        private readonly Dictionary<Effect, ObjectPool<IEffect>> _pools = new();
+        private readonly Dictionary<Effect, UnityEngine.Object> _prefabMap = new();
         private readonly List<IEffect> _activeEffects = new();
 
         private Transform _effectsContainer;
-
         private IGameWorldDataProvider _gameData;
         public void Initialize(ServiceContainer services)
         {
             _gameData = services.Get<GameWorld>();
             
-           _effectsContainer = new GameObject("EffectsContainer").transform;
-           _effectsContainer.SetParent(transform, false);
+            _effectsContainer = new GameObject("EffectsContainer").transform;
+            _effectsContainer.SetParent(transform, false);
         }
-        
+
         public void Tick()
         {
-            CleanupFinishedEffects();
+            ReturnFinishedEffects();
         }
 
         public void Dispose()
         {
             ClearAllEffects();
-        }
-
-        public void PreparePools()
-        {
-            InitializePools();
+            
+            foreach (var pool in _pools.Values)
+            {
+                pool.Dispose();
+            }
+            _pools.Clear();
+            _prefabMap.Clear();
         }
         
-        private void InitializePools()
+        public void PreparePools()
         {
-            for (int i = 0; i < effectsPoolSize; i++)
+            foreach (var entry in effectPrefabs)
             {
-                var spawnedEffects = InstantiateEffects();
-                spawnedEffects.ForEach(effect =>
-                {
-                    effect.Prepare(_gameData);
-                    effect.GameObject.SetActive(false);
-                    _effectsPool.Enqueue(effect);
-                });
-            }
-        }
+                // Resolve the IEffect from the prefab to read its Type
+                IEffect sample = (entry.Prefab as GameObject)?.GetComponent<IEffect>()
+                                 ?? (entry.Prefab as Component)?.GetComponent<IEffect>();
 
-        public void PlayEffect(Effect effect, EffectData data)
-        {
-            var effectsFromPool = GetEffectsFromPool();
-            foreach (var effectFromPool in effectsFromPool)
-            {
-                if (effectFromPool.Type != effect)
+                if (sample == null)
                 {
+                    Debug.LogError($"[EffectsManager] Prefab {entry.Prefab.name} does not implement IEffect!");
                     continue;
                 }
 
-                effectFromPool.GameObject.SetActive(true);
-                effectFromPool.Play(data);
+                Effect effectType = sample.Type;
 
-                _activeEffects.Add(effectFromPool);
+                if (_pools.ContainsKey(effectType))
+                {
+                    Debug.LogWarning($"[EffectsManager] Duplicate pool for {effectType}, skipping.");
+                    continue;
+                }
+
+                _prefabMap[effectType] = entry.Prefab;
+
+                Effect capturedType = effectType;
+
+                var pool = new ObjectPool<IEffect>(
+                    createFunc:       () => CreateEffect(capturedType),
+                    actionOnGet:      OnGetEffect,
+                    actionOnRelease:  OnReleaseEffect,
+                    actionOnDestroy:  OnDestroyEffect,
+                    collectionCheck:  false,
+                    defaultCapacity:  defaultPoolSize,
+                    maxSize:          maxPoolSize
+                );
+
+                _pools[effectType] = pool;
+
+                var prewarmed = new List<IEffect>(defaultPoolSize);
+                for (int i = 0; i < defaultPoolSize; i++)
+                {
+                    prewarmed.Add(pool.Get());
+                }
+                foreach (var effect in prewarmed)
+                {
+                    pool.Release(effect);
+                }
             }
         }
 
-        private List<IEffect> InstantiateEffects()
+        public void PlayEffect(Effect effectType, EffectData data)
         {
-            var instantiatedEffects = new List<IEffect>();
-            foreach (var effectWrapper in effects)
+            if (!_pools.TryGetValue(effectType, out var pool))
             {
-                var instance = Instantiate(effectWrapper.EffectObject, _effectsContainer);
-        
-                IEffect effectInterface = (instance as GameObject)?.GetComponent<IEffect>() 
-                                          ?? (instance as Component)?.GetComponent<IEffect>();
-
-                if (effectInterface != null)
-                {
-                    instantiatedEffects.Add(effectInterface);
-                }
-                else
-                {
-                    Debug.LogError($"Object {instance.name} does not implement IEffect!");
-                }
+                Debug.LogWarning($"[EffectsManager] No pool for effect type {effectType}");
+                return;
             }
-            return instantiatedEffects;
+
+            IEffect effect = pool.Get();
+            effect.Play(data);
+            _activeEffects.Add(effect);
         }
-        
-        private void CleanupFinishedEffects()
+
+        private IEffect CreateEffect(Effect effectType)
+        {
+            if (!_prefabMap.TryGetValue(effectType, out var prefab))
+            {
+                Debug.LogError($"[EffectsManager] No prefab registered for {effectType}");
+                return null;
+            }
+
+            var instance = Instantiate(prefab, _effectsContainer);
+            IEffect effect = (instance as GameObject)?.GetComponent<IEffect>()
+                             ?? (instance as Component)?.GetComponent<IEffect>();
+
+            if (effect == null)
+            {
+                Debug.LogError($"[EffectsManager] Instantiated {instance.name} but no IEffect found!");
+                return null;
+            }
+
+            effect.Prepare(_gameData);
+            effect.GameObject.SetActive(false);
+            return effect;
+        }
+
+        private void OnGetEffect(IEffect effect)
+        {
+            if (effect?.GameObject != null)
+            {
+                effect.GameObject.SetActive(true);
+            }
+        }
+
+        private void OnReleaseEffect(IEffect effect)
+        {
+            if (effect == null) return;
+            
+            effect.Stop();
+            effect.Reset();
+            
+            if (effect.GameObject != null)
+            {
+                effect.GameObject.SetActive(false);
+            }
+        }
+
+        private void OnDestroyEffect(IEffect effect)
+        {
+            if (effect?.GameObject != null)
+            {
+                Destroy(effect.GameObject);
+            }
+        }
+
+        private void ReturnFinishedEffects()
         {
             for (int i = _activeEffects.Count - 1; i >= 0; i--)
             {
-                if (!_activeEffects[i].IsPlaying)
+                var effect = _activeEffects[i];
+                if (!effect.IsPlaying)
                 {
-                    var effect = _activeEffects[i];
-                    effect.GameObject.SetActive(false);
-                    _effectsPool.Enqueue(effect);
                     _activeEffects.RemoveAt(i);
+                    
+                    if (_pools.TryGetValue(effect.Type, out var pool))
+                    {
+                        pool.Release(effect);
+                    }
                 }
             }
-        }
-
-        private IEnumerable<IEffect> GetEffectsFromPool()
-        {
-            if (_effectsPool.Count > 0)
-            {
-                return new[]
-                {
-                    _effectsPool.Dequeue()
-                };
-            }
-
-            return InstantiateEffects();
         }
 
         private void ClearAllEffects()
         {
-            foreach (var activeEffect in _activeEffects)
+            for (int i = _activeEffects.Count - 1; i >= 0; i--)
             {
-                activeEffect.Stop();
-                activeEffect.GameObject.SetActive(false);
-                _effectsPool.Enqueue(activeEffect);
+                var effect = _activeEffects[i];
+                _activeEffects.RemoveAt(i);
+                
+                if (_pools.TryGetValue(effect.Type, out var pool))
+                {
+                    pool.Release(effect);
+                }
             }
-            _activeEffects.Clear();
         }
     }
 }

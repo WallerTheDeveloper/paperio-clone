@@ -22,6 +22,7 @@ namespace Game.Effects.Implementations
         public Effect Type => type;
         public GameObject GameObject => this.gameObject;
         public bool IsPlaying => _particleSystem != null && _particleSystem.isPlaying;
+        
         public void Prepare(IGameWorldDataProvider gameData)
         {
             _particleSystem = GetComponent<ParticleSystem>();
@@ -49,10 +50,22 @@ namespace Game.Effects.Implementations
 
         public void Stop()
         {
-            if (_particleMaterial != null)
+            if (_particleSystem != null && _particleSystem.isPlaying)
             {
-                Destroy(_particleMaterial);
+                _particleSystem.Stop(true, ParticleSystemStopBehavior.StopEmittingAndClear);
             }
+        }
+
+        public void Reset()
+        {
+            if (_particleSystem != null)
+            {
+                _particleSystem.Stop(true, ParticleSystemStopBehavior.StopEmittingAndClear);
+                _particleSystem.Clear();
+            }
+            
+            transform.position = Vector3.zero;
+            transform.localScale = Vector3.one;
         }
     }
 }
