@@ -23,9 +23,9 @@ namespace Helpers
         public static Vector3 GridToWorld(int gridX, int gridY, float cellSize, float height = 0f)
         {
             return new Vector3(
-                gridX * cellSize,
+                (gridX + 0.5f) * cellSize,
                 height,
-                gridY * cellSize
+                (gridY + 0.5f) * cellSize
             );
         }
 
@@ -36,8 +36,8 @@ namespace Helpers
         public static Vector2Int WorldToGrid(Vector3 worldPos, float cellSize)
         {
             return new Vector2Int(
-                Mathf.RoundToInt(worldPos.x / cellSize),
-                Mathf.RoundToInt(worldPos.z / cellSize)
+                Mathf.FloorToInt(worldPos.x / cellSize),
+                Mathf.FloorToInt(worldPos.z / cellSize)
             );
         }
 
