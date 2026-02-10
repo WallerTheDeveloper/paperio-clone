@@ -151,8 +151,9 @@ namespace Game.Rendering
                     
                     float x0 = x * _gameWorldData.Config.CellSize;
                     float x1 = (x + 1) * _gameWorldData.Config.CellSize;
-                    float z0 = y * _gameWorldData.Config.CellSize;
-                    float z1 = (y + 1) * _gameWorldData.Config.CellSize;
+                    int flippedY = (int)(_gameWorldData.GridHeight - 1 - y);
+                    float z0 = flippedY * _gameWorldData.Config.CellSize;
+                    float z1 = (flippedY + 1) * _gameWorldData.Config.CellSize;
                     
                     _vertices[vertexBase + 0] = new Vector3(x0, 0, z1); // Top-left
                     _vertices[vertexBase + 1] = new Vector3(x1, 0, z1); // Top-right
