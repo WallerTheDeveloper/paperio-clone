@@ -144,8 +144,8 @@ namespace Game
             
             float yRotation = _currentDirection switch
             {
-                Direction.Down => 0f,
-                Direction.Up => 180f,
+                Direction.Up => 0f,
+                Direction.Down => 180f,
                 Direction.Left => 270f,
                 Direction.Right => 90f,
                 _ => directionIndicator.localEulerAngles.y // Keep current

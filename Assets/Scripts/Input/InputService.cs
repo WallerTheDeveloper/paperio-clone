@@ -90,7 +90,7 @@ namespace Input
             {
                 return input.x > 0 ? Direction.Right : Direction.Left;
             }
-            return input.y > 0 ? Direction.Down : Direction.Up;
+            return input.y > 0 ? Direction.Up : Direction.Down;
         }
         
         private bool IsOppositeDirection(Direction a, Direction b)
