@@ -258,7 +258,6 @@ namespace Game
                             var serverPos = new Vector2Int(player.Position.X, player.Position.Y);
                             bool corrected = _prediction.Reconcile(state.Tick, serverPos, player.Direction);
             
-                            _prediction.AdvancePrediction(state.Tick + 1);
                             _estimatedServerTick = state.Tick;
                             
                             _tickAccumulator = 0f;
