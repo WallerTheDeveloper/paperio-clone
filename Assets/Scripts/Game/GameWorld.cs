@@ -7,6 +7,7 @@ using Game.Effects;
 using Game.Paperio;
 using Game.Rendering;
 using Helpers;
+using Network;
 using UnityEngine;
 
 namespace Game
@@ -19,6 +20,9 @@ namespace Game
         [SerializeField] private bool logTerritoryUpdates = false;
         [SerializeField] private bool logPlayerUpdates = false;
         
+        private uint _estimatedServerTick;
+        private float _tickAccumulator;
+        private ClientPrediction _prediction;
         private TerritoryData _territoryData;
         private readonly Dictionary<uint, Color> _playerColors = new();
         private uint _localPlayerId;
@@ -29,6 +33,7 @@ namespace Game
 
         private float _lastTickTime;
         private uint _lastTick;
+        private bool _inputSubscribed;
         
         public event Action OnGameStarted;
         public event Action OnGameEnded;
@@ -69,6 +74,7 @@ namespace Game
         
         public void Initialize(ServiceContainer services)
         {
+            _prediction = new ClientPrediction(_gridWidth, _gridHeight);
             _playerVisualsManager = services.Get<PlayerVisualsManager>();
             _effectsManager = services.Get<EffectsManager>();
             _territoryRenderer = services.Get<TerritoryRenderer>();
@@ -80,9 +86,21 @@ namespace Game
         {
             if (!_isGameActive)
             {
+                Debug.Log("[GameWorld] Game is not active!");
                 return;
             }
-            
+    
+            if (!_inputSubscribed && _prediction != null)
+            {
+                var localPlayerData = _playerVisualsManager.PlayersContainer.TryGetPlayerById(_localPlayerId);
+                if (localPlayerData?.InputService != null)
+                {
+                    localPlayerData.InputService.OnDirectionChanged += OnLocalDirectionChanged;
+                    _inputSubscribed = true;
+                    Debug.Log("[GameWorld] Subscribed to local player input for prediction");
+                }
+            }
+    
             _playerVisualsManager.UpdateInterpolation(TickProgress);
         }
 
@@ -98,11 +116,20 @@ namespace Game
         {
             _territoryClaim.FinishAllImmediately();
             _playerVisualsManager.ClearAll();
-            
+            if (_inputSubscribed)
+            {
+                var localPlayerData = _playerVisualsManager?.PlayersContainer?.TryGetPlayerById(_localPlayerId);
+                if (localPlayerData?.InputService != null)
+                {
+                    localPlayerData.InputService.OnDirectionChanged -= OnLocalDirectionChanged;
+                }
+                _inputSubscribed = false;
+            }
             _territoryData.Clear();
             _isGameActive = false;
             
             _cameraController.Dispose();
+            _prediction = null;
         }
 
         public void OnJoinedGame(PaperioJoinResponse response)
@@ -124,6 +151,21 @@ namespace Game
                 _cameraController.Initialize(this as IGameWorldDataProvider);
                 
                 InitializeFromState(response.InitialState);
+                
+                foreach (var player in response.InitialState.Players)
+                {
+                    if (player.PlayerId == _localPlayerId && player.Position != null)
+                    {
+                        _prediction.Initialize(
+                            new Vector2Int(player.Position.X, player.Position.Y),
+                            player.Direction
+                        );
+                        break;
+                    }
+                }
+    
+                _estimatedServerTick = response.InitialState.Tick;
+                _tickAccumulator = 0f;
             }
             
             _isGameActive = true;
@@ -139,6 +181,13 @@ namespace Game
             OnLocalPlayerSpawned?.Invoke(_localPlayerId);
         }
 
+        public void OnLocalDirectionChanged(Direction direction)
+        {
+            Debug.Log($"[GameWorld] PREDICTION INPUT: {direction}, estimated tick: {_estimatedServerTick}");
+
+            _prediction?.RecordInput(direction, _estimatedServerTick + 1);
+        }
+        
         public void OnServerStateUpdated(PaperioState state)
         {
             if (!_isGameActive)
@@ -200,7 +249,43 @@ namespace Game
             
             if (_playerVisualsManager != null)
             {
+                if (_prediction != null)
+                {
+                    foreach (var player in state.Players)
+                    {
+                        if (player.PlayerId == _localPlayerId && player.Position != null)
+                        {
+                            var serverPos = new Vector2Int(player.Position.X, player.Position.Y);
+                            bool corrected = _prediction.Reconcile(state.Tick, serverPos, player.Direction);
+            
+                            _prediction.AdvancePrediction(state.Tick + 1);
+                            _estimatedServerTick = state.Tick;
+                            
+                            _tickAccumulator = 0f;
+            
+                            if (corrected && logPlayerUpdates)
+                            {
+                                Debug.Log($"[GameWorld] Prediction corrected at tick {state.Tick}: " +
+                                          $"server=({serverPos.x},{serverPos.y}), " +
+                                          $"predicted=({_prediction.PredictedPosition.x},{_prediction.PredictedPosition.y}), " +
+                                          $"pending={_prediction.PendingInputCount}");
+                            }
+                            break;
+                        }
+                    }
+                }
                 _playerVisualsManager.UpdateFromState(state, _localPlayerId);
+                if (_prediction != null && _playerVisualsManager.LocalPlayerVisual != null)
+                {
+                    var predictedWorldPos = GridHelper.GridToWorld(
+                        _prediction.PredictedPosition.x,
+                        _prediction.PredictedPosition.y,
+                        config.CellSize,
+                        _playerVisualsManager.LocalPlayerVisual.transform.position.y
+                    );
+    
+                    _playerVisualsManager.LocalPlayerVisual.SetPredictedTarget(predictedWorldPos);
+                }
                 
                 if (logPlayerUpdates && state.Tick % 20 == 0)
                 {
@@ -261,6 +346,13 @@ namespace Game
             if (isLocal && _cameraController != null && LocalPlayerVisual != null)
             {
                 _cameraController.SetTarget(LocalPlayerVisual.transform);
+                if (_prediction != null)
+                {
+                    _prediction.Initialize(
+                        playerData.GridPosition,
+                        Direction.None
+                    );
+                }
             }
         }
         

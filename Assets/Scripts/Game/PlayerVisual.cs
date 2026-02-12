@@ -294,7 +294,14 @@ namespace Game
                 }
             }
         }
-
+        public void SetPredictedTarget(Vector3 predictedWorldPosition)
+        {
+            if (!_isLocalPlayer) return;
+    
+            _previousPosition = _transform.position;
+            _targetPosition = predictedWorldPosition;
+        }
+        
         public void ResetForPool()
         {
             _playerId = 0;
