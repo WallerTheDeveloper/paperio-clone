@@ -25,7 +25,7 @@ namespace Game
         
         private MaterialPropertyBlock _propertyBlock;
         private Transform _transform;
-        
+        private Vector3 _smoothVelocity;
         private uint _playerId;
         private bool _isLocalPlayer;
         private bool _isAlive = true;
@@ -165,8 +165,13 @@ namespace Game
             
             if (_isLocalPlayer)
             {
-                Vector3 interpolatedPos = Vector3.Lerp(_previousPosition, _targetPosition, tickProgress);
-                _transform.position = interpolatedPos;
+                float smoothTime = 0.03f;
+                _transform.position = Vector3.SmoothDamp(
+                    _transform.position, 
+                    _targetPosition, 
+                    ref _smoothVelocity, 
+                    smoothTime
+                );
             }
             else
             {
@@ -298,7 +303,6 @@ namespace Game
         {
             if (!_isLocalPlayer) return;
     
-            _previousPosition = _transform.position;
             _targetPosition = predictedWorldPosition;
         }
         
