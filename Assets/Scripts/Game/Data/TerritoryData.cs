@@ -30,6 +30,7 @@ namespace Game.Data
         public int ClaimedCells { get; private set; }
         public int TotalCells => Width * Height;
         private readonly uint[] _cells;
+
         public TerritoryData(int width, int height, MeshFilter meshFilter)
         {
             Width = width;
@@ -38,6 +39,7 @@ namespace Game.Data
             ClaimedCells = 0;
             _cells = new uint[width * height];
         }
+
         public uint GetOwner(int x, int y)
         {
             if (!IsInBounds(x, y))
@@ -46,26 +48,38 @@ namespace Game.Data
             }
             return _cells[y * Width + x];
         }
+
         public uint GetOwner(Vector2Int position)
         {
             return GetOwner(position.x, position.y);
         }
+
         public bool IsInBounds(int x, int y)
         {
             return x >= 0 && x < Width && y >= 0 && y < Height;
         }
+
         public bool IsInBounds(Vector2Int position)
         {
             return IsInBounds(position.x, position.y);
         }
+
         public bool IsOwnedBy(int x, int y, uint playerId)
         {
             return GetOwner(x, y) == playerId;
         }
+
         public bool IsOwnedBy(Vector2Int position, uint playerId)
         {
             return IsOwnedBy(position.x, position.y, playerId);
         }
+
+        public uint[] GetRawCells()
+        {
+            return _cells;
+        }
+
+        // TODO: REFACTOR. Two separate methods for full state vs delta is a bit redundant. Can we unify them?
         public List<TerritoryChange> ApplyServerState(IEnumerable<TerritoryRow> territoryRows)
         {
             var changes = new List<TerritoryChange>();
@@ -73,7 +87,7 @@ namespace Game.Data
             foreach (var row in territoryRows)
             {
                 int y = row.Y;
-                
+
                 if (y < 0 || y >= Height)
                 {
                     Debug.LogWarning($"[TerritoryData] Row y={y} out of bounds (height={Height})");
@@ -83,21 +97,21 @@ namespace Game.Data
                 DecodeRow(row, changes);
             }
 
-            // Update claimed cells count
             RecalculateClaimedCells();
 
             return changes;
         }
+        
+        // TODO: REFACTOR. Two separate methods for full state vs delta is a bit redundant. Can we unify them?
         public List<TerritoryChange> ApplyFullState(IEnumerable<TerritoryRow> territoryRows)
         {
             var changes = new List<TerritoryChange>();
             var processedRows = new HashSet<int>();
 
-            // First, apply the rows we received
             foreach (var row in territoryRows)
             {
                 int y = row.Y;
-                
+
                 if (y < 0 || y >= Height)
                 {
                     continue;
@@ -107,18 +121,66 @@ namespace Game.Data
                 DecodeRow(row, changes);
             }
 
-            // Clear rows not in the update (they should be entirely unclaimed)
             for (int y = 0; y < Height; y++)
             {
                 if (!processedRows.Contains(y))
                 {
-                    ClearRow(y, changes);
+                    for (int x = 0; x < Width; x++)
+                    {
+                        int idx = y * Width + x;
+                        if (_cells[idx] != 0)
+                        {
+                            changes.Add(new TerritoryChange(x, y, _cells[idx], 0));
+                            _cells[idx] = 0;
+                        }
+                    }
                 }
             }
 
             RecalculateClaimedCells();
+
             return changes;
         }
+
+        public List<TerritoryChange> ApplyDeltaChanges(IEnumerable<TerritoryCell> cellChanges)
+        {
+            var changes = new List<TerritoryChange>();
+
+            foreach (var cell in cellChanges)
+            {
+                int x = cell.X;
+                int y = cell.Y;
+
+                if (!IsInBounds(x, y))
+                {
+                    Debug.LogWarning($"[TerritoryData] Delta cell ({x},{y}) out of bounds");
+                    continue;
+                }
+
+                int idx = y * Width + x;
+                uint previousOwner = _cells[idx];
+                uint newOwner = cell.OwnerId;
+
+                if (previousOwner != newOwner)
+                {
+                    _cells[idx] = newOwner;
+
+                    if (previousOwner == 0 && newOwner != 0)
+                    {
+                        ClaimedCells++;
+                    }
+                    else if (previousOwner != 0 && newOwner == 0)
+                    {
+                        ClaimedCells--;
+                    }
+
+                    changes.Add(new TerritoryChange(x, y, previousOwner, newOwner));
+                }
+            }
+
+            return changes;
+        }
+
         private void DecodeRow(TerritoryRow row, List<TerritoryChange> changes)
         {
             int y = row.Y;
@@ -131,123 +193,49 @@ namespace Game.Data
 
                 for (int i = 0; i < count && x < Width; i++, x++)
                 {
-                    SetCell(x, y, ownerId, changes);
+                    int idx = y * Width + x;
+                    uint previousOwner = _cells[idx];
+
+                    if (previousOwner != ownerId)
+                    {
+                        _cells[idx] = ownerId;
+                        changes.Add(new TerritoryChange(x, y, previousOwner, ownerId));
+                    }
                 }
             }
+        }
 
-            while (x < Width)
-            {
-                SetCell(x, y, 0, changes);
-                x++;
-            }
-        }
-        private void ClearRow(int y, List<TerritoryChange> changes)
-        {
-            for (int x = 0; x < Width; x++)
-            {
-                SetCell(x, y, 0, changes);
-            }
-        }
-        private void SetCell(int x, int y, uint newOwner, List<TerritoryChange> changes)
-        {
-            int index = y * Width + x;
-            uint previousOwner = _cells[index];
-
-            if (previousOwner != newOwner)
-            {
-                _cells[index] = newOwner;
-                changes.Add(new TerritoryChange(x, y, previousOwner, newOwner));
-            }
-        }
         private void RecalculateClaimedCells()
         {
-            int count = 0;
+            ClaimedCells = 0;
             for (int i = 0; i < _cells.Length; i++)
             {
                 if (_cells[i] != 0)
                 {
-                    count++;
+                    ClaimedCells++;
                 }
             }
-            ClaimedCells = count;
         }
-        public int CountOwnedBy(uint playerId)
+
+        public string DebugRegion(int startX, int startY, int w, int h)
         {
-            int count = 0;
-            for (int i = 0; i < _cells.Length; i++)
+            var sb = new System.Text.StringBuilder();
+            for (int y = startY; y < startY + h && y < Height; y++)
             {
-                if (_cells[i] == playerId)
+                for (int x = startX; x < startX + w && x < Width; x++)
                 {
-                    count++;
+                    uint owner = GetOwner(x, y);
+                    sb.Append(owner == 0 ? "." : owner.ToString());
                 }
+                sb.AppendLine();
             }
-            return count;
+            return sb.ToString();
         }
-        public float GetOwnershipPercentage(uint playerId)
-        {
-            if (TotalCells == 0) return 0f;
-            return (float)CountOwnedBy(playerId) / TotalCells * 100f;
-        }
-        public List<Vector2Int> GetCellsOwnedBy(uint playerId)
-        {
-            var cells = new List<Vector2Int>();
-            
-            for (int y = 0; y < Height; y++)
-            {
-                for (int x = 0; x < Width; x++)
-                {
-                    if (_cells[y * Width + x] == playerId)
-                    {
-                        cells.Add(new Vector2Int(x, y));
-                    }
-                }
-            }
-            
-            return cells;
-        }
+        
         public void Clear()
         {
             System.Array.Clear(_cells, 0, _cells.Length);
             ClaimedCells = 0;
-        }
-        public uint[] GetRawCells() => _cells;
-        public string DebugRegion(int startX, int startY, int regionWidth, int regionHeight)
-        {
-            var sb = new System.Text.StringBuilder();
-            
-            for (int y = startY + regionHeight - 1; y >= startY && y >= 0; y--) // Top to bottom
-            {
-                for (int x = startX; x < startX + regionWidth && x < Width; x++)
-                {
-                    if (x < 0) continue;
-                    
-                    uint owner = GetOwner(x, y);
-                    if (owner == 0)
-                    {
-                        sb.Append('.');
-                    }
-                    else if (owner <= 9)
-                    {
-                        sb.Append(owner);
-                    }
-                    else if (owner <= 35)
-                    {
-                        sb.Append((char)('A' + owner - 10));
-                    }
-                    else
-                    {
-                        sb.Append('#');
-                    }
-                }
-                sb.AppendLine();
-            }
-            
-            return sb.ToString();
-        }
-        public void DebugLogAround(int centerX, int centerY, int radius = 5)
-        {
-            Debug.Log($"[TerritoryData] Region around ({centerX},{centerY}):\n" +
-                      DebugRegion(centerX - radius, centerY - radius, radius * 2 + 1, radius * 2 + 1));
         }
     }
 }

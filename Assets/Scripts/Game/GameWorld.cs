@@ -158,23 +158,41 @@ namespace Game
                 }
             }
 
-            if (_territoryData != null && state.Territory != null)
+            if (_territoryData != null)
             {
-                var changes = _territoryData.ApplyServerState(state.Territory);
-                
+                List<TerritoryChange> changes;
+    
+                bool isDeltaChange = state.StateType == Game.Paperio.StateType.StateDelta;
+    
+                if (isDeltaChange && state.TerritoryChanges.Count > 0)
+                {
+                    changes = _territoryData.ApplyDeltaChanges(state.TerritoryChanges);
+                }
+                else if (!isDeltaChange && state.Territory != null && state.Territory.Count > 0)
+                {
+                    changes = _territoryData.ApplyServerState(state.Territory);
+                }
+                else
+                {
+                    changes = new List<TerritoryChange>();
+                }
+    
                 if (changes.Count > 0)
                 {
                     _territoryRenderer.UpdateTerritory(changes);
 
                     var playerData = _playerVisualsManager.PlayersContainer.TryGetPlayerById(changes[0].NewOwner);
-                    _territoryClaim.AddWave(changes, playerData.PlayerId, playerData.Color);
-                    
+                    if (playerData != null)
+                    {
+                        _territoryClaim.AddWave(changes, playerData.PlayerId, playerData.Color);
+                    }
+        
                     OnTerritoryChanged?.Invoke(changes);
-                    
+        
                     if (logTerritoryUpdates && state.Tick % 20 == 0)
                     {
                         Debug.Log($"[GameWorld] Tick {state.Tick}: " +
-                                  $"{changes.Count} territory changes, " +
+                                  $"{changes.Count} territory changes ({(isDeltaChange ? "DELTA" : "FULL")}), " +
                                   $"{_territoryData.ClaimedCells}/{_territoryData.TotalCells} claimed");
                     }
                 }

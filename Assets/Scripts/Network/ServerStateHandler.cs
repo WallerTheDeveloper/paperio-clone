@@ -26,6 +26,15 @@ namespace Network
         
         private MessageSender _messageSender;
         private PlayersContainer _playersContainer;
+
+        private uint _lastAppliedKeyframeTick;
+        
+        private bool _hasValidBaseline;
+        
+        private int _fullStatesReceived;
+        private int _deltaStatesReceived;
+        private int _deltasSkipped;
+        
         public void Initialize(ServiceContainer services)
         {
             _messageSender = services.Get<MessageSender>();
@@ -47,8 +56,10 @@ namespace Network
             }
             
             _hasJoinedGame = false;
+            _hasValidBaseline = false;
             _currentState = null;
         }
+
         private void HandleStateReceived(PaperioState state)
         {
             // Ignore old states (can happen due to UDP packet reordering)
@@ -71,6 +82,10 @@ namespace Network
             {
                 _gridWidth = response.InitialState.GridWidth;
                 _gridHeight = response.InitialState.GridHeight;
+                
+                _hasValidBaseline = true;
+                _lastAppliedKeyframeTick = response.InitialState.Tick;
+                
                 ApplyState(response.InitialState);
             }
             
@@ -81,9 +96,44 @@ namespace Network
             
             OnJoinedGame?.Invoke(response);
         }
+
         private void ApplyState(PaperioState state)
         {
             var previousState = _currentState;
+            
+            bool isDeltaChange = state.StateType == StateType.StateDelta;
+            
+            if (isDeltaChange)
+            {
+                _deltaStatesReceived++;
+                
+                if (!_hasValidBaseline)
+                {
+                    _deltasSkipped++;
+                    if (_deltasSkipped % 10 == 1)
+                    {
+                        Debug.LogWarning($"[ServerStateHandler] Skipping delta tick {state.Tick}: no valid baseline (skipped {_deltasSkipped} total)");
+                    }
+                    return;
+                }
+                
+                if (_currentState != null)
+                {
+                    state.Territory.Clear();
+                    state.Territory.AddRange(_currentState.Territory);
+                    state.GridWidth = _gridWidth;
+                    state.GridHeight = _gridHeight;
+                }
+            }
+            else
+            {
+                _fullStatesReceived++;
+                
+                _hasValidBaseline = true;
+                _lastAppliedKeyframeTick = state.Tick;
+                _deltasSkipped = 0;
+            }
+            
             _currentState = state;
             _lastReceivedTick = state.Tick;
             
@@ -95,11 +145,6 @@ namespace Network
             }
             
             OnStateUpdated?.Invoke(state);
-            
-            if (state.Tick % 20 == 0)
-            {
-                Debug.Log($"[ServerStateHandler] Tick {state.Tick}: {state.Players.Count} players");
-            }
         }
         
         private void UpdatePlayersFromState(PaperioState state, PaperioState previousState)

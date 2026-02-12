@@ -36,35 +36,41 @@ namespace Game.Paperio {
             "KAsyGi5nYW1lLnBhcGVyaW8uR3JpZFBvc2l0aW9uIkMKDFRlcnJpdG9yeVJv",
             "dxIJCgF5GAEgASgFEigKBHJ1bnMYAiADKAsyGi5nYW1lLnBhcGVyaW8uVGVy",
             "cml0b3J5UnVuIi8KDFRlcnJpdG9yeVJ1bhIQCghvd25lcl9pZBgBIAEoDRIN",
-            "CgVjb3VudBgCIAEoDSKiAQoMUGFwZXJpb1N0YXRlEgwKBHRpY2sYASABKA0S",
-            "LAoHcGxheWVycxgCIAMoCzIbLmdhbWUucGFwZXJpby5QYXBlcmlvUGxheWVy",
-            "Ei0KCXRlcnJpdG9yeRgDIAMoCzIaLmdhbWUucGFwZXJpby5UZXJyaXRvcnlS",
-            "b3cSEgoKZ3JpZF93aWR0aBgEIAEoDRITCgtncmlkX2hlaWdodBgFIAEoDSKn",
-            "AQoMUGFwZXJpb0RlbHRhEgwKBHRpY2sYASABKA0SNAoPY2hhbmdlZF9wbGF5",
-            "ZXJzGAIgAygLMhsuZ2FtZS5wYXBlcmlvLlBhcGVyaW9QbGF5ZXISNwoRdGVy",
-            "cml0b3J5X2NoYW5nZXMYAyADKAsyHC5nYW1lLnBhcGVyaW8uVGVycml0b3J5",
-            "Q2h1bmsSGgoSZWxpbWluYXRlZF9wbGF5ZXJzGAQgAygNImMKEFRlcnJpdG9y",
-            "eUNsYWltZWQSEQoJcGxheWVyX2lkGAEgASgNEhUKDWNlbGxzX2NsYWltZWQY",
-            "AiABKA0SFAoMY2VsbHNfc3RvbGVuGAMgASgNEg8KB3ZpY3RpbXMYBCADKA0i",
-            "SAoQUGxheWVyRWxpbWluYXRlZBIRCglwbGF5ZXJfaWQYASABKA0SEQoJa2ls",
-            "bGVyX2lkGAIgASgNEg4KBnJlYXNvbhgDIAEoCSJYCg9QbGF5ZXJSZXNwYXdu",
-            "ZWQSEQoJcGxheWVyX2lkGAEgASgNEjIKDnNwYXduX3Bvc2l0aW9uGAIgASgL",
-            "MhouZ2FtZS5wYXBlcmlvLkdyaWRQb3NpdGlvbiJ2ChNQYXBlcmlvSm9pblJl",
-            "c3BvbnNlEhYKDnlvdXJfcGxheWVyX2lkGAEgASgNEjEKDWluaXRpYWxfc3Rh",
-            "dGUYAiABKAsyGi5nYW1lLnBhcGVyaW8uUGFwZXJpb1N0YXRlEhQKDHRpY2tf",
-            "cmF0ZV9tcxgDIAEoDSpuCglEaXJlY3Rpb24SEgoORElSRUNUSU9OX05PTkUQ",
-            "ABIQCgxESVJFQ1RJT05fVVAQARISCg5ESVJFQ1RJT05fRE9XThACEhIKDkRJ",
-            "UkVDVElPTl9MRUZUEAMSEwoPRElSRUNUSU9OX1JJR0hUEARiBnByb3RvMw=="));
+            "CgVjb3VudBgCIAEoDSI3Cg1UZXJyaXRvcnlDZWxsEgkKAXgYASABKAUSCQoB",
+            "eRgCIAEoBRIQCghvd25lcl9pZBgDIAEoDSKeAgoMUGFwZXJpb1N0YXRlEgwK",
+            "BHRpY2sYASABKA0SLAoHcGxheWVycxgCIAMoCzIbLmdhbWUucGFwZXJpby5Q",
+            "YXBlcmlvUGxheWVyEi0KCXRlcnJpdG9yeRgDIAMoCzIaLmdhbWUucGFwZXJp",
+            "by5UZXJyaXRvcnlSb3cSEgoKZ3JpZF93aWR0aBgEIAEoDRITCgtncmlkX2hl",
+            "aWdodBgFIAEoDRIrCgpzdGF0ZV90eXBlGAYgASgOMhcuZ2FtZS5wYXBlcmlv",
+            "LlN0YXRlVHlwZRI2ChF0ZXJyaXRvcnlfY2hhbmdlcxgHIAMoCzIbLmdhbWUu",
+            "cGFwZXJpby5UZXJyaXRvcnlDZWxsEhUKDWtleWZyYW1lX3RpY2sYCCABKA0i",
+            "pwEKDFBhcGVyaW9EZWx0YRIMCgR0aWNrGAEgASgNEjQKD2NoYW5nZWRfcGxh",
+            "eWVycxgCIAMoCzIbLmdhbWUucGFwZXJpby5QYXBlcmlvUGxheWVyEjcKEXRl",
+            "cnJpdG9yeV9jaGFuZ2VzGAMgAygLMhwuZ2FtZS5wYXBlcmlvLlRlcnJpdG9y",
+            "eUNodW5rEhoKEmVsaW1pbmF0ZWRfcGxheWVycxgEIAMoDSJjChBUZXJyaXRv",
+            "cnlDbGFpbWVkEhEKCXBsYXllcl9pZBgBIAEoDRIVCg1jZWxsc19jbGFpbWVk",
+            "GAIgASgNEhQKDGNlbGxzX3N0b2xlbhgDIAEoDRIPCgd2aWN0aW1zGAQgAygN",
+            "IkgKEFBsYXllckVsaW1pbmF0ZWQSEQoJcGxheWVyX2lkGAEgASgNEhEKCWtp",
+            "bGxlcl9pZBgCIAEoDRIOCgZyZWFzb24YAyABKAkiWAoPUGxheWVyUmVzcGF3",
+            "bmVkEhEKCXBsYXllcl9pZBgBIAEoDRIyCg5zcGF3bl9wb3NpdGlvbhgCIAEo",
+            "CzIaLmdhbWUucGFwZXJpby5HcmlkUG9zaXRpb24idgoTUGFwZXJpb0pvaW5S",
+            "ZXNwb25zZRIWCg55b3VyX3BsYXllcl9pZBgBIAEoDRIxCg1pbml0aWFsX3N0",
+            "YXRlGAIgASgLMhouZ2FtZS5wYXBlcmlvLlBhcGVyaW9TdGF0ZRIUCgx0aWNr",
+            "X3JhdGVfbXMYAyABKA0qbgoJRGlyZWN0aW9uEhIKDkRJUkVDVElPTl9OT05F",
+            "EAASEAoMRElSRUNUSU9OX1VQEAESEgoORElSRUNUSU9OX0RPV04QAhISCg5E",
+            "SVJFQ1RJT05fTEVGVBADEhMKD0RJUkVDVElPTl9SSUdIVBAEKiwKCVN0YXRl",
+            "VHlwZRIOCgpTVEFURV9GVUxMEAASDwoLU1RBVEVfREVMVEEQAWIGcHJvdG8z"));
       descriptor = pbr::FileDescriptor.FromGeneratedCode(descriptorData,
           new pbr::FileDescriptor[] { },
-          new pbr::GeneratedClrTypeInfo(new[] {typeof(global::Game.Paperio.Direction), }, null, new pbr::GeneratedClrTypeInfo[] {
+          new pbr::GeneratedClrTypeInfo(new[] {typeof(global::Game.Paperio.Direction), typeof(global::Game.Paperio.StateType), }, null, new pbr::GeneratedClrTypeInfo[] {
             new pbr::GeneratedClrTypeInfo(typeof(global::Game.Paperio.PaperioInput), global::Game.Paperio.PaperioInput.Parser, new[]{ "Direction" }, null, null, null, null),
             new pbr::GeneratedClrTypeInfo(typeof(global::Game.Paperio.GridPosition), global::Game.Paperio.GridPosition.Parser, new[]{ "X", "Y" }, null, null, null, null),
             new pbr::GeneratedClrTypeInfo(typeof(global::Game.Paperio.PaperioPlayer), global::Game.Paperio.PaperioPlayer.Parser, new[]{ "PlayerId", "Name", "Position", "Direction", "Trail", "Alive", "Score", "Color" }, null, null, null, null),
             new pbr::GeneratedClrTypeInfo(typeof(global::Game.Paperio.TerritoryChunk), global::Game.Paperio.TerritoryChunk.Parser, new[]{ "OwnerId", "Cells" }, null, null, null, null),
             new pbr::GeneratedClrTypeInfo(typeof(global::Game.Paperio.TerritoryRow), global::Game.Paperio.TerritoryRow.Parser, new[]{ "Y", "Runs" }, null, null, null, null),
             new pbr::GeneratedClrTypeInfo(typeof(global::Game.Paperio.TerritoryRun), global::Game.Paperio.TerritoryRun.Parser, new[]{ "OwnerId", "Count" }, null, null, null, null),
-            new pbr::GeneratedClrTypeInfo(typeof(global::Game.Paperio.PaperioState), global::Game.Paperio.PaperioState.Parser, new[]{ "Tick", "Players", "Territory", "GridWidth", "GridHeight" }, null, null, null, null),
+            new pbr::GeneratedClrTypeInfo(typeof(global::Game.Paperio.TerritoryCell), global::Game.Paperio.TerritoryCell.Parser, new[]{ "X", "Y", "OwnerId" }, null, null, null, null),
+            new pbr::GeneratedClrTypeInfo(typeof(global::Game.Paperio.PaperioState), global::Game.Paperio.PaperioState.Parser, new[]{ "Tick", "Players", "Territory", "GridWidth", "GridHeight", "StateType", "TerritoryChanges", "KeyframeTick" }, null, null, null, null),
             new pbr::GeneratedClrTypeInfo(typeof(global::Game.Paperio.PaperioDelta), global::Game.Paperio.PaperioDelta.Parser, new[]{ "Tick", "ChangedPlayers", "TerritoryChanges", "EliminatedPlayers" }, null, null, null, null),
             new pbr::GeneratedClrTypeInfo(typeof(global::Game.Paperio.TerritoryClaimed), global::Game.Paperio.TerritoryClaimed.Parser, new[]{ "PlayerId", "CellsClaimed", "CellsStolen", "Victims" }, null, null, null, null),
             new pbr::GeneratedClrTypeInfo(typeof(global::Game.Paperio.PlayerEliminated), global::Game.Paperio.PlayerEliminated.Parser, new[]{ "PlayerId", "KillerId", "Reason" }, null, null, null, null),
@@ -82,6 +88,11 @@ namespace Game.Paperio {
     [pbr::OriginalName("DIRECTION_DOWN")] Down = 2,
     [pbr::OriginalName("DIRECTION_LEFT")] Left = 3,
     [pbr::OriginalName("DIRECTION_RIGHT")] Right = 4,
+  }
+
+  public enum StateType {
+    [pbr::OriginalName("STATE_FULL")] StateFull = 0,
+    [pbr::OriginalName("STATE_DELTA")] StateDelta = 1,
   }
 
   #endregion
@@ -1659,6 +1670,278 @@ namespace Game.Paperio {
   }
 
   [global::System.Diagnostics.DebuggerDisplayAttribute("{ToString(),nq}")]
+  public sealed partial class TerritoryCell : pb::IMessage<TerritoryCell>
+  #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+      , pb::IBufferMessage
+  #endif
+  {
+    private static readonly pb::MessageParser<TerritoryCell> _parser = new pb::MessageParser<TerritoryCell>(() => new TerritoryCell());
+    private pb::UnknownFieldSet _unknownFields;
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public static pb::MessageParser<TerritoryCell> Parser { get { return _parser; } }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public static pbr::MessageDescriptor Descriptor {
+      get { return global::Game.Paperio.PaperioReflection.Descriptor.MessageTypes[6]; }
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    pbr::MessageDescriptor pb::IMessage.Descriptor {
+      get { return Descriptor; }
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public TerritoryCell() {
+      OnConstruction();
+    }
+
+    partial void OnConstruction();
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public TerritoryCell(TerritoryCell other) : this() {
+      x_ = other.x_;
+      y_ = other.y_;
+      ownerId_ = other.ownerId_;
+      _unknownFields = pb::UnknownFieldSet.Clone(other._unknownFields);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public TerritoryCell Clone() {
+      return new TerritoryCell(this);
+    }
+
+    /// <summary>Field number for the "x" field.</summary>
+    public const int XFieldNumber = 1;
+    private int x_;
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public int X {
+      get { return x_; }
+      set {
+        x_ = value;
+      }
+    }
+
+    /// <summary>Field number for the "y" field.</summary>
+    public const int YFieldNumber = 2;
+    private int y_;
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public int Y {
+      get { return y_; }
+      set {
+        y_ = value;
+      }
+    }
+
+    /// <summary>Field number for the "owner_id" field.</summary>
+    public const int OwnerIdFieldNumber = 3;
+    private uint ownerId_;
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public uint OwnerId {
+      get { return ownerId_; }
+      set {
+        ownerId_ = value;
+      }
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public override bool Equals(object other) {
+      return Equals(other as TerritoryCell);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public bool Equals(TerritoryCell other) {
+      if (ReferenceEquals(other, null)) {
+        return false;
+      }
+      if (ReferenceEquals(other, this)) {
+        return true;
+      }
+      if (X != other.X) return false;
+      if (Y != other.Y) return false;
+      if (OwnerId != other.OwnerId) return false;
+      return Equals(_unknownFields, other._unknownFields);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public override int GetHashCode() {
+      int hash = 1;
+      if (X != 0) hash ^= X.GetHashCode();
+      if (Y != 0) hash ^= Y.GetHashCode();
+      if (OwnerId != 0) hash ^= OwnerId.GetHashCode();
+      if (_unknownFields != null) {
+        hash ^= _unknownFields.GetHashCode();
+      }
+      return hash;
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public override string ToString() {
+      return pb::JsonFormatter.ToDiagnosticString(this);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public void WriteTo(pb::CodedOutputStream output) {
+    #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+      output.WriteRawMessage(this);
+    #else
+      if (X != 0) {
+        output.WriteRawTag(8);
+        output.WriteInt32(X);
+      }
+      if (Y != 0) {
+        output.WriteRawTag(16);
+        output.WriteInt32(Y);
+      }
+      if (OwnerId != 0) {
+        output.WriteRawTag(24);
+        output.WriteUInt32(OwnerId);
+      }
+      if (_unknownFields != null) {
+        _unknownFields.WriteTo(output);
+      }
+    #endif
+    }
+
+    #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    void pb::IBufferMessage.InternalWriteTo(ref pb::WriteContext output) {
+      if (X != 0) {
+        output.WriteRawTag(8);
+        output.WriteInt32(X);
+      }
+      if (Y != 0) {
+        output.WriteRawTag(16);
+        output.WriteInt32(Y);
+      }
+      if (OwnerId != 0) {
+        output.WriteRawTag(24);
+        output.WriteUInt32(OwnerId);
+      }
+      if (_unknownFields != null) {
+        _unknownFields.WriteTo(ref output);
+      }
+    }
+    #endif
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public int CalculateSize() {
+      int size = 0;
+      if (X != 0) {
+        size += 1 + pb::CodedOutputStream.ComputeInt32Size(X);
+      }
+      if (Y != 0) {
+        size += 1 + pb::CodedOutputStream.ComputeInt32Size(Y);
+      }
+      if (OwnerId != 0) {
+        size += 1 + pb::CodedOutputStream.ComputeUInt32Size(OwnerId);
+      }
+      if (_unknownFields != null) {
+        size += _unknownFields.CalculateSize();
+      }
+      return size;
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public void MergeFrom(TerritoryCell other) {
+      if (other == null) {
+        return;
+      }
+      if (other.X != 0) {
+        X = other.X;
+      }
+      if (other.Y != 0) {
+        Y = other.Y;
+      }
+      if (other.OwnerId != 0) {
+        OwnerId = other.OwnerId;
+      }
+      _unknownFields = pb::UnknownFieldSet.MergeFrom(_unknownFields, other._unknownFields);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public void MergeFrom(pb::CodedInputStream input) {
+    #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+      input.ReadRawMessage(this);
+    #else
+      uint tag;
+      while ((tag = input.ReadTag()) != 0) {
+      if ((tag & 7) == 4) {
+        // Abort on any end group tag.
+        return;
+      }
+      switch(tag) {
+          default:
+            _unknownFields = pb::UnknownFieldSet.MergeFieldFrom(_unknownFields, input);
+            break;
+          case 8: {
+            X = input.ReadInt32();
+            break;
+          }
+          case 16: {
+            Y = input.ReadInt32();
+            break;
+          }
+          case 24: {
+            OwnerId = input.ReadUInt32();
+            break;
+          }
+        }
+      }
+    #endif
+    }
+
+    #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    void pb::IBufferMessage.InternalMergeFrom(ref pb::ParseContext input) {
+      uint tag;
+      while ((tag = input.ReadTag()) != 0) {
+      if ((tag & 7) == 4) {
+        // Abort on any end group tag.
+        return;
+      }
+      switch(tag) {
+          default:
+            _unknownFields = pb::UnknownFieldSet.MergeFieldFrom(_unknownFields, ref input);
+            break;
+          case 8: {
+            X = input.ReadInt32();
+            break;
+          }
+          case 16: {
+            Y = input.ReadInt32();
+            break;
+          }
+          case 24: {
+            OwnerId = input.ReadUInt32();
+            break;
+          }
+        }
+      }
+    }
+    #endif
+
+  }
+
+  [global::System.Diagnostics.DebuggerDisplayAttribute("{ToString(),nq}")]
   public sealed partial class PaperioState : pb::IMessage<PaperioState>
   #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
       , pb::IBufferMessage
@@ -1673,7 +1956,7 @@ namespace Game.Paperio {
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public static pbr::MessageDescriptor Descriptor {
-      get { return global::Game.Paperio.PaperioReflection.Descriptor.MessageTypes[6]; }
+      get { return global::Game.Paperio.PaperioReflection.Descriptor.MessageTypes[7]; }
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -1698,6 +1981,9 @@ namespace Game.Paperio {
       territory_ = other.territory_.Clone();
       gridWidth_ = other.gridWidth_;
       gridHeight_ = other.gridHeight_;
+      stateType_ = other.stateType_;
+      territoryChanges_ = other.territoryChanges_.Clone();
+      keyframeTick_ = other.keyframeTick_;
       _unknownFields = pb::UnknownFieldSet.Clone(other._unknownFields);
     }
 
@@ -1765,6 +2051,41 @@ namespace Game.Paperio {
       }
     }
 
+    /// <summary>Field number for the "state_type" field.</summary>
+    public const int StateTypeFieldNumber = 6;
+    private global::Game.Paperio.StateType stateType_ = global::Game.Paperio.StateType.StateFull;
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public global::Game.Paperio.StateType StateType {
+      get { return stateType_; }
+      set {
+        stateType_ = value;
+      }
+    }
+
+    /// <summary>Field number for the "territory_changes" field.</summary>
+    public const int TerritoryChangesFieldNumber = 7;
+    private static readonly pb::FieldCodec<global::Game.Paperio.TerritoryCell> _repeated_territoryChanges_codec
+        = pb::FieldCodec.ForMessage(58, global::Game.Paperio.TerritoryCell.Parser);
+    private readonly pbc::RepeatedField<global::Game.Paperio.TerritoryCell> territoryChanges_ = new pbc::RepeatedField<global::Game.Paperio.TerritoryCell>();
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public pbc::RepeatedField<global::Game.Paperio.TerritoryCell> TerritoryChanges {
+      get { return territoryChanges_; }
+    }
+
+    /// <summary>Field number for the "keyframe_tick" field.</summary>
+    public const int KeyframeTickFieldNumber = 8;
+    private uint keyframeTick_;
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public uint KeyframeTick {
+      get { return keyframeTick_; }
+      set {
+        keyframeTick_ = value;
+      }
+    }
+
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public override bool Equals(object other) {
@@ -1785,6 +2106,9 @@ namespace Game.Paperio {
       if(!territory_.Equals(other.territory_)) return false;
       if (GridWidth != other.GridWidth) return false;
       if (GridHeight != other.GridHeight) return false;
+      if (StateType != other.StateType) return false;
+      if(!territoryChanges_.Equals(other.territoryChanges_)) return false;
+      if (KeyframeTick != other.KeyframeTick) return false;
       return Equals(_unknownFields, other._unknownFields);
     }
 
@@ -1797,6 +2121,9 @@ namespace Game.Paperio {
       hash ^= territory_.GetHashCode();
       if (GridWidth != 0) hash ^= GridWidth.GetHashCode();
       if (GridHeight != 0) hash ^= GridHeight.GetHashCode();
+      if (StateType != global::Game.Paperio.StateType.StateFull) hash ^= StateType.GetHashCode();
+      hash ^= territoryChanges_.GetHashCode();
+      if (KeyframeTick != 0) hash ^= KeyframeTick.GetHashCode();
       if (_unknownFields != null) {
         hash ^= _unknownFields.GetHashCode();
       }
@@ -1829,6 +2156,15 @@ namespace Game.Paperio {
         output.WriteRawTag(40);
         output.WriteUInt32(GridHeight);
       }
+      if (StateType != global::Game.Paperio.StateType.StateFull) {
+        output.WriteRawTag(48);
+        output.WriteEnum((int) StateType);
+      }
+      territoryChanges_.WriteTo(output, _repeated_territoryChanges_codec);
+      if (KeyframeTick != 0) {
+        output.WriteRawTag(64);
+        output.WriteUInt32(KeyframeTick);
+      }
       if (_unknownFields != null) {
         _unknownFields.WriteTo(output);
       }
@@ -1853,6 +2189,15 @@ namespace Game.Paperio {
         output.WriteRawTag(40);
         output.WriteUInt32(GridHeight);
       }
+      if (StateType != global::Game.Paperio.StateType.StateFull) {
+        output.WriteRawTag(48);
+        output.WriteEnum((int) StateType);
+      }
+      territoryChanges_.WriteTo(ref output, _repeated_territoryChanges_codec);
+      if (KeyframeTick != 0) {
+        output.WriteRawTag(64);
+        output.WriteUInt32(KeyframeTick);
+      }
       if (_unknownFields != null) {
         _unknownFields.WriteTo(ref output);
       }
@@ -1873,6 +2218,13 @@ namespace Game.Paperio {
       }
       if (GridHeight != 0) {
         size += 1 + pb::CodedOutputStream.ComputeUInt32Size(GridHeight);
+      }
+      if (StateType != global::Game.Paperio.StateType.StateFull) {
+        size += 1 + pb::CodedOutputStream.ComputeEnumSize((int) StateType);
+      }
+      size += territoryChanges_.CalculateSize(_repeated_territoryChanges_codec);
+      if (KeyframeTick != 0) {
+        size += 1 + pb::CodedOutputStream.ComputeUInt32Size(KeyframeTick);
       }
       if (_unknownFields != null) {
         size += _unknownFields.CalculateSize();
@@ -1896,6 +2248,13 @@ namespace Game.Paperio {
       }
       if (other.GridHeight != 0) {
         GridHeight = other.GridHeight;
+      }
+      if (other.StateType != global::Game.Paperio.StateType.StateFull) {
+        StateType = other.StateType;
+      }
+      territoryChanges_.Add(other.territoryChanges_);
+      if (other.KeyframeTick != 0) {
+        KeyframeTick = other.KeyframeTick;
       }
       _unknownFields = pb::UnknownFieldSet.MergeFrom(_unknownFields, other._unknownFields);
     }
@@ -1934,6 +2293,18 @@ namespace Game.Paperio {
           }
           case 40: {
             GridHeight = input.ReadUInt32();
+            break;
+          }
+          case 48: {
+            StateType = (global::Game.Paperio.StateType) input.ReadEnum();
+            break;
+          }
+          case 58: {
+            territoryChanges_.AddEntriesFrom(input, _repeated_territoryChanges_codec);
+            break;
+          }
+          case 64: {
+            KeyframeTick = input.ReadUInt32();
             break;
           }
         }
@@ -1975,6 +2346,18 @@ namespace Game.Paperio {
             GridHeight = input.ReadUInt32();
             break;
           }
+          case 48: {
+            StateType = (global::Game.Paperio.StateType) input.ReadEnum();
+            break;
+          }
+          case 58: {
+            territoryChanges_.AddEntriesFrom(ref input, _repeated_territoryChanges_codec);
+            break;
+          }
+          case 64: {
+            KeyframeTick = input.ReadUInt32();
+            break;
+          }
         }
       }
     }
@@ -1997,7 +2380,7 @@ namespace Game.Paperio {
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public static pbr::MessageDescriptor Descriptor {
-      get { return global::Game.Paperio.PaperioReflection.Descriptor.MessageTypes[7]; }
+      get { return global::Game.Paperio.PaperioReflection.Descriptor.MessageTypes[8]; }
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -2275,7 +2658,7 @@ namespace Game.Paperio {
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public static pbr::MessageDescriptor Descriptor {
-      get { return global::Game.Paperio.PaperioReflection.Descriptor.MessageTypes[8]; }
+      get { return global::Game.Paperio.PaperioReflection.Descriptor.MessageTypes[9]; }
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -2575,7 +2958,7 @@ namespace Game.Paperio {
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public static pbr::MessageDescriptor Descriptor {
-      get { return global::Game.Paperio.PaperioReflection.Descriptor.MessageTypes[9]; }
+      get { return global::Game.Paperio.PaperioReflection.Descriptor.MessageTypes[10]; }
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -2847,7 +3230,7 @@ namespace Game.Paperio {
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public static pbr::MessageDescriptor Descriptor {
-      get { return global::Game.Paperio.PaperioReflection.Descriptor.MessageTypes[10]; }
+      get { return global::Game.Paperio.PaperioReflection.Descriptor.MessageTypes[11]; }
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -3091,7 +3474,7 @@ namespace Game.Paperio {
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public static pbr::MessageDescriptor Descriptor {
-      get { return global::Game.Paperio.PaperioReflection.Descriptor.MessageTypes[11]; }
+      get { return global::Game.Paperio.PaperioReflection.Descriptor.MessageTypes[12]; }
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
