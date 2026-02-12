@@ -100,6 +100,18 @@ namespace Game
                     Debug.Log("[GameWorld] Subscribed to local player input for prediction");
                 }
             }
+            if (_prediction != null && _tickRateMs > 0)
+            {
+                _tickAccumulator += Time.deltaTime;
+                float tickDuration = _tickRateMs / 1000f;
+        
+                while (_tickAccumulator >= tickDuration)
+                {
+                    _tickAccumulator -= tickDuration;
+                    _estimatedServerTick++;
+                    _prediction.AdvancePrediction(_estimatedServerTick);
+                }
+            }
     
             _playerVisualsManager.UpdateInterpolation(TickProgress);
         }
