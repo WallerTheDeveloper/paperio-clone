@@ -27,7 +27,7 @@ namespace Game.Rendering
         private PlayerVisual _localPlayerVisual;
         
         private uint _localPlayerId;
-
+        private uint _currentTick;
         public int ActiveCount => _activeVisuals.Count;
         public PlayerVisual LocalPlayerVisual => _localPlayerVisual;
         public PlayersContainer PlayersContainer { get; private set; }
@@ -190,20 +190,21 @@ namespace Game.Rendering
             
             Vector3 worldPos = CalculateWorldPosition(protoPlayer);
             
-            visual.UpdateFromData(playerData, worldPos);
+            visual.UpdateFromData(playerData, worldPos, _currentTick);
         }
 
         public void UpdateFromState(PaperioState state, uint localPlayerId)
         {
             _localPlayerId = localPlayerId;
+            _currentTick = state.Tick;
             var currentPlayers = new HashSet<uint>();
-            
+    
             foreach (var protoPlayer in state.Players)
             {
                 currentPlayers.Add(protoPlayer.PlayerId);
                 ActivateOrUpdatePlayer(protoPlayer);
             }
-            
+    
             var toRemove = new List<uint>();
             foreach (var playerId in _activeVisuals.Keys)
             {
@@ -212,13 +213,13 @@ namespace Game.Rendering
                     toRemove.Add(playerId);
                 }
             }
-            
+    
             foreach (var playerId in toRemove)
             {
                 DespawnPlayer(playerId);
             }
         }
-
+        
         public void UpdateInterpolation(float tickProgress)
         {
             foreach (var visual in _activeVisuals.Values)

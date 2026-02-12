@@ -1,5 +1,6 @@
 ﻿using Game.Data;
 using Game.Paperio;
+using Network;
 using UnityEngine;
 
 namespace Game
@@ -17,6 +18,11 @@ namespace Game
         [SerializeField] private float respawnScaleDuration = 0.3f;
         [SerializeField] private float localPlayerScaleMultiplier = 1.1f;
         
+        [Header("Interpolation")]
+        [SerializeField] private float renderDelayTicks = 1f;
+        [SerializeField] private float maxExtrapolationTicks = 3f;
+        [SerializeField] private int snapshotBufferSize = 10;
+        
         private MaterialPropertyBlock _propertyBlock;
         private Transform _transform;
         
@@ -28,6 +34,9 @@ namespace Game
         
         private Vector3 _previousPosition;
         private Vector3 _targetPosition;
+        
+        private InterpolationBuffer _interpolationBuffer;
+        
         private Direction _currentDirection = Direction.None;
         
         private float _deathAnimationProgress;
@@ -43,7 +52,13 @@ namespace Game
         public bool IsAlive => _isAlive;
         public Color PlayerColor => _playerColor;
         
-        public void Initialize(uint playerId, string playerName, Color color, Vector3 worldPosition, bool isLocalPlayer)
+        public void Initialize(
+            uint playerId,
+            string playerName,
+            Color color,
+            Vector3 worldPosition,
+            bool isLocalPlayer,
+            float tickDurationSeconds = 0.05f)
         {
             _transform = transform;
             _propertyBlock = new MaterialPropertyBlock();
@@ -63,6 +78,20 @@ namespace Game
             _targetPosition = worldPosition;
             _transform.position = worldPosition;
             
+            if (!isLocalPlayer)
+            {
+                _interpolationBuffer = new InterpolationBuffer(
+                    bufferSize: snapshotBufferSize,
+                    renderDelayTicks: renderDelayTicks,
+                    maxExtrapolationTicks: maxExtrapolationTicks,
+                    tickDurationSeconds: tickDurationSeconds
+                );
+            }
+            else
+            {
+                _interpolationBuffer = null;
+            }
+            
             SetColor(color);
             
             if (nameLabel != null)
@@ -78,17 +107,33 @@ namespace Game
             SetBodyVisible(true);
             
             Debug.Log($"[PlayerVisual] Initialized: {playerName} (ID: {playerId})" + 
-                      (isLocalPlayer ? " [LOCAL]" : ""));
+                      (isLocalPlayer ? " [LOCAL]" : $" [REMOTE, buffer={snapshotBufferSize}, delay={renderDelayTicks} ticks]"));
         }
-        public void UpdateFromData(PlayerData playerData, Vector3 worldPosition)
+
+        public void UpdateFromData(PlayerData playerData, Vector3 worldPosition, uint tick = 0)
         {
-            _previousPosition = _targetPosition;
-            _targetPosition = worldPosition;
+            if (_isLocalPlayer)
+            {
+                _previousPosition = _targetPosition;
+                _targetPosition = worldPosition;
+            }
+            else
+            {
+                _interpolationBuffer?.AddSnapshot(
+                    tick,
+                    worldPosition,
+                    playerData.Direction,
+                    playerData.Alive
+                );
+            }
             
             if (playerData.Direction != _currentDirection)
             {
                 _currentDirection = playerData.Direction;
-                UpdateDirectionIndicator();
+                if (_isLocalPlayer)
+                {
+                    UpdateDirectionIndicator();
+                }
             }
             
             if (playerData.Color != _playerColor && playerData.Color != default)
@@ -118,8 +163,29 @@ namespace Game
                 return;
             }
             
-            Vector3 interpolatedPos = Vector3.Lerp(_previousPosition, _targetPosition, tickProgress);
-            _transform.position = interpolatedPos;
+            if (_isLocalPlayer)
+            {
+                Vector3 interpolatedPos = Vector3.Lerp(_previousPosition, _targetPosition, tickProgress);
+                _transform.position = interpolatedPos;
+            }
+            else
+            {
+                if (_interpolationBuffer != null)
+                {
+                    var result = _interpolationBuffer.Sample(tickProgress);
+                    
+                    if (result.IsValid)
+                    {
+                        _transform.position = result.Position;
+                        
+                        if (result.Direction != _currentDirection)
+                        {
+                            _currentDirection = result.Direction;
+                            UpdateDirectionIndicator();
+                        }
+                    }
+                }
+            }
         }
 
         public void SnapToPosition(Vector3 worldPosition)
@@ -127,6 +193,8 @@ namespace Game
             _previousPosition = worldPosition;
             _targetPosition = worldPosition;
             _transform.position = worldPosition;
+            
+            _interpolationBuffer?.Clear();
         }
 
         private void SetColor(Color color)
@@ -148,13 +216,13 @@ namespace Game
                 Direction.Down => 180f,
                 Direction.Left => 270f,
                 Direction.Right => 90f,
-                _ => directionIndicator.localEulerAngles.y // Keep current
+                _ => directionIndicator.localEulerAngles.y
             };
             
             directionIndicator.localRotation = Quaternion.Euler(0, yRotation, 0);
-            
             directionIndicator.gameObject.SetActive(_currentDirection != Direction.None);
         }
+
         private void SetBodyVisible(bool visible)
         {
             if (bodyRenderer != null)
@@ -236,6 +304,9 @@ namespace Game
             _isPlayingRespawnAnimation = false;
             _currentDirection = Direction.None;
             
+            _interpolationBuffer?.Clear();
+            _interpolationBuffer = null;
+            
             _transform.localScale = Vector3.one * _baseScale;
             SetBodyVisible(true);
             
@@ -249,11 +320,22 @@ namespace Game
 
         private void OnDrawGizmosSelected()
         {
-            Gizmos.color = Color.yellow;
-            Gizmos.DrawLine(_previousPosition, _targetPosition);
-            
-            Gizmos.color = Color.green;
-            Gizmos.DrawWireSphere(_targetPosition, 0.2f);
+            if (_isLocalPlayer)
+            {
+                Gizmos.color = Color.yellow;
+                Gizmos.DrawLine(_previousPosition, _targetPosition);
+                Gizmos.color = Color.green;
+                Gizmos.DrawWireSphere(_targetPosition, 0.2f);
+            }
+            else if (_interpolationBuffer != null)
+            {
+                // Draw buffer state for debugging
+                Gizmos.color = Color.cyan;
+                Gizmos.DrawWireSphere(_transform.position, 0.15f);
+                
+                Gizmos.color = _interpolationBuffer.Count >= 2 ? Color.green : Color.red;
+                Gizmos.DrawWireSphere(_transform.position + Vector3.up * 0.5f, 0.1f);
+            }
         }
     }
 }
