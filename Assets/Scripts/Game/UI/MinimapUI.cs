@@ -7,13 +7,11 @@ namespace Game.UI
 {
     public class MinimapUI : MonoBehaviour
     {
-        [SerializeField] private RawImage minimapImage;
         [SerializeField] private TMP_Text percentageText;
         [SerializeField] private string percentageFormat = "{0:F1}%";
 
         private IGameWorldDataProvider _gameData;
         private bool _isInitialized;
-        private bool _rtAssigned;
 
         public void Initialize(IGameWorldDataProvider gameData)
         {
@@ -21,19 +19,13 @@ namespace Game.UI
             _isInitialized = true;
         }
 
-        public void SetVisible(bool visible)
-        {
-            gameObject.SetActive(visible);
-        }
-
-
         private void LateUpdate()
         {
             if (!_isInitialized)
             {
                 return;
             }
-
+            
             UpdatePercentage();
         }
 
