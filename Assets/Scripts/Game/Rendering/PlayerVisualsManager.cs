@@ -21,7 +21,7 @@ namespace Game.Rendering
         [SerializeField] private bool usePooling = true;
         
         private readonly Dictionary<uint, PlayerVisual> _activeVisuals = new();
-        
+
         private readonly Queue<PlayerVisual> _pool = new();
         
         private PlayerVisual _localPlayerVisual;
@@ -31,6 +31,7 @@ namespace Game.Rendering
         public int ActiveCount => _activeVisuals.Count;
         public PlayerVisual LocalPlayerVisual => _localPlayerVisual;
         public PlayersContainer PlayersContainer { get; private set; }
+        public IReadOnlyDictionary<uint, PlayerVisual> ActiveVisuals => _activeVisuals;
         
         private readonly Color32[] _playerColors = {
             new(255, 77, 77, 255),   // Red

@@ -205,6 +205,25 @@ namespace Game.Data
             }
         }
 
+        public float GetOwnershipPercentage(uint playerId)
+        {
+            if (TotalCells == 0 || playerId == 0)
+            {
+                return 0f;
+            }
+
+            int count = 0;
+            for (int i = 0; i < _cells.Length; i++)
+            {
+                if (_cells[i] == playerId)
+                {
+                    count++;
+                }
+            }
+
+            return (count * 100f) / TotalCells;
+        }
+        
         private void RecalculateClaimedCells()
         {
             ClaimedCells = 0;

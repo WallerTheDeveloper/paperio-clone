@@ -22,6 +22,7 @@ namespace Core
         [SerializeField] private TerritoryRenderer territoryRenderer;
         [SerializeField] private TrailVisualsManager trailVisualsManager;
         [SerializeField] private TerritoryClaim territoryClaim;
+        [SerializeField] private MinimapSystem minimapSystem;
         
         private PlayersContainer _playersContainer;
         
@@ -41,6 +42,7 @@ namespace Core
             _services.Register(effectsManager);
             _services.Register(territoryRenderer);
             _services.Register(territoryClaim);
+            _services.Register(minimapSystem);
             
             _services.InitDanglingServices();
         }

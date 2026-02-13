@@ -6,6 +6,7 @@ using Game.Data;
 using Game.Effects;
 using Game.Paperio;
 using Game.Rendering;
+using Game.UI;
 using Helpers;
 using Network;
 using UnityEngine;
@@ -20,11 +21,10 @@ namespace Game
         [SerializeField] private bool logTerritoryUpdates = false;
         [SerializeField] private bool logPlayerUpdates = false;
         
+        private readonly Dictionary<uint, Color> _playerColors = new();
+        
         private uint _estimatedServerTick;
         private float _tickAccumulator;
-        private ClientPrediction _prediction;
-        private TerritoryData _territoryData;
-        private readonly Dictionary<uint, Color> _playerColors = new();
         private uint _localPlayerId;
         private uint _gridWidth;
         private uint _gridHeight;
@@ -39,7 +39,7 @@ namespace Game
         public event Action OnGameEnded;
         public event Action<uint> OnLocalPlayerSpawned;
         public event Action<List<TerritoryChange>> OnTerritoryChanged;
-
+        public PlayerVisual LocalPlayerVisual => _playerVisualsManager?.LocalPlayerVisual;
         public GameWorldConfig Config => config;
         public TerritoryData Territory => _territoryData;
         public Dictionary<uint, Color> PlayerColors => _playerColors;
@@ -63,7 +63,8 @@ namespace Game
             }
         }
         
-        public PlayerVisual LocalPlayerVisual => _playerVisualsManager?.LocalPlayerVisual;
+        private TerritoryData _territoryData;
+        private ClientPrediction _prediction;
         
         private CameraController _cameraController;
         private PlayerVisualsManager _playerVisualsManager;
@@ -71,7 +72,7 @@ namespace Game
         private TerritoryRenderer _territoryRenderer;
         private TrailVisualsManager _trailVisualsManager;
         private TerritoryClaim _territoryClaim;
-        
+        private MinimapSystem _minimapSystem;
         public void Initialize(ServiceContainer services)
         {
             _prediction = new ClientPrediction(_gridWidth, _gridHeight);
@@ -80,6 +81,7 @@ namespace Game
             _territoryRenderer = services.Get<TerritoryRenderer>();
             _trailVisualsManager = services.Get<TrailVisualsManager>();
             _territoryClaim = services.Get<TerritoryClaim>();
+            _minimapSystem = services.Get<MinimapSystem>();
         }
 
         public void Tick()
@@ -128,6 +130,7 @@ namespace Game
         {
             _territoryClaim.FinishAllImmediately();
             _playerVisualsManager.ClearAll();
+            
             if (_inputSubscribed)
             {
                 var localPlayerData = _playerVisualsManager?.PlayersContainer?.TryGetPlayerById(_localPlayerId);
@@ -191,6 +194,8 @@ namespace Game
             
             OnGameStarted?.Invoke();
             OnLocalPlayerSpawned?.Invoke(_localPlayerId);
+            
+            _minimapSystem.CreateUI();
         }
 
         public void OnLocalDirectionChanged(Direction direction)
