@@ -35,6 +35,11 @@ namespace Game
         private Vector3 _previousPosition;
         private Vector3 _targetPosition;
         
+        private float _moveDuration;
+        private float _moveProgress = 1f; // 1 = at target, 0 = just started moving
+        private Vector3 _lerpStart;
+        private Vector3 _lerpEnd;
+        
         private InterpolationBuffer _interpolationBuffer;
         
         private Direction _currentDirection = Direction.None;
@@ -51,6 +56,11 @@ namespace Game
         public bool IsLocalPlayer => _isLocalPlayer;
         public bool IsAlive => _isAlive;
         public Color PlayerColor => _playerColor;
+
+        public void SetMoveDuration(float moveDurationSeconds)
+        {
+            _moveDuration = Mathf.Max(0.05f, moveDurationSeconds);
+        }
         
         public void Initialize(
             uint playerId,
@@ -69,29 +79,6 @@ namespace Game
             _playerColor = color;
             _isAlive = true;
             
-            _isPlayingDeathAnimation = false;
-            _isPlayingRespawnAnimation = false;
-            _deathAnimationProgress = 0f;
-            _respawnAnimationProgress = 0f;
-            
-            _previousPosition = worldPosition;
-            _targetPosition = worldPosition;
-            _transform.position = worldPosition;
-            
-            if (!isLocalPlayer)
-            {
-                _interpolationBuffer = new InterpolationBuffer(
-                    bufferSize: snapshotBufferSize,
-                    renderDelayTicks: renderDelayTicks,
-                    maxExtrapolationTicks: maxExtrapolationTicks,
-                    tickDurationSeconds: tickDurationSeconds
-                );
-            }
-            else
-            {
-                _interpolationBuffer = null;
-            }
-            
             SetColor(color);
             
             if (nameLabel != null)
@@ -102,6 +89,23 @@ namespace Game
             
             float scale = _baseScale * (isLocalPlayer ? localPlayerScaleMultiplier : 1f);
             _transform.localScale = Vector3.one * scale;
+            
+            _previousPosition = worldPosition;
+            _targetPosition = worldPosition;
+            _lerpStart = worldPosition;
+            _lerpEnd = worldPosition;
+            _moveProgress = 1f;
+            _transform.position = worldPosition;
+            
+            if (!isLocalPlayer)
+            {
+                _interpolationBuffer = new InterpolationBuffer(
+                    snapshotBufferSize,
+                    renderDelayTicks,
+                    maxExtrapolationTicks,
+                    tickDurationSeconds
+                );
+            }
             
             gameObject.SetActive(true);
             SetBodyVisible(true);
@@ -165,13 +169,17 @@ namespace Game
             
             if (_isLocalPlayer)
             {
-                float smoothTime = 0.03f;
-                _transform.position = Vector3.SmoothDamp(
-                    _transform.position, 
-                    _targetPosition, 
-                    ref _smoothVelocity, 
-                    smoothTime
-                );
+                if (_moveProgress < 1f)
+                {
+                    _moveProgress += Time.deltaTime / _moveDuration;
+                    _moveProgress = Mathf.Clamp01(_moveProgress);
+                    
+                    _transform.position = Vector3.Lerp(_lerpStart, _lerpEnd, _moveProgress);
+                }
+                else
+                {
+                    _transform.position = _lerpEnd;
+                }
             }
             else
             {
@@ -193,11 +201,36 @@ namespace Game
             }
         }
 
+        public void SetPredictedTarget(Vector3 predictedWorldPosition)
+        {
+            if (!_isLocalPlayer)
+            {
+                return;
+            }
+            
+            float dist = Vector3.Distance(_lerpEnd, predictedWorldPosition);
+            // Same cell - ignore
+            if (dist < 0.01f)
+            {
+                return;
+            }
+    
+            _lerpStart = _transform.position;
+            _lerpEnd = predictedWorldPosition;
+            _moveProgress = 0f;
+            
+            _targetPosition = predictedWorldPosition;
+        }
+
         public void SnapToPosition(Vector3 worldPosition)
         {
             _previousPosition = worldPosition;
             _targetPosition = worldPosition;
+            _lerpStart = worldPosition;
+            _lerpEnd = worldPosition;
+            _moveProgress = 1f;
             _transform.position = worldPosition;
+            _smoothVelocity = Vector3.zero;
             
             _interpolationBuffer?.Clear();
         }
@@ -299,13 +332,7 @@ namespace Game
                 }
             }
         }
-        public void SetPredictedTarget(Vector3 predictedWorldPosition)
-        {
-            if (!_isLocalPlayer) return;
-    
-            _targetPosition = predictedWorldPosition;
-        }
-        
+
         public void ResetForPool()
         {
             _playerId = 0;
@@ -314,6 +341,7 @@ namespace Game
             _isPlayingDeathAnimation = false;
             _isPlayingRespawnAnimation = false;
             _currentDirection = Direction.None;
+            _moveProgress = 1f;
             
             _interpolationBuffer?.Clear();
             _interpolationBuffer = null;
@@ -334,13 +362,14 @@ namespace Game
             if (_isLocalPlayer)
             {
                 Gizmos.color = Color.yellow;
-                Gizmos.DrawLine(_previousPosition, _targetPosition);
+                Gizmos.DrawLine(_lerpStart, _lerpEnd);
                 Gizmos.color = Color.green;
-                Gizmos.DrawWireSphere(_targetPosition, 0.2f);
+                Gizmos.DrawWireSphere(_lerpEnd, 0.2f);
+                Gizmos.color = Color.red;
+                Gizmos.DrawWireSphere(_lerpStart, 0.15f);
             }
             else if (_interpolationBuffer != null)
             {
-                // Draw buffer state for debugging
                 Gizmos.color = Color.cyan;
                 Gizmos.DrawWireSphere(_transform.position, 0.15f);
                 

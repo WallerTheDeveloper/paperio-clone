@@ -23,6 +23,7 @@ namespace Game
         
         private readonly Dictionary<uint, Color> _playerColors = new();
         
+        private uint _moveIntervalTicks = 1;
         private uint _estimatedServerTick;
         private float _tickAccumulator;
         private uint _localPlayerId;
@@ -57,9 +58,10 @@ namespace Game
                 {
                     return 1f;
                 }
-                float tickDuration = _tickRateMs / 1000f;
+
+                float moveDuration = config.moveIntervalTicks * (_tickRateMs / 1000f);
                 float elapsed = Time.time - _lastTickTime;
-                return Mathf.Clamp01(elapsed / tickDuration);
+                return Mathf.Clamp01(elapsed / moveDuration);
             }
         }
         
@@ -151,6 +153,7 @@ namespace Game
         {
             _localPlayerId = response.YourPlayerId;
             _tickRateMs = response.TickRateMs;
+            _moveIntervalTicks = response.MoveIntervalTicks;
             
             if (response.InitialState != null)
             {
@@ -161,6 +164,12 @@ namespace Game
                 
                 _playerVisualsManager.UpdateFromState(response.InitialState, _localPlayerId);
                 _playerVisualsManager.SpawnPlayers();
+                
+                if (_playerVisualsManager.LocalPlayerVisual != null)
+                {
+                    float moveDuration = _moveIntervalTicks * (_tickRateMs / 1000f);
+                    _playerVisualsManager.LocalPlayerVisual.SetMoveDuration(moveDuration);
+                }
                 
                 _cameraController = FindFirstObjectByType<CameraController>();
                 _cameraController.Initialize(this as IGameWorldDataProvider);
@@ -175,6 +184,7 @@ namespace Game
                             new Vector2Int(player.Position.X, player.Position.Y),
                             player.Direction
                         );
+                        _prediction.SetMoveInterval(_moveIntervalTicks);
                         break;
                     }
                 }
@@ -279,7 +289,7 @@ namespace Game
                             
                             _tickAccumulator = 0f;
             
-                            if (corrected && logPlayerUpdates)
+                            if (corrected && logPlayerUpdates && (serverPos != _prediction.PredictedPosition))
                             {
                                 Debug.Log($"[GameWorld] Prediction corrected at tick {state.Tick}: " +
                                           $"server=({serverPos.x},{serverPos.y}), " +
@@ -368,6 +378,10 @@ namespace Game
                         playerData.GridPosition,
                         Direction.None
                     );
+                    _prediction.SetMoveInterval(_moveIntervalTicks);
+                    float moveDuration = _moveIntervalTicks * (_tickRateMs / 1000f);
+                    LocalPlayerVisual.SetMoveDuration(moveDuration);
+                    
                 }
             }
         }
@@ -408,17 +422,6 @@ namespace Game
                 GridHeight * config.CellSize
             );
             return new Bounds(center, size);
-        }
-
-        public Color GetTrailColor(uint playerId)
-        {
-            Color playerColor = _playerVisualsManager.GetPlayerColor(playerId);
-            return new Color(
-                Mathf.Min(1f, playerColor.r * 1.2f),
-                Mathf.Min(1f, playerColor.g * 1.2f),
-                Mathf.Min(1f, playerColor.b * 1.2f),
-                0.9f
-            );
         }
 
         private void OnDrawGizmosSelected()

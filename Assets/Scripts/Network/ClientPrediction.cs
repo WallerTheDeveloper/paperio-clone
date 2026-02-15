@@ -21,20 +21,30 @@ namespace Network
         private readonly uint _gridWidth;
         private readonly uint _gridHeight;
 
-        private int _correctionCount;
+        private int _totalCorrectionCount;
+        private int _significantCorrectionCount;
         private int _totalReconciliations;
+
+        private uint _moveIntervalTicks = 3;
+        private uint _moveTimer = 0;
 
         private const int MaxPredictionError = 3;
 
         public Vector2Int PredictedPosition => _predictedPosition;
         public Direction CurrentDirection => _currentDirection;
         public int PendingInputCount => _pendingInputs.Count;
-        public int CorrectionCount => _correctionCount;
+        public int TotalCorrectionCount => _totalCorrectionCount;
 
         public ClientPrediction(uint gridWidth, uint gridHeight)
         {
             _gridWidth = gridWidth;
             _gridHeight = gridHeight;
+        }
+
+        public void SetMoveInterval(uint moveIntervalTicks)
+        {
+            _moveIntervalTicks = (uint)Mathf.Max(1, moveIntervalTicks);
+            _moveTimer = 0;
         }
 
         public void Initialize(Vector2Int serverPosition, Direction direction)
@@ -43,13 +53,15 @@ namespace Network
             _currentDirection = direction;
             _pendingInputs.Clear();
             _lastServerTick = 0;
-            _correctionCount = 0;
+            _totalCorrectionCount = 0;
             _totalReconciliations = 0;
+            _moveTimer = 0;
         }
 
         public void RecordInput(Direction direction, uint estimatedTick)
         {
             _currentDirection = direction;
+            _moveTimer = 0;
 
             _pendingInputs.Add(new PendingInput
             {
@@ -70,6 +82,14 @@ namespace Network
             {
                 return;
             }
+
+            if (_moveTimer > 0)
+            {
+                _moveTimer--;
+                return;
+            }
+            
+            _moveTimer = _moveIntervalTicks - 1;
 
             var delta = DirectionDelta(_currentDirection);
             var newPos = new Vector2Int(
@@ -95,13 +115,24 @@ namespace Network
 
             if (errorX == 0 && errorY == 0)
             {
+                if (_currentDirection != serverDirection)
+                {
+                    _currentDirection = serverDirection;
+                }
                 return false;
             }
 
-            _correctionCount++;
+            int totalError = errorX + errorY;
+            _totalCorrectionCount++;
+            
+            if (totalError > 1)
+            {
+                _significantCorrectionCount++;
+            }
 
             _predictedPosition = serverPosition;
             _currentDirection = serverDirection;
+            _moveTimer = 0;
 
             foreach (var input in _pendingInputs)
             {
@@ -118,8 +149,12 @@ namespace Network
 
             if (_totalReconciliations % 100 == 0)
             {
-                Debug.Log($"[ClientPrediction] Stats: {_correctionCount} corrections in {_totalReconciliations} reconciliations " +
-                          $"({(float)_correctionCount / _totalReconciliations * 100f:F1}% error rate), " +
+                float errorRate = (float)_totalCorrectionCount / _totalReconciliations * 100f;
+                float significantRate = (float)_significantCorrectionCount / _totalReconciliations * 100f;
+                
+                Debug.Log($"[ClientPrediction] Stats over {_totalReconciliations} reconciliations: " +
+                          $"{_totalCorrectionCount} total corrections ({errorRate:F1}%), " +
+                          $"{_significantCorrectionCount} significant ({significantRate:F1}%), " +
                           $"{_pendingInputs.Count} pending inputs");
             }
 

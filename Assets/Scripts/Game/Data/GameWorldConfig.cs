@@ -1,4 +1,5 @@
 ﻿using UnityEngine;
+using UnityEngine.Serialization;
 
 namespace Game.Data
 {
@@ -10,5 +11,8 @@ namespace Game.Data
         
         [Tooltip("Neutral territory color (unclaimed cells)")]
         public Color NeutralColor = new Color(0.15f, 0.15f, 0.15f, 1f);
+        
+        [Tooltip("Interval in ticks for player movement updates (server tick rate)")]
+        public uint moveIntervalTicks = 3;
     }
 }

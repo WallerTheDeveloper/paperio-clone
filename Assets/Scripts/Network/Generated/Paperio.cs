@@ -53,13 +53,14 @@ namespace Game.Paperio {
             "IkgKEFBsYXllckVsaW1pbmF0ZWQSEQoJcGxheWVyX2lkGAEgASgNEhEKCWtp",
             "bGxlcl9pZBgCIAEoDRIOCgZyZWFzb24YAyABKAkiWAoPUGxheWVyUmVzcGF3",
             "bmVkEhEKCXBsYXllcl9pZBgBIAEoDRIyCg5zcGF3bl9wb3NpdGlvbhgCIAEo",
-            "CzIaLmdhbWUucGFwZXJpby5HcmlkUG9zaXRpb24idgoTUGFwZXJpb0pvaW5S",
-            "ZXNwb25zZRIWCg55b3VyX3BsYXllcl9pZBgBIAEoDRIxCg1pbml0aWFsX3N0",
-            "YXRlGAIgASgLMhouZ2FtZS5wYXBlcmlvLlBhcGVyaW9TdGF0ZRIUCgx0aWNr",
-            "X3JhdGVfbXMYAyABKA0qbgoJRGlyZWN0aW9uEhIKDkRJUkVDVElPTl9OT05F",
-            "EAASEAoMRElSRUNUSU9OX1VQEAESEgoORElSRUNUSU9OX0RPV04QAhISCg5E",
-            "SVJFQ1RJT05fTEVGVBADEhMKD0RJUkVDVElPTl9SSUdIVBAEKiwKCVN0YXRl",
-            "VHlwZRIOCgpTVEFURV9GVUxMEAASDwoLU1RBVEVfREVMVEEQAWIGcHJvdG8z"));
+            "CzIaLmdhbWUucGFwZXJpby5HcmlkUG9zaXRpb24ikwEKE1BhcGVyaW9Kb2lu",
+            "UmVzcG9uc2USFgoOeW91cl9wbGF5ZXJfaWQYASABKA0SMQoNaW5pdGlhbF9z",
+            "dGF0ZRgCIAEoCzIaLmdhbWUucGFwZXJpby5QYXBlcmlvU3RhdGUSFAoMdGlj",
+            "a19yYXRlX21zGAMgASgNEhsKE21vdmVfaW50ZXJ2YWxfdGlja3MYBCABKA0q",
+            "bgoJRGlyZWN0aW9uEhIKDkRJUkVDVElPTl9OT05FEAASEAoMRElSRUNUSU9O",
+            "X1VQEAESEgoORElSRUNUSU9OX0RPV04QAhISCg5ESVJFQ1RJT05fTEVGVBAD",
+            "EhMKD0RJUkVDVElPTl9SSUdIVBAEKiwKCVN0YXRlVHlwZRIOCgpTVEFURV9G",
+            "VUxMEAASDwoLU1RBVEVfREVMVEEQAWIGcHJvdG8z"));
       descriptor = pbr::FileDescriptor.FromGeneratedCode(descriptorData,
           new pbr::FileDescriptor[] { },
           new pbr::GeneratedClrTypeInfo(new[] {typeof(global::Game.Paperio.Direction), typeof(global::Game.Paperio.StateType), }, null, new pbr::GeneratedClrTypeInfo[] {
@@ -75,7 +76,7 @@ namespace Game.Paperio {
             new pbr::GeneratedClrTypeInfo(typeof(global::Game.Paperio.TerritoryClaimed), global::Game.Paperio.TerritoryClaimed.Parser, new[]{ "PlayerId", "CellsClaimed", "CellsStolen", "Victims" }, null, null, null, null),
             new pbr::GeneratedClrTypeInfo(typeof(global::Game.Paperio.PlayerEliminated), global::Game.Paperio.PlayerEliminated.Parser, new[]{ "PlayerId", "KillerId", "Reason" }, null, null, null, null),
             new pbr::GeneratedClrTypeInfo(typeof(global::Game.Paperio.PlayerRespawned), global::Game.Paperio.PlayerRespawned.Parser, new[]{ "PlayerId", "SpawnPosition" }, null, null, null, null),
-            new pbr::GeneratedClrTypeInfo(typeof(global::Game.Paperio.PaperioJoinResponse), global::Game.Paperio.PaperioJoinResponse.Parser, new[]{ "YourPlayerId", "InitialState", "TickRateMs" }, null, null, null, null)
+            new pbr::GeneratedClrTypeInfo(typeof(global::Game.Paperio.PaperioJoinResponse), global::Game.Paperio.PaperioJoinResponse.Parser, new[]{ "YourPlayerId", "InitialState", "TickRateMs", "MoveIntervalTicks" }, null, null, null, null)
           }));
     }
     #endregion
@@ -3497,6 +3498,7 @@ namespace Game.Paperio {
       yourPlayerId_ = other.yourPlayerId_;
       initialState_ = other.initialState_ != null ? other.initialState_.Clone() : null;
       tickRateMs_ = other.tickRateMs_;
+      moveIntervalTicks_ = other.moveIntervalTicks_;
       _unknownFields = pb::UnknownFieldSet.Clone(other._unknownFields);
     }
 
@@ -3542,6 +3544,18 @@ namespace Game.Paperio {
       }
     }
 
+    /// <summary>Field number for the "move_interval_ticks" field.</summary>
+    public const int MoveIntervalTicksFieldNumber = 4;
+    private uint moveIntervalTicks_;
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public uint MoveIntervalTicks {
+      get { return moveIntervalTicks_; }
+      set {
+        moveIntervalTicks_ = value;
+      }
+    }
+
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public override bool Equals(object other) {
@@ -3560,6 +3574,7 @@ namespace Game.Paperio {
       if (YourPlayerId != other.YourPlayerId) return false;
       if (!object.Equals(InitialState, other.InitialState)) return false;
       if (TickRateMs != other.TickRateMs) return false;
+      if (MoveIntervalTicks != other.MoveIntervalTicks) return false;
       return Equals(_unknownFields, other._unknownFields);
     }
 
@@ -3570,6 +3585,7 @@ namespace Game.Paperio {
       if (YourPlayerId != 0) hash ^= YourPlayerId.GetHashCode();
       if (initialState_ != null) hash ^= InitialState.GetHashCode();
       if (TickRateMs != 0) hash ^= TickRateMs.GetHashCode();
+      if (MoveIntervalTicks != 0) hash ^= MoveIntervalTicks.GetHashCode();
       if (_unknownFields != null) {
         hash ^= _unknownFields.GetHashCode();
       }
@@ -3600,6 +3616,10 @@ namespace Game.Paperio {
         output.WriteRawTag(24);
         output.WriteUInt32(TickRateMs);
       }
+      if (MoveIntervalTicks != 0) {
+        output.WriteRawTag(32);
+        output.WriteUInt32(MoveIntervalTicks);
+      }
       if (_unknownFields != null) {
         _unknownFields.WriteTo(output);
       }
@@ -3622,6 +3642,10 @@ namespace Game.Paperio {
         output.WriteRawTag(24);
         output.WriteUInt32(TickRateMs);
       }
+      if (MoveIntervalTicks != 0) {
+        output.WriteRawTag(32);
+        output.WriteUInt32(MoveIntervalTicks);
+      }
       if (_unknownFields != null) {
         _unknownFields.WriteTo(ref output);
       }
@@ -3640,6 +3664,9 @@ namespace Game.Paperio {
       }
       if (TickRateMs != 0) {
         size += 1 + pb::CodedOutputStream.ComputeUInt32Size(TickRateMs);
+      }
+      if (MoveIntervalTicks != 0) {
+        size += 1 + pb::CodedOutputStream.ComputeUInt32Size(MoveIntervalTicks);
       }
       if (_unknownFields != null) {
         size += _unknownFields.CalculateSize();
@@ -3664,6 +3691,9 @@ namespace Game.Paperio {
       }
       if (other.TickRateMs != 0) {
         TickRateMs = other.TickRateMs;
+      }
+      if (other.MoveIntervalTicks != 0) {
+        MoveIntervalTicks = other.MoveIntervalTicks;
       }
       _unknownFields = pb::UnknownFieldSet.MergeFrom(_unknownFields, other._unknownFields);
     }
@@ -3699,6 +3729,10 @@ namespace Game.Paperio {
             TickRateMs = input.ReadUInt32();
             break;
           }
+          case 32: {
+            MoveIntervalTicks = input.ReadUInt32();
+            break;
+          }
         }
       }
     #endif
@@ -3731,6 +3765,10 @@ namespace Game.Paperio {
           }
           case 24: {
             TickRateMs = input.ReadUInt32();
+            break;
+          }
+          case 32: {
+            MoveIntervalTicks = input.ReadUInt32();
             break;
           }
         }
