@@ -23,7 +23,7 @@ namespace Game
         
         private readonly Dictionary<uint, Color> _playerColors = new();
         
-        private uint _moveIntervalTicks = 1;
+        private uint _moveIntervalTicks;
         private uint _estimatedServerTick;
         private float _tickAccumulator;
         private uint _localPlayerId;
