@@ -4,7 +4,6 @@
     {
         Death,
         Respawn,
-        TerritoryClaim,
         CameraShake
     }
 }

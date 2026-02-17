@@ -7,10 +7,6 @@ namespace Game.Effects.Implementations
     {
         [SerializeField] private Effect type;
         
-        [Header("Screen Shake")]
-        [SerializeField] private float shakeIntensity = 0.3f;
-        [SerializeField] private float shakeDuration = 0.2f;
-        
         [Header("Scale Animation")]
         [SerializeField] private float scaleDuration = 0.3f;
         [SerializeField] private float maxScale = 1.5f;

@@ -44,7 +44,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 3d637510993a4a0384b191993a7611a4, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Game.Effects.ScreenShake
-  type: 3
+  type: 2
   defaultIntensity: 0.5
   defaultDuration: 0.3
   defaultFrequency: 25
