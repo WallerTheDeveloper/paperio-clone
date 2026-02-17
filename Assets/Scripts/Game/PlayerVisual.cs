@@ -1,5 +1,6 @@
 ﻿using Game.Data;
 using Game.Paperio;
+using Game.UI;
 using Network;
 using UnityEngine;
 
@@ -10,19 +11,19 @@ namespace Game
         [Header("Visual Components")]
         [SerializeField] private MeshRenderer bodyRenderer;
         [SerializeField] private Transform directionIndicator;
-        [SerializeField] private TextMesh nameLabel;
-        
+        [SerializeField] private NameLabel nameLabel;
+
         [Header("Configuration")]
         [SerializeField] private float bodyScale = 0.8f;
         [SerializeField] private float deathFadeDuration = 0.5f;
         [SerializeField] private float respawnScaleDuration = 0.3f;
         [SerializeField] private float localPlayerScaleMultiplier = 1.1f;
-        
+
         [Header("Interpolation")]
         [SerializeField] private float renderDelayTicks = 1f;
         [SerializeField] private float maxExtrapolationTicks = 3f;
         [SerializeField] private int snapshotBufferSize = 10;
-        
+
         private MaterialPropertyBlock _propertyBlock;
         private Transform _transform;
         private Vector3 _smoothVelocity;
@@ -31,27 +32,27 @@ namespace Game
         private bool _isAlive = true;
         private Color _playerColor;
         private float _baseScale;
-        
+
         private Vector3 _previousPosition;
         private Vector3 _targetPosition;
-        
+
         private float _moveDuration;
-        private float _moveProgress = 1f; // 1 = at target, 0 = just started moving
+        private float _moveProgress = 1f;
         private Vector3 _lerpStart;
         private Vector3 _lerpEnd;
-        
+
         private InterpolationBuffer _interpolationBuffer;
-        
+
         private Direction _currentDirection = Direction.None;
-        
+
         private float _deathAnimationProgress;
         private float _respawnAnimationProgress;
         private bool _isPlayingDeathAnimation;
         private bool _isPlayingRespawnAnimation;
-        
+
         private static readonly int ColorProperty = Shader.PropertyToID("_Color");
         private static readonly int BaseColorProperty = Shader.PropertyToID("_BaseColor");
-        
+
         public uint PlayerId => _playerId;
         public bool IsLocalPlayer => _isLocalPlayer;
         public bool IsAlive => _isAlive;
@@ -61,7 +62,7 @@ namespace Game
         {
             _moveDuration = Mathf.Max(0.05f, moveDurationSeconds);
         }
-        
+
         public void Initialize(
             uint playerId,
             string playerName,
@@ -73,30 +74,29 @@ namespace Game
             _transform = transform;
             _propertyBlock = new MaterialPropertyBlock();
             _baseScale = bodyScale;
-            
+
             _playerId = playerId;
             _isLocalPlayer = isLocalPlayer;
             _playerColor = color;
             _isAlive = true;
-            
+
             SetColor(color);
-            
+
             if (nameLabel != null)
             {
-                nameLabel.text = playerName;
-                nameLabel.color = isLocalPlayer ? Color.yellow : Color.white;
+                nameLabel.Setup(playerName, isLocalPlayer);
             }
-            
+
             float scale = _baseScale * (isLocalPlayer ? localPlayerScaleMultiplier : 1f);
             _transform.localScale = Vector3.one * scale;
-            
+
             _previousPosition = worldPosition;
             _targetPosition = worldPosition;
             _lerpStart = worldPosition;
             _lerpEnd = worldPosition;
             _moveProgress = 1f;
             _transform.position = worldPosition;
-            
+
             if (!isLocalPlayer)
             {
                 _interpolationBuffer = new InterpolationBuffer(
@@ -106,12 +106,12 @@ namespace Game
                     tickDurationSeconds
                 );
             }
-            
+
             gameObject.SetActive(true);
             SetBodyVisible(true);
-            
-            Debug.Log($"[PlayerVisual] Initialized: {playerName} (ID: {playerId})" + 
-                      (isLocalPlayer ? " [LOCAL]" : $" [REMOTE, buffer={snapshotBufferSize}, delay={renderDelayTicks} ticks]"));
+
+            Debug.Log($"[PlayerVisual] Initialized: {playerName} (ID: {playerId})" +
+                      (isLocalPlayer ? " [LOCAL]" : ""));
         }
 
         public void UpdateFromData(PlayerData playerData, Vector3 worldPosition, uint tick = 0)
@@ -130,7 +130,7 @@ namespace Game
                     playerData.Alive
                 );
             }
-            
+
             if (playerData.Direction != _currentDirection)
             {
                 _currentDirection = playerData.Direction;
@@ -139,23 +139,19 @@ namespace Game
                     UpdateDirectionIndicator();
                 }
             }
-            
+
             if (playerData.Color != _playerColor && playerData.Color != default)
             {
                 _playerColor = playerData.Color;
                 SetColor(_playerColor);
             }
-            
+
             if (playerData.Alive != _isAlive)
             {
                 if (playerData.Alive)
-                {
                     OnRespawn(worldPosition);
-                }
                 else
-                {
                     OnDeath();
-                }
             }
         }
 
@@ -166,14 +162,13 @@ namespace Game
                 UpdateAnimations();
                 return;
             }
-            
+
             if (_isLocalPlayer)
             {
                 if (_moveProgress < 1f)
                 {
                     _moveProgress += Time.deltaTime / _moveDuration;
                     _moveProgress = Mathf.Clamp01(_moveProgress);
-                    
                     _transform.position = Vector3.Lerp(_lerpStart, _lerpEnd, _moveProgress);
                 }
                 else
@@ -186,11 +181,10 @@ namespace Game
                 if (_interpolationBuffer != null)
                 {
                     var result = _interpolationBuffer.Sample(tickProgress);
-                    
                     if (result.IsValid)
                     {
                         _transform.position = result.Position;
-                        
+
                         if (result.Direction != _currentDirection)
                         {
                             _currentDirection = result.Direction;
@@ -231,14 +225,14 @@ namespace Game
             _moveProgress = 1f;
             _transform.position = worldPosition;
             _smoothVelocity = Vector3.zero;
-            
+
             _interpolationBuffer?.Clear();
         }
 
         private void SetColor(Color color)
         {
             if (bodyRenderer == null) return;
-            
+
             _propertyBlock.SetColor(ColorProperty, color);
             _propertyBlock.SetColor(BaseColorProperty, color);
             bodyRenderer.SetPropertyBlock(_propertyBlock);
@@ -247,7 +241,7 @@ namespace Game
         private void UpdateDirectionIndicator()
         {
             if (directionIndicator == null) return;
-            
+
             float yRotation = _currentDirection switch
             {
                 Direction.Up => 0f,
@@ -256,7 +250,7 @@ namespace Game
                 Direction.Right => 90f,
                 _ => directionIndicator.localEulerAngles.y
             };
-            
+
             directionIndicator.localRotation = Quaternion.Euler(0, yRotation, 0);
             directionIndicator.gameObject.SetActive(_currentDirection != Direction.None);
         }
@@ -264,9 +258,7 @@ namespace Game
         private void SetBodyVisible(bool visible)
         {
             if (bodyRenderer != null)
-            {
                 bodyRenderer.enabled = visible;
-            }
         }
 
         private void OnDeath()
@@ -274,7 +266,9 @@ namespace Game
             _isAlive = false;
             _isPlayingDeathAnimation = true;
             _deathAnimationProgress = 0f;
-            
+
+            nameLabel.SetVisible(false);
+
             Debug.Log($"[PlayerVisual] Player {_playerId} death animation started");
         }
 
@@ -284,11 +278,11 @@ namespace Game
             _isPlayingDeathAnimation = false;
             _isPlayingRespawnAnimation = true;
             _respawnAnimationProgress = 0f;
-            
+
             SnapToPosition(newPosition);
-            
             SetBodyVisible(true);
-            
+            nameLabel.SetVisible(true);
+
             Debug.Log($"[PlayerVisual] Player {_playerId} respawn animation started");
         }
 
@@ -297,7 +291,7 @@ namespace Game
             if (_isPlayingDeathAnimation)
             {
                 _deathAnimationProgress += Time.deltaTime / deathFadeDuration;
-                
+
                 if (_deathAnimationProgress >= 1f)
                 {
                     _isPlayingDeathAnimation = false;
@@ -307,7 +301,7 @@ namespace Game
                 {
                     float scale = _baseScale * (1f - _deathAnimationProgress);
                     _transform.localScale = Vector3.one * scale;
-                    
+
                     Color fadedColor = _playerColor;
                     fadedColor.a = 1f - _deathAnimationProgress;
                     SetColor(fadedColor);
@@ -316,7 +310,7 @@ namespace Game
             else if (_isPlayingRespawnAnimation)
             {
                 _respawnAnimationProgress += Time.deltaTime / respawnScaleDuration;
-                
+
                 if (_respawnAnimationProgress >= 1f)
                 {
                     _isPlayingRespawnAnimation = false;
@@ -326,7 +320,7 @@ namespace Game
                 }
                 else
                 {
-                    float scale = _baseScale * _respawnAnimationProgress * 
+                    float scale = _baseScale * _respawnAnimationProgress *
                                   (_isLocalPlayer ? localPlayerScaleMultiplier : 1f);
                     _transform.localScale = Vector3.one * scale;
                 }
@@ -342,18 +336,15 @@ namespace Game
             _isPlayingRespawnAnimation = false;
             _currentDirection = Direction.None;
             _moveProgress = 1f;
-            
+
             _interpolationBuffer?.Clear();
             _interpolationBuffer = null;
-            
+
             _transform.localScale = Vector3.one * _baseScale;
             SetBodyVisible(true);
-            
-            if (nameLabel != null)
-            {
-                nameLabel.text = "";
-            }
-            
+
+            nameLabel.ResetForPool();
+
             gameObject.SetActive(false);
         }
 
@@ -372,7 +363,7 @@ namespace Game
             {
                 Gizmos.color = Color.cyan;
                 Gizmos.DrawWireSphere(_transform.position, 0.15f);
-                
+
                 Gizmos.color = _interpolationBuffer.Count >= 2 ? Color.green : Color.red;
                 Gizmos.DrawWireSphere(_transform.position + Vector3.up * 0.5f, 0.1f);
             }
