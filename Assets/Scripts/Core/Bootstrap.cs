@@ -25,6 +25,7 @@ namespace Core
         [SerializeField] private TerritoryClaim territoryClaim;
         [SerializeField] private MinimapSystem minimapSystem;
         [SerializeField] private TerritoryClaimPopupManager territoryClaimPopupManager;
+        [SerializeField] private LeaderboardUI leaderboardUI;
         
         private PlayersContainer _playersContainer;
         
@@ -46,6 +47,7 @@ namespace Core
             _services.Register(territoryClaim);
             _services.Register(minimapSystem);
             _services.Register(territoryClaimPopupManager);
+            _services.Register(leaderboardUI);
             
             _services.InitDanglingServices();
         }

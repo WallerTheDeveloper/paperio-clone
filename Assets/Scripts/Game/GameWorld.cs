@@ -37,6 +37,7 @@ namespace Game
         private bool _inputSubscribed;
         
         public event Action OnGameStarted;
+        public event Action<PaperioState> OnStateRefreshed;
         public event Action OnGameEnded;
         public event Action<uint> OnLocalPlayerSpawned;
         public event Action<List<TerritoryChange>> OnTerritoryChanged;
@@ -358,6 +359,8 @@ namespace Game
                     _trailVisualsManager.UpdatePlayerTrail(player.PlayerId, gridPoints, playerColor);
                 }
             }
+            
+            OnStateRefreshed?.Invoke(state);
         }
 
         public void OnPlayerEliminated(uint playerId)
