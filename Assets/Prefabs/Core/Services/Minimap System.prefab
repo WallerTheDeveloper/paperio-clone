@@ -185,7 +185,7 @@ MonoBehaviour:
   pulseLocalIndicator: 1
   pulseSpeed: 3
   pulseAmplitude: 0.3
-  showViewBounds: 1
+  showViewBounds: 0
   viewBoundsColor: {r: 1, g: 1, b: 1, a: 0.4}
   viewBoundsLineWidth: 0.5
   indicatorLayer: 31

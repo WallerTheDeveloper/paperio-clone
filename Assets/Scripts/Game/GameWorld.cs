@@ -75,6 +75,7 @@ namespace Game
         private TrailVisualsManager _trailVisualsManager;
         private TerritoryClaim _territoryClaim;
         private MinimapSystem _minimapSystem;
+        private TerritoryClaimPopupManager _claimPopupManager;
         public void Initialize(ServiceContainer services)
         {
             _prediction = new ClientPrediction(_gridWidth, _gridHeight);
@@ -84,6 +85,7 @@ namespace Game
             _trailVisualsManager = services.Get<TrailVisualsManager>();
             _territoryClaim = services.Get<TerritoryClaim>();
             _minimapSystem = services.Get<MinimapSystem>();
+            _claimPopupManager = services.Get<TerritoryClaimPopupManager>();
         }
 
         public void Tick()
@@ -259,8 +261,30 @@ namespace Game
 
                     var playerData = _playerVisualsManager.PlayersContainer.TryGetPlayerById(changes[0].NewOwner);
                     if (playerData != null)
-                    {
+                    { 
                         _territoryClaim.AddWave(changes, playerData.PlayerId, playerData.Color);
+                        
+                        if (_claimPopupManager != null)
+                        {
+                           int localClaimCount = 0;
+                           Color localColor = Color.white;
+                           foreach (var change in changes)
+                           {
+                               if (change.NewOwner == _localPlayerId)
+                               {
+                                   localClaimCount++;
+                                   if (localColor == Color.white && _playerColors.TryGetValue(_localPlayerId, out var c))
+                                   {
+                                       localColor = c;
+                                   }
+                               }
+                           }
+                           
+                           if (localClaimCount > 0)
+                           {
+                               _claimPopupManager.ShowClaimPopup(localClaimCount, localColor);
+                           }
+                        }
                     }
         
                     OnTerritoryChanged?.Invoke(changes);

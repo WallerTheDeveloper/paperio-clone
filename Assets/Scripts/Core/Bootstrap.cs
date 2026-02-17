@@ -5,6 +5,7 @@ using Game;
 using Game.Data;
 using Game.Effects;
 using Game.Rendering;
+using Game.UI;
 using Input;
 using Network;
 using UnityEngine;
@@ -23,6 +24,7 @@ namespace Core
         [SerializeField] private TrailVisualsManager trailVisualsManager;
         [SerializeField] private TerritoryClaim territoryClaim;
         [SerializeField] private MinimapSystem minimapSystem;
+        [SerializeField] private TerritoryClaimPopupManager territoryClaimPopupManager;
         
         private PlayersContainer _playersContainer;
         
@@ -43,6 +45,7 @@ namespace Core
             _services.Register(territoryRenderer);
             _services.Register(territoryClaim);
             _services.Register(minimapSystem);
+            _services.Register(territoryClaimPopupManager);
             
             _services.InitDanglingServices();
         }
