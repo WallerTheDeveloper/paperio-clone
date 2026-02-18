@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using Core.Services;
 using Game.Data;
 using Game.Paperio;
@@ -132,12 +133,17 @@ namespace Game.Rendering
             if (isLocal)
             {
                 _localPlayerVisual = visual;
+                var localPlayerData = _playersContainer.GetAlivePlayers()
+                    .FirstOrDefault(p => p.PlayerId == _localPlayerId);
+                if (localPlayerData != null)
+                {
+                    localPlayerData.InputService = visual.GetComponent<InputService>();
+                }
             }
             
             Debug.Log($"[PlayerVisualsManager] Activated player: {protoPlayer.Name} (ID: {protoPlayer.PlayerId})" +
                       (isLocal ? " [LOCAL]" : ""));
         }
-
         public Color GetPlayerColor(uint playerId)
         {
             if (playerId == 0)
@@ -280,14 +286,6 @@ namespace Game.Rendering
         private PlayerVisual CreateNewVisual()
         {
             var createdPlayer = Instantiate(playerVisualPrefab, visualsContainer);
-
-            foreach (var player in _playersContainer.GetAlivePlayers())
-            {
-                if (_localPlayerId == player.PlayerId)
-                {
-                    player.InputService = createdPlayer.GetComponent<InputService>();
-                }
-            }
             return createdPlayer.GetComponent<PlayerVisual>();
         }
     }
