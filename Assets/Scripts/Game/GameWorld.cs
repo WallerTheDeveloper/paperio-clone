@@ -338,12 +338,12 @@ namespace Game
                     _playerVisualsManager.LocalPlayerVisual.SetPredictedTarget(predictedWorldPos);
                 }
                 
-                if (logPlayerUpdates && state.Tick % 20 == 0)
-                {
-                    Debug.Log($"[GameWorld] Tick {state.Tick}: " +
-                              $"{state.Players.Count} players, " +
-                              $"{_playerVisualsManager.ActiveCount} visuals active");
-                }
+                // if (logPlayerUpdates && state.Tick % 20 == 0)
+                // {
+                //     Debug.Log($"[GameWorld] Tick {state.Tick}: " +
+                //               $"{state.Players.Count} players, " +
+                //               $"{_playerVisualsManager.ActiveCount} visuals active");
+                // }
             }
             if (_trailVisualsManager != null)
             {
