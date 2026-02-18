@@ -177,6 +177,11 @@ namespace Game
                 _cameraController = FindFirstObjectByType<CameraController>();
                 _cameraController.Initialize(this as IGameWorldDataProvider);
                 
+                if (_playerVisualsManager.LocalPlayerVisual != null)
+                {
+                    _cameraController.SetLocalTarget(_playerVisualsManager.LocalPlayerVisual.transform);
+                }
+                
                 InitializeFromState(response.InitialState);
                 
                 foreach (var player in response.InitialState.Players)
@@ -398,7 +403,7 @@ namespace Game
             _effectsManager.PlayEffect(Effect.Respawn, effectData);
             if (isLocal && _cameraController != null && LocalPlayerVisual != null)
             {
-                _cameraController.SetTarget(LocalPlayerVisual.transform);
+                _cameraController.SetLocalTarget(LocalPlayerVisual.transform);
                 if (_prediction != null)
                 {
                     _prediction.Initialize(

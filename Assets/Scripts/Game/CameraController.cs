@@ -1,5 +1,4 @@
-﻿using Core.Services;
-using Game.Data;
+﻿using Game.Data;
 using Helpers;
 using UnityEngine;
 
@@ -7,221 +6,167 @@ namespace Game
 {
     public class CameraController : MonoBehaviour
     {
-        [Header("Target")]
-        [SerializeField] private Transform target;
-        [SerializeField] private float height = 30f;
+        [Header("Follow")] [SerializeField] private float height = 30f;
         [SerializeField] private float distance = 10f;
-        [SerializeField] private float lookAheadDistance = 5f;
         [SerializeField] private float followSmoothTime = 0.15f;
-        [SerializeField] private float rotationSmoothTime = 0.3f;
-        [SerializeField] private bool followDirection = false;
-        [SerializeField] private float minHeight = 20f;
+
+        [Header("Zoom")] [SerializeField] private float minHeight = 20f;
         [SerializeField] private float maxHeight = 50f;
         [SerializeField] private float zoomSmoothTime = 0.5f;
-        [SerializeField] private bool useBounds = true;
-        
+
+        [Header("Look")] [SerializeField] private bool followDirection;
+        [SerializeField] private float lookAheadDistance = 5f;
+        [SerializeField] private float rotationSmoothTime = 0.3f;
+
+        [Header("Bounds")] [SerializeField] private bool useBounds = true;
         [SerializeField] private float boundsPadding = 5f;
-        
-        [SerializeField] private bool enableShake = true;
-        
+
+        [Header("Screen Shake")] [SerializeField]
+        private bool enableShake = true;
+
         [SerializeField] private float defaultShakeIntensity = 0.5f;
-        
+
         private Camera _camera;
         private Transform _transform;
-        
+
+        private Transform _localTarget;
+
         private Vector3 _currentVelocity;
         private float _currentZoomVelocity;
         private float _currentRotationVelocity;
         private float _targetHeight;
         private float _currentYaw;
-        
+
         private Bounds _gameBounds;
         private bool _hasBounds;
-        
+
         private float _shakeIntensity;
         private float _shakeDuration;
         private float _shakeTimer;
-        
-        private bool _isInitialized;
-        private Vector3 _initialOffset;
 
-        public bool IsFollowing => target != null && _isInitialized;
-        
+        private bool _isInitialized;
+
+        public bool IsFollowing => _localTarget != null && _isInitialized;
+
         public void Initialize(IGameWorldDataProvider gameWorldData)
         {
             _transform = transform;
             _camera = GetComponent<Camera>();
-            
+
             _targetHeight = height;
             _currentYaw = _transform.eulerAngles.y;
 
-            _gameBounds = GridHelper.GetGridBounds(gameWorldData.GridWidth, gameWorldData.GridHeight, gameWorldData.Config.CellSize);
+            _gameBounds = GridHelper.GetGridBounds(
+                gameWorldData.GridWidth,
+                gameWorldData.GridHeight,
+                gameWorldData.Config.CellSize);
 
-            if (_gameBounds != null)
-            {
-                _hasBounds = true;
-            }
-            
+            _hasBounds = _gameBounds != default;
             _isInitialized = true;
-            
-            Debug.Log($"[CameraController] Initialized - Height: {height}, Distance: {distance}");
+
+            Debug.Log($"[CameraController] Initialized — height:{height} distance:{distance}");
         }
 
-        public void TickLate()
+        public void SetLocalTarget(Transform localPlayerTransform)
         {
-            if (!_isInitialized)
+            if (localPlayerTransform == null)
             {
+                Debug.LogWarning("[CameraController] SetLocalTarget called with null — ignoring.");
                 return;
             }
-            
-            height = Mathf.SmoothDamp(height, _targetHeight, ref _currentZoomVelocity, zoomSmoothTime);
-            
-            if (target != null)
-            {
-                UpdateFollowPosition();
-            }
-        }
 
-        public void Dispose()
-        { }
-        
-        public void SetTarget(Transform newTarget)
-        {
-            target = newTarget;
-            
-            if (target != null)
-            {
-                SnapToTarget();
-            }
+            _localTarget = localPlayerTransform;
+            SnapToTarget();
+
+            Debug.Log($"[CameraController] Local target locked → {localPlayerTransform.name}");
         }
 
         public void SnapToTarget()
         {
-            if (target == null) return;
-            
-            Vector3 targetPos = CalculateTargetPosition(target.position);
-            _transform.position = targetPos;
+            if (_localTarget == null) return;
+
+            _transform.position = CalculateDesiredPosition(_localTarget.position);
             _currentVelocity = Vector3.zero;
-            
-            LookAtTarget();
-        }
-        
-        private void UpdateFollowPosition()
-        {
-            Vector3 targetWorldPos = target.position;
-            Vector3 desiredPosition = CalculateTargetPosition(targetWorldPos);
-            
-            if (useBounds && _hasBounds)
-            {
-                desiredPosition = ClampToBounds(desiredPosition);
-            }
-            
-            _transform.position = Vector3.SmoothDamp(
-                _transform.position,
-                desiredPosition,
-                ref _currentVelocity,
-                followSmoothTime
-            );
-            
             LookAtTarget();
         }
 
-        private Vector3 CalculateTargetPosition(Vector3 targetPos)
+        public void TickLate()
         {
-            float yawRad = _currentYaw * Mathf.Deg2Rad;
-            
-            Vector3 offset;
-            if (followDirection && target != null)
+            if (!_isInitialized || _localTarget == null) return;
+
+            height = Mathf.SmoothDamp(height, _targetHeight,
+                ref _currentZoomVelocity, zoomSmoothTime);
+
+            UpdateFollowPosition();
+
+            if (_shakeTimer > 0f)
             {
-                offset = new Vector3(
-                    -Mathf.Sin(yawRad) * distance,
-                    height,
-                    -Mathf.Cos(yawRad) * distance
-                );
+                _shakeTimer -= Time.deltaTime;
+                var t = _shakeTimer / Mathf.Max(_shakeDuration, 0.001f);
+                var offset = Mathf.Sin(Time.unscaledTime * 40f) * _shakeIntensity * t;
+                _transform.position += _transform.right * offset;
             }
-            else
-            {
-                offset = new Vector3(0, height, -distance);
-            }
-            
+        }
+
+        public void Dispose()
+        {
+            _localTarget = null;
+            _isInitialized = false;
+        }
+
+        private void UpdateFollowPosition()
+        {
+            var desired = CalculateDesiredPosition(_localTarget.position);
+
+            if (useBounds && _hasBounds)
+                desired = ClampToBounds(desired);
+
+            _transform.position = Vector3.SmoothDamp(
+                _transform.position, desired,
+                ref _currentVelocity, followSmoothTime);
+
+            LookAtTarget();
+        }
+
+        private Vector3 CalculateDesiredPosition(Vector3 targetPos)
+        {
+            var yawRad = _currentYaw * Mathf.Deg2Rad;
+
+            var offset = followDirection
+                ? new Vector3(-Mathf.Sin(yawRad) * distance, height, -Mathf.Cos(yawRad) * distance)
+                : new Vector3(0f, height, -distance);
+
             return targetPos + offset;
         }
 
         private void LookAtTarget()
         {
-            if (target == null) return;
-            
-            Vector3 lookTarget = target.position;
-            
-            Vector3 lookDirection = lookTarget - _transform.position;
-            
-            if (lookDirection.sqrMagnitude > 0.001f)
-            {
-                Quaternion targetRotation = Quaternion.LookRotation(lookDirection);
-                _transform.rotation = targetRotation;
-            }
+            if (_localTarget == null) return;
+
+            var dir = _localTarget.position - _transform.position;
+            if (dir.sqrMagnitude > 0.001f)
+                _transform.rotation = Quaternion.LookRotation(dir);
         }
 
         private Vector3 ClampToBounds(Vector3 position)
         {
-            float frustumHeight = 2f * height * Mathf.Tan(_camera.fieldOfView * 0.5f * Mathf.Deg2Rad);
-            float frustumWidth = frustumHeight * _camera.aspect;
-            
-            float halfWidth = frustumWidth * 0.5f;
-            float halfHeight = frustumHeight * 0.5f;
-            
-            float minX = _gameBounds.min.x + halfWidth + boundsPadding;
-            float maxX = _gameBounds.max.x - halfWidth - boundsPadding;
-            float minZ = _gameBounds.min.z + halfHeight + boundsPadding - distance;
-            float maxZ = _gameBounds.max.z - halfHeight - boundsPadding - distance;
-            
-            if (maxX > minX)
-            {
-                position.x = Mathf.Clamp(position.x, minX, maxX);
-            }
-            else
-            {
-                position.x = _gameBounds.center.x;
-            }
-            
-            if (maxZ > minZ)
-            {
-                position.z = Mathf.Clamp(position.z, minZ, maxZ);
-            }
-            else
-            {
-                position.z = _gameBounds.center.z - distance;
-            }
-            
-            return position;
-        }
+            if (_camera == null) return position;
 
-        private void OnDrawGizmosSelected()
-        {
-            if (_camera == null) return;
-            
-            float frustumHeight = 2f * height * Mathf.Tan(_camera.fieldOfView * 0.5f * Mathf.Deg2Rad);
-            float frustumWidth = frustumHeight * _camera.aspect;
-            
-            Gizmos.color = Color.cyan;
-            Vector3 center = transform.position;
-            center.y = 0;
-            center.z += distance; // Offset for the angled view
-            
-            Vector3 size = new Vector3(frustumWidth, 0.1f, frustumHeight);
-            Gizmos.DrawWireCube(center, size);
-            
-            if (target != null)
-            {
-                Gizmos.color = Color.yellow;
-                Gizmos.DrawLine(transform.position, target.position);
-            }
-            
-            if (_hasBounds)
-            {
-                Gizmos.color = Color.green;
-                Gizmos.DrawWireCube(_gameBounds.center, _gameBounds.size);
-            }
+            var frustumH = 2f * height * Mathf.Tan(_camera.fieldOfView * 0.5f * Mathf.Deg2Rad);
+            var frustumW = frustumH * _camera.aspect;
+
+            var halfW = frustumW * 0.5f + boundsPadding;
+            var halfH = frustumH * 0.5f + boundsPadding;
+
+            var minX = _gameBounds.min.x + halfW;
+            var maxX = _gameBounds.max.x - halfW;
+            var minZ = _gameBounds.min.z + halfH;
+            var maxZ = _gameBounds.max.z - halfH;
+
+            return new Vector3(
+                Mathf.Clamp(position.x, minX, maxX),
+                position.y,
+                Mathf.Clamp(position.z, minZ, maxZ));
         }
     }
 }
