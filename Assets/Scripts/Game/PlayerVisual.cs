@@ -10,7 +10,6 @@ namespace Game
     {
         [Header("Visual Components")]
         [SerializeField] private MeshRenderer bodyRenderer;
-        [SerializeField] private Transform directionIndicator;
         [SerializeField] private NameLabel nameLabel;
 
         [Header("Configuration")]
@@ -24,6 +23,8 @@ namespace Game
         [SerializeField] private float maxExtrapolationTicks = 3f;
         [SerializeField] private int snapshotBufferSize = 10;
 
+        [SerializeField] private Camera playerCamera;
+        
         private MaterialPropertyBlock _propertyBlock;
         private Transform _transform;
         private Vector3 _smoothVelocity;
@@ -109,7 +110,9 @@ namespace Game
 
             gameObject.SetActive(true);
             SetBodyVisible(true);
-
+            
+            playerCamera.gameObject.SetActive(_isLocalPlayer);
+            
             Debug.Log($"[PlayerVisual] Initialized: {playerName} (ID: {playerId})" +
                       (isLocalPlayer ? " [LOCAL]" : ""));
         }
@@ -134,10 +137,6 @@ namespace Game
             if (playerData.Direction != _currentDirection)
             {
                 _currentDirection = playerData.Direction;
-                if (_isLocalPlayer)
-                {
-                    UpdateDirectionIndicator();
-                }
             }
 
             if (playerData.Color != _playerColor && playerData.Color != default)
@@ -188,7 +187,6 @@ namespace Game
                         if (result.Direction != _currentDirection)
                         {
                             _currentDirection = result.Direction;
-                            UpdateDirectionIndicator();
                         }
                     }
                 }
@@ -236,23 +234,6 @@ namespace Game
             _propertyBlock.SetColor(ColorProperty, color);
             _propertyBlock.SetColor(BaseColorProperty, color);
             bodyRenderer.SetPropertyBlock(_propertyBlock);
-        }
-
-        private void UpdateDirectionIndicator()
-        {
-            if (directionIndicator == null) return;
-
-            float yRotation = _currentDirection switch
-            {
-                Direction.Up => 0f,
-                Direction.Down => 180f,
-                Direction.Left => 270f,
-                Direction.Right => 90f,
-                _ => directionIndicator.localEulerAngles.y
-            };
-
-            directionIndicator.localRotation = Quaternion.Euler(0, yRotation, 0);
-            directionIndicator.gameObject.SetActive(_currentDirection != Direction.None);
         }
 
         private void SetBodyVisible(bool visible)

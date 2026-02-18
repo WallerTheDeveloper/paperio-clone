@@ -13,5 +13,6 @@ namespace Game.Data
         public uint GridWidth { get; }
         public uint GridHeight { get; } 
         public uint TickRateMs { get; }
+        public Camera LocalPlayerCamera { get; }
     }
 }

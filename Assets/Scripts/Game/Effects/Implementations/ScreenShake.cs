@@ -37,7 +37,8 @@ namespace Game.Effects.Implementations
         
         public void Prepare(IGameWorldDataProvider gameData)
         {
-            _targetTransform = Camera.main.transform;
+            
+            _targetTransform = gameData.LocalPlayerCamera.transform;
             _originalLocalPosition = _targetTransform.localPosition;
             _seed = Random.Range(0, 1000);
         }

@@ -50,7 +50,23 @@ namespace Game
         public uint GridWidth => _gridWidth;
         public uint GridHeight => _gridHeight;
         public uint TickRateMs => _tickRateMs;
-        
+
+        public Camera LocalPlayerCamera
+        {
+            get
+            {
+                // TODO: rewrite this to not rely on FindWithTag every time, maybe cache reference in CameraController?
+                var camObj = GameObject.FindWithTag("LocalPlayerCamera");
+                if (camObj != null)
+                {
+                    var cam = camObj.GetComponent<Camera>();
+                    return cam;
+                }
+
+                return null;
+            }
+        }
+
         private float TickProgress
         {
             get
