@@ -133,9 +133,8 @@ namespace Game.Rendering
             if (isLocal)
             {
                 _localPlayerVisual = visual;
-                var localPlayerData = _playersContainer.GetAlivePlayers()
-                    .FirstOrDefault(p => p.PlayerId == _localPlayerId);
-                if (localPlayerData != null)
+                var localPlayerData = _playersContainer.TryGetPlayerById(protoPlayer.PlayerId);
+                if (localPlayerData != null && localPlayerData.InputService == null)
                 {
                     localPlayerData.InputService = visual.GetComponent<InputService>();
                 }
