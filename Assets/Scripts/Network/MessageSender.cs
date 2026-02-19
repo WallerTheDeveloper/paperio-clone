@@ -97,6 +97,8 @@ namespace Network
 
         public void Dispose()
         {
+            SendLeaveRoom();
+            
             if (_udpClient != null)
             {
                 _udpClient.OnDataReceived -= HandleDataReceived;

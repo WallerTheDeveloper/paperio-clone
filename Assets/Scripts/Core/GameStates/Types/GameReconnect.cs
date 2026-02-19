@@ -1,0 +1,132 @@
+﻿using System;
+using Core.Services;
+using Network;
+using UnityEngine;
+
+namespace Core.GameStates.Types
+{
+    public class GameReconnect : GameState
+    {
+        public override Action TriggerStateSwitch { get; set; }
+        
+        public Action OnReconnectFailed;
+
+        private MessageSender _messageSender;
+        private bool _isWaitingForResponse;
+        private float _timeoutTimer;
+        
+        private const float ReconnectTimeoutSeconds = 5f;
+        private const string ReconnectTokenKey = "ReconnectToken";
+        private const string ReconnectRoomKey = "ReconnectRoomCode";
+
+        public override void Initialize(ServiceContainer container)
+        {
+            _messageSender = container.Get<MessageSender>();
+            _isWaitingForResponse = false;
+            _timeoutTimer = 0f;
+
+            string savedToken = PlayerPrefs.GetString(ReconnectTokenKey, "");
+            string savedRoom = PlayerPrefs.GetString(ReconnectRoomKey, "");
+
+            if (string.IsNullOrEmpty(savedToken))
+            {
+                Debug.Log("[GameReconnect] No saved reconnect token, falling back to join");
+                FallbackToJoin();
+                return;
+            }
+
+            if (!string.IsNullOrEmpty(_messageSender.RoomCode) && 
+                !string.IsNullOrEmpty(savedRoom) && 
+                _messageSender.RoomCode != savedRoom)
+            {
+                Debug.Log($"[GameReconnect] Room mismatch (saved: {savedRoom}, target: {_messageSender.RoomCode}), falling back to join");
+                ClearSavedToken();
+                FallbackToJoin();
+                return;
+            }
+
+            Debug.Log($"[GameReconnect] Attempting reconnect with saved token for room {savedRoom}");
+            
+            _messageSender.OnRoomJoined += OnRoomJoined;
+            _messageSender.OnError += OnError;
+            
+            _messageSender.SendReconnect(savedToken);
+            _isWaitingForResponse = true;
+            _timeoutTimer = 0f;
+        }
+
+        public override void Tick()
+        {
+            if (!_isWaitingForResponse) return;
+
+            _timeoutTimer += Time.deltaTime;
+            if (_timeoutTimer >= ReconnectTimeoutSeconds)
+            {
+                Debug.LogWarning("[GameReconnect] Reconnect timed out, falling back to join");
+                ClearSavedToken();
+                Cleanup();
+                FallbackToJoin();
+            }
+        }
+
+        public override void Stop()
+        {
+            Cleanup();
+        }
+
+        private void OnRoomJoined(Game.Server.RoomJoined roomJoined)
+        {
+            Debug.Log($"[GameReconnect] Reconnected successfully as player {roomJoined.PlayerId} in room {roomJoined.RoomCode}");
+            
+            SaveToken(roomJoined.ReconnectToken, roomJoined.RoomCode);
+            
+            _isWaitingForResponse = false;
+            Cleanup();
+            
+            TriggerStateSwitch?.Invoke();
+        }
+
+        private void OnError(Game.Server.Error error)
+        {
+            Debug.LogWarning($"[GameReconnect] Reconnect failed: {error.Message}");
+            
+            ClearSavedToken();
+            _isWaitingForResponse = false;
+            Cleanup();
+            FallbackToJoin();
+        }
+
+        private void FallbackToJoin()
+        {
+            OnReconnectFailed?.Invoke();
+        }
+
+        private void Cleanup()
+        {
+            if (_messageSender != null)
+            {
+                _messageSender.OnRoomJoined -= OnRoomJoined;
+                _messageSender.OnError -= OnError;
+            }
+        }
+
+        private static void SaveToken(string token, string roomCode)
+        {
+            PlayerPrefs.SetString(ReconnectTokenKey, token);
+            PlayerPrefs.SetString(ReconnectRoomKey, roomCode);
+            PlayerPrefs.Save();
+        }
+
+        private static void ClearSavedToken()
+        {
+            PlayerPrefs.DeleteKey(ReconnectTokenKey);
+            PlayerPrefs.DeleteKey(ReconnectRoomKey);
+            PlayerPrefs.Save();
+        }
+
+        public static bool HasSavedToken()
+        {
+            return !string.IsNullOrEmpty(PlayerPrefs.GetString(ReconnectTokenKey, ""));
+        }
+    }
+}
