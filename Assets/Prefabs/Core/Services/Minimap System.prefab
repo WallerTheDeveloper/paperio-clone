@@ -177,19 +177,18 @@ MonoBehaviour:
   minimapUI: {fileID: 6963077222671374751}
   minimapCamera: {fileID: 6487936252727107034}
   gridPadding: 2
-  cameraHeight: 50
-  indicatorSize: 2.5
-  localIndicatorSize: 3.5
-  localHighlightColor: {r: 1, g: 1, b: 1, a: 1}
-  indicatorHeight: 5
-  pulseLocalIndicator: 1
+  cameraHeight: 25
+  indicatorSize: 3
+  localIndicatorSize: 3
+  indicatorHeight: 15
+  pulseLocalIndicator: 0
   pulseSpeed: 3
   pulseAmplitude: 0.3
-  showViewBounds: 0
+  showViewBounds: 1
   viewBoundsColor: {r: 1, g: 1, b: 1, a: 0.4}
   viewBoundsLineWidth: 0.5
   indicatorLayer: 31
-  debugLog: 0
+  debugLog: 1
 --- !u!1001 &1440913342391774892
 PrefabInstance:
   m_ObjectHideFlags: 0

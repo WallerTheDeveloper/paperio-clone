@@ -16,7 +16,6 @@ namespace Game.Rendering
         [SerializeField] private float cameraHeight = 200f;
         [SerializeField] private float indicatorSize = 2.5f;
         [SerializeField] private float localIndicatorSize = 3.5f;
-        [SerializeField] private Color localHighlightColor = Color.white;
         [SerializeField] private float indicatorHeight = 5f;
         [SerializeField] private bool pulseLocalIndicator = true;
         [SerializeField] private float pulseSpeed = 3f;
@@ -38,12 +37,8 @@ namespace Game.Rendering
 
         private bool _isInitialized;
 
-        #region Public Properties
-
         public RenderTexture MinimapTexture => minimapCamera != null ? minimapCamera.targetTexture : null;
         public bool IsReady => _isInitialized && MinimapTexture != null;
-
-        #endregion
 
         private IGameWorldDataProvider _gameData;
         private PlayerVisualsManager _playerVisualsManager;
@@ -251,41 +246,12 @@ namespace Game.Rendering
             mpb.SetColor("_Color", color);
             renderer.SetPropertyBlock(mpb);
 
-            if (isLocal)
-            {
-                CreateHighlightRing(indicator.transform, size * 1.4f);
-            }
-
             if (debugLog)
             {
                 Debug.Log($"[MinimapSystem] Created indicator for player {playerId} (local={isLocal})");
             }
 
             return indicator;
-        }
-
-        private void CreateHighlightRing(Transform parent, float ringSize)
-        {
-            var ring = GameObject.CreatePrimitive(PrimitiveType.Quad);
-            ring.name = "HighlightRing";
-            ring.layer = indicatorLayer;
-            ring.transform.SetParent(parent);
-            ring.transform.localPosition = new Vector3(0f, -0.01f, 0f);
-            ring.transform.localRotation = Quaternion.identity;
-            ring.transform.localScale = new Vector3(ringSize / parent.localScale.x,
-                                                     ringSize / parent.localScale.x, 1f);
-
-            var collider = ring.GetComponent<Collider>();
-            if (collider != null) Destroy(collider);
-
-            var renderer = ring.GetComponent<MeshRenderer>();
-            renderer.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
-            renderer.receiveShadows = false;
-
-            var mpb = new MaterialPropertyBlock();
-            mpb.SetColor("_BaseColor", localHighlightColor);
-            mpb.SetColor("_Color", localHighlightColor);
-            renderer.SetPropertyBlock(mpb);
         }
 
         private void CreateViewBoundsIndicator()
