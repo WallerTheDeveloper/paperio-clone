@@ -198,6 +198,15 @@ namespace Game
                     _cameraController.SetLocalTarget(_playerVisualsManager.LocalPlayerVisual.transform);
                 }
                 
+                foreach (var player in response.InitialState.Players)
+                {
+                    var playerColor = _playerVisualsManager.GetPlayerColor(player.PlayerId);
+                    if (!_playerColors.ContainsKey(player.PlayerId))
+                    {
+                        _playerColors.Add(player.PlayerId, playerColor);
+                    }
+                }
+                
                 InitializeFromState(response.InitialState);
                 
                 foreach (var player in response.InitialState.Players)
