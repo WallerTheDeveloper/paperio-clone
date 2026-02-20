@@ -4,6 +4,7 @@ using Core.Services;
 using Game;
 using Game.Effects;
 using Network;
+using UnityEngine;
 
 namespace Core.GameStates.Types
 {
@@ -20,25 +21,44 @@ namespace Core.GameStates.Types
             _messageSender = container.Get<MessageSender>();
             _serverStateHandler = container.Get<ServerStateHandler>();
             _gameWorld = container.Get<GameWorld>();
-            
-            if (!_messageSender.IsJoined)
+
+            if (_gameWorld.IsGameActive)
             {
-                StartCoroutine(WaitForJoinRoom());
+                Debug.Log("[GameRunning] Reconnection detected — resetting game state");
+                _gameWorld.Dispose();
             }
-            IEnumerator WaitForJoinRoom()
-            {
-                while (!_messageSender.IsJoined)
-                {
-                    yield return null;
-                }
-                
-                _messageSender.SendReady();
-            }
-            
+
+            _serverStateHandler.ResetForReconnect();
+
             _serverStateHandler.OnJoinedGame += _gameWorld.OnJoinedGame;
             _serverStateHandler.OnStateUpdated += _gameWorld.OnServerStateUpdated;
             _serverStateHandler.OnPlayerEliminated += _gameWorld.OnPlayerEliminated;
             _serverStateHandler.OnPlayerRespawned += _gameWorld.OnPlayerRespawned;
+
+            if (!_serverStateHandler.HasJoinedGame)
+            {
+                if (!_messageSender.IsJoined)
+                {
+                    StartCoroutine(WaitForJoinThenReady());
+                }
+                else
+                {
+                    _messageSender.SendReady();
+                }
+            }
+            else
+            {
+                Debug.Log("[GameRunning] Already joined game (reconnect path), skipping SendReady");
+            }
+        }
+
+        private IEnumerator WaitForJoinThenReady()
+        {
+            while (!_messageSender.IsJoined)
+            {
+                yield return null;
+            }
+            _messageSender.SendReady();
         }
 
         public override void Tick()

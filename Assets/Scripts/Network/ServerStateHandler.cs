@@ -35,6 +35,8 @@ namespace Network
         private int _deltaStatesReceived;
         private int _deltasSkipped;
         
+        public bool HasJoinedGame => _hasJoinedGame;
+        
         public void Initialize(ServiceContainer services)
         {
             _messageSender = services.Get<MessageSender>();
@@ -43,7 +45,6 @@ namespace Network
             _messageSender.OnPaperioStateReceived += HandleStateReceived;
             _messageSender.OnPaperioJoinResponse += HandleJoinResponse;
         }
-
         public void Tick()
         { }
 
@@ -60,6 +61,24 @@ namespace Network
             _currentState = null;
         }
 
+        public void ResetForReconnect()
+        {
+            _lastReceivedTick = 0;
+            _localPlayerId = 0;
+            _tickRateMs = 0;
+            _gridWidth = 0;
+            _gridHeight = 0;
+            _hasJoinedGame = false;
+            _hasValidBaseline = false;
+            _currentState = null;
+            _lastAppliedKeyframeTick = 0;
+            _fullStatesReceived = 0;
+            _deltaStatesReceived = 0;
+            _deltasSkipped = 0;
+
+            Debug.Log("[ServerStateHandler] Reset for reconnect");
+        }
+        
         private void HandleStateReceived(PaperioState state)
         {
             // Ignore old states (can happen due to UDP packet reordering)
