@@ -279,7 +279,7 @@ namespace Game
                 }
                 else if (!isDeltaChange && state.Territory != null && state.Territory.Count > 0)
                 {
-                    changes = _territoryData.ApplyServerState(state.Territory);
+                    changes = _territoryData.ApplyFullState(state.Territory);
                 }
                 else
                 {
