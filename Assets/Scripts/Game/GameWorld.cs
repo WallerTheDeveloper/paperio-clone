@@ -272,12 +272,7 @@ namespace Game
                 List<TerritoryChange> changes;
     
                 bool isDeltaChange = state.StateType == Game.Paperio.StateType.StateDelta;
-    
-                Debug.Log($"[GameWorld] Territory update: tick={state.Tick}, " +
-                          $"isDelta={isDeltaChange}, " +
-                          $"deltaChanges={state.TerritoryChanges.Count}, " +
-                          $"rleRows={state.Territory?.Count ?? 0}, " +
-                          $"stateType={state.StateType}");   
+                
                 if (isDeltaChange && state.TerritoryChanges.Count > 0)
                 {
                     changes = _territoryData.ApplyDeltaChanges(state.TerritoryChanges);
