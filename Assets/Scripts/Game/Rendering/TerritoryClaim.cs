@@ -249,6 +249,17 @@ namespace Game.Rendering
             }
         }
 
+        public void SyncFromMesh()
+        {
+            if (!_isInitialized || _mesh == null)
+            {
+                return;
+            }
+    
+            _originalColors = _mesh.colors32;
+            _colors = _mesh.colors32;
+        }
+        
         private void RemoveWaveAndRemapIndices(int removedIndex)
         {
             _activeWaves.RemoveAt(removedIndex);

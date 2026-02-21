@@ -322,6 +322,10 @@ namespace Game
                            }
                         }
                     }
+                    else
+                    {
+                        _territoryClaim.SyncFromMesh();
+                    }
         
                     OnTerritoryChanged?.Invoke(changes);
         
