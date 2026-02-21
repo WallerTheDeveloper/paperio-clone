@@ -32,15 +32,17 @@ namespace Game.Rendering
         private Mesh _mesh;
         private Vector3[] _originalVertices;
         private Vector3[] _animatedVertices;
-        private Color32[] _originalColors;
-        private Color32[] _colors;
+        private Color32[] _animatedColors;
         private uint _width;
         private uint _height;
         private bool _isInitialized;
 
+        private TerritoryVisualData _visualData;
+
         public bool IsAnimating => _activeWaves.Count > 0;
 
         private IGameWorldDataProvider _gameData;
+
         public void Initialize(ServiceContainer services)
         {
             _gameData = services.Get<GameWorld>();
@@ -51,9 +53,11 @@ namespace Game.Rendering
             _width = _gameData.GridWidth;
             _height = _gameData.GridHeight;
 
-            CaptureOriginalMesh();
+            _visualData = _gameData.Territory.VisualData;
+
+            CaptureFromVisualData();
         }
-        
+
         public void Tick()
         {
             if (_activeWaves.Count == 0) return;
@@ -111,7 +115,7 @@ namespace Game.Rendering
             if (meshDirty)
             {
                 _mesh.vertices = _animatedVertices;
-                _mesh.colors32 = _colors;
+                _mesh.colors32 = _animatedColors;
             }
 
             if (_activeWaves.Count == 0)
@@ -125,25 +129,9 @@ namespace Game.Rendering
             FinishAllImmediately();
         }
 
-        private void CaptureOriginalMesh()
-        {
-            var meshFilter = _gameData.Territory.MeshFilter;
-            if (meshFilter == null || meshFilter.sharedMesh == null) return;
-
-            _mesh = meshFilter.sharedMesh;
-
-            _originalVertices = _mesh.vertices;
-            _animatedVertices = _mesh.vertices;
-            _originalColors = _mesh.colors32;
-            _colors = _mesh.colors32;
-            _isInitialized = true;
-        }
-
         public void AddWave(List<TerritoryChange> changes, uint playerId, Color playerColor)
         {
             if (!_isInitialized || changes == null || changes.Count == 0) return;
-
-            _originalColors = _mesh.colors32;
 
             int waveIndex = _activeWaves.Count;
 
@@ -178,6 +166,45 @@ namespace Game.Rendering
             _activeWaves.Add(wave);
         }
 
+        public void FinishAllImmediately()
+        {
+            foreach (var wave in _activeWaves)
+            {
+                foreach (var cell in wave.AffectedCells)
+                {
+                    long cellIndex = (long)cell.y * _width + cell.x;
+                    ResetCellToFinal(cellIndex);
+                }
+            }
+
+            _activeWaves.Clear();
+            _cellToWaveIndex.Clear();
+
+            if (_isInitialized && _mesh != null)
+            {
+                _mesh.vertices = _animatedVertices;
+                _mesh.colors32 = _animatedColors;
+            }
+        }
+
+        private void CaptureFromVisualData()
+        {
+            if (_visualData == null || !_visualData.IsInitialized) return;
+
+            // TODO: Too hacky to find the mesh filter like this
+            var meshFilter = FindAnyObjectByType<TerritoryRenderer>()?.MeshFilter;
+            if (meshFilter == null || meshFilter.sharedMesh == null) return;
+
+            _mesh = meshFilter.sharedMesh;
+
+            _originalVertices = _mesh.vertices;
+            _animatedVertices = (Vector3[])_originalVertices.Clone();
+
+            _animatedColors = (Color32[])_visualData.Colors.Clone();
+
+            _isInitialized = true;
+        }
+
         private void AnimateCell(long cellIndex, float progress, Color targetColor)
         {
             int vBase = (int)(cellIndex * 4);
@@ -204,10 +231,10 @@ namespace Game.Rendering
             );
 
             Color32 c = animColor;
-            _colors[vBase + 0] = c;
-            _colors[vBase + 1] = c;
-            _colors[vBase + 2] = c;
-            _colors[vBase + 3] = c;
+            _animatedColors[vBase + 0] = c;
+            _animatedColors[vBase + 1] = c;
+            _animatedColors[vBase + 2] = c;
+            _animatedColors[vBase + 3] = c;
         }
 
         private void ResetCellToFinal(long cellIndex)
@@ -218,48 +245,15 @@ namespace Game.Rendering
             for (int i = 0; i < 4; i++)
             {
                 _animatedVertices[vBase + i] = _originalVertices[vBase + i];
-                _colors[vBase + i] = _originalColors[vBase + i];
             }
+
+            Color32 finalColor = _visualData.GetCellColor(cellIndex);
+            _animatedColors[vBase + 0] = finalColor;
+            _animatedColors[vBase + 1] = finalColor;
+            _animatedColors[vBase + 2] = finalColor;
+            _animatedColors[vBase + 3] = finalColor;
         }
 
-        public void FinishAllImmediately()
-        {
-            // Re-sync from mesh to get the latest TerritoryRenderer colors
-            if (_mesh != null)
-            {
-                _originalColors = _mesh.colors32;
-            }
-
-            foreach (var wave in _activeWaves)
-            {
-                foreach (var cell in wave.AffectedCells)
-                {
-                    long cellIndex = (long)cell.y * _width + cell.x;
-                    ResetCellToFinal(cellIndex);
-                }
-            }
-
-            _activeWaves.Clear();
-            _cellToWaveIndex.Clear();
-
-            if (_isInitialized && _mesh != null)
-            {
-                _mesh.vertices = _animatedVertices;
-                _mesh.colors32 = _colors;
-            }
-        }
-
-        public void SyncFromMesh()
-        {
-            if (!_isInitialized || _mesh == null)
-            {
-                return;
-            }
-    
-            _originalColors = _mesh.colors32;
-            _colors = _mesh.colors32;
-        }
-        
         private void RemoveWaveAndRemapIndices(int removedIndex)
         {
             _activeWaves.RemoveAt(removedIndex);

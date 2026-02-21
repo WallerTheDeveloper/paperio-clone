@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using Game.Paperio;
 using UnityEngine;
 
@@ -26,18 +27,25 @@ namespace Game.Data
     {
         public int Width { get; }
         public int Height { get; }
-        public MeshFilter MeshFilter { get; private set; }
         public int ClaimedCells { get; private set; }
         public int TotalCells => Width * Height;
+
+        public TerritoryVisualData VisualData { get; private set; }
+
         private readonly uint[] _cells;
 
-        public TerritoryData(int width, int height, MeshFilter meshFilter)
+        public TerritoryData(int width, int height)
         {
             Width = width;
             Height = height;
-            MeshFilter = meshFilter;
             ClaimedCells = 0;
             _cells = new uint[width * height];
+        }
+
+        public void InitializeVisuals(float cellSize, Color32 neutralColor, Func<uint, Color32> colorResolver)
+        {
+            VisualData = new TerritoryVisualData();
+            VisualData.Initialize(Width, Height, cellSize, neutralColor, colorResolver);
         }
 
         public uint GetOwner(int x, int y)
@@ -79,30 +87,6 @@ namespace Game.Data
             return _cells;
         }
 
-        // TODO: REFACTOR. Two separate methods for full state vs delta is a bit redundant. Can we unify them?
-        public List<TerritoryChange> ApplyServerState(IEnumerable<TerritoryRow> territoryRows)
-        {
-            var changes = new List<TerritoryChange>();
-
-            foreach (var row in territoryRows)
-            {
-                int y = row.Y;
-
-                if (y < 0 || y >= Height)
-                {
-                    Debug.LogWarning($"[TerritoryData] Row y={y} out of bounds (height={Height})");
-                    continue;
-                }
-
-                DecodeRow(row, changes);
-            }
-
-            RecalculateClaimedCells();
-
-            return changes;
-        }
-        
-        // TODO: REFACTOR. Two separate methods for full state vs delta is a bit redundant. Can we unify them?
         public List<TerritoryChange> ApplyFullState(IEnumerable<TerritoryRow> territoryRows)
         {
             var changes = new List<TerritoryChange>();
@@ -138,6 +122,8 @@ namespace Game.Data
             }
 
             RecalculateClaimedCells();
+
+            VisualData?.ApplyChanges(changes);
 
             return changes;
         }
@@ -177,6 +163,8 @@ namespace Game.Data
                     changes.Add(new TerritoryChange(x, y, previousOwner, newOwner));
                 }
             }
+
+            VisualData?.ApplyChanges(changes);
 
             return changes;
         }
@@ -223,7 +211,7 @@ namespace Game.Data
 
             return (count * 100f) / TotalCells;
         }
-        
+
         private void RecalculateClaimedCells()
         {
             ClaimedCells = 0;
@@ -236,25 +224,12 @@ namespace Game.Data
             }
         }
 
-        public string DebugRegion(int startX, int startY, int w, int h)
-        {
-            var sb = new System.Text.StringBuilder();
-            for (int y = startY; y < startY + h && y < Height; y++)
-            {
-                for (int x = startX; x < startX + w && x < Width; x++)
-                {
-                    uint owner = GetOwner(x, y);
-                    sb.Append(owner == 0 ? "." : owner.ToString());
-                }
-                sb.AppendLine();
-            }
-            return sb.ToString();
-        }
-        
         public void Clear()
         {
             System.Array.Clear(_cells, 0, _cells.Length);
             ClaimedCells = 0;
+
+            VisualData.RebuildAllColors(_cells);
         }
     }
 }

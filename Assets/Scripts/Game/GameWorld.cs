@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
 using Core.Services;
 using Game.Data;
 using Game.Effects;
@@ -18,7 +17,6 @@ namespace Game
         [SerializeField] private GameWorldConfig config;
         
         [Header("Debug")]
-        [SerializeField] private bool logTerritoryUpdates = false;
         [SerializeField] private bool logPlayerUpdates = false;
         
         private readonly Dictionary<uint, Color> _playerColors = new();
@@ -179,8 +177,6 @@ namespace Game
                 _gridWidth = response.InitialState.GridWidth;
                 _gridHeight = response.InitialState.GridHeight;
                 
-                _territoryRenderer.CreateTerritory();
-                
                 _playerVisualsManager.UpdateFromState(response.InitialState, _localPlayerId);
                 _playerVisualsManager.SpawnPlayers();
                 
@@ -266,13 +262,13 @@ namespace Game
                     _playerColors.Add(player.PlayerId, playerColor);
                 }
             }
-
+            
             if (_territoryData != null)
             {
                 List<TerritoryChange> changes;
-    
+
                 bool isDeltaChange = state.StateType == Game.Paperio.StateType.StateDelta;
-                
+
                 if (isDeltaChange && state.TerritoryChanges.Count > 0)
                 {
                     changes = _territoryData.ApplyDeltaChanges(state.TerritoryChanges);
@@ -285,51 +281,40 @@ namespace Game
                 {
                     changes = new List<TerritoryChange>();
                 }
-    
+
                 if (changes.Count > 0)
                 {
-                    _territoryRenderer.UpdateTerritory(changes);
+                    _territoryRenderer.FlushToMesh(changes.Count);
 
                     var playerData = _playerVisualsManager.PlayersContainer.TryGetPlayerById(changes[0].NewOwner);
                     if (playerData != null)
-                    { 
+                    {
                         _territoryClaim.AddWave(changes, playerData.PlayerId, playerData.Color);
-                        
+
                         if (_claimPopupManager != null)
                         {
-                           int localClaimCount = 0;
-                           Color localColor = Color.white;
-                           foreach (var change in changes)
-                           {
-                               if (change.NewOwner == _localPlayerId)
-                               {
-                                   localClaimCount++;
-                                   if (localColor == Color.white && _playerColors.TryGetValue(_localPlayerId, out var c))
-                                   {
-                                       localColor = c;
-                                   }
-                               }
-                           }
-                           
-                           if (localClaimCount > 0)
-                           {
-                               _claimPopupManager.ShowClaimPopup(localClaimCount, localColor);
-                           }
+                            int localClaimCount = 0;
+                            Color localColor = Color.white;
+                            foreach (var change in changes)
+                            {
+                                if (change.NewOwner == _localPlayerId)
+                                {
+                                    localClaimCount++;
+                                    if (localColor == Color.white && _playerColors.TryGetValue(_localPlayerId, out var c))
+                                    {
+                                        localColor = c;
+                                    }
+                                }
+                            }
+
+                            if (localClaimCount > 0)
+                            {
+                                _claimPopupManager.ShowClaimPopup(localClaimCount, localColor);
+                            }
                         }
                     }
-                    else
-                    {
-                        _territoryClaim.SyncFromMesh();
-                    }
-        
+
                     OnTerritoryChanged?.Invoke(changes);
-        
-                    if (logTerritoryUpdates && state.Tick % 20 == 0)
-                    {
-                        Debug.Log($"[GameWorld] Tick {state.Tick}: " +
-                                  $"{changes.Count} territory changes ({(isDeltaChange ? "DELTA" : "FULL")}), " +
-                                  $"{_territoryData.ClaimedCells}/{_territoryData.TotalCells} claimed");
-                    }
                 }
             }
             
@@ -371,13 +356,6 @@ namespace Game
     
                     _playerVisualsManager.LocalPlayerVisual.SetPredictedTarget(predictedWorldPos);
                 }
-                
-                // if (logPlayerUpdates && state.Tick % 20 == 0)
-                // {
-                //     Debug.Log($"[GameWorld] Tick {state.Tick}: " +
-                //               $"{state.Players.Count} players, " +
-                //               $"{_playerVisualsManager.ActiveCount} visuals active");
-                // }
             }
             if (_trailVisualsManager != null)
             {
@@ -452,28 +430,49 @@ namespace Game
         {
             int width = (int)initialState.GridWidth;
             int height = (int)initialState.GridHeight;
-            
-            _territoryData = new TerritoryData(width, height, _territoryRenderer.MeshFilter);
-            
+
+            _territoryData = new TerritoryData(width, height);
+
+            _territoryData.InitializeVisuals(config.CellSize, config.NeutralColor, ResolveTerritoryColor);
+
             if (initialState.Territory != null)
             {
                 var changes = _territoryData.ApplyFullState(initialState.Territory);
                 Debug.Log($"[GameWorld] Initial territory: {_territoryData.ClaimedCells} cells claimed");
             }
-            
-            _territoryRenderer.ApplyFullState(_territoryData);
-            
-            if (logTerritoryUpdates)
-            {
-                int cx = width / 2, cy = height / 2;
-                Debug.Log($"[GameWorld] Territory around center ({cx},{cy}):\n" + 
-                          _territoryData.DebugRegion(cx - 5, cy - 5, 11, 11));
-            }
-            
+
+            _territoryRenderer.CreateTerritory();
+
             _effectsManager.PreparePools();
             _territoryClaim.Prepare();
         }
         
+        // TODO: should this method be here?
+        private Color32 ResolveTerritoryColor(uint ownerId)
+        {
+            if (ownerId == 0)
+            {
+                return config.NeutralColor;
+            }
+
+            if (_playerColors.TryGetValue(ownerId, out Color playerColor))
+            {
+                return new Color(
+                    playerColor.r * 0.7f,
+                    playerColor.g * 0.7f,
+                    playerColor.b * 0.7f,
+                    1f
+                );
+            }
+
+            Color resolved = _playerVisualsManager.GetPlayerColor(ownerId);
+            return new Color(
+                resolved.r * 0.7f,
+                resolved.g * 0.7f,
+                resolved.b * 0.7f,
+                1f
+            );
+        }
         private Bounds GetGridBounds()
         {
             var center = GridHelper.GetGridCenter(GridWidth, GridHeight, config.CellSize);
