@@ -166,6 +166,21 @@ namespace Game.Rendering
             _activeWaves.Add(wave);
         }
 
+        public void SyncNonAnimatedColors()
+        {
+            if (!_isInitialized || _visualData == null || !_visualData.IsInitialized) return;
+
+            var sourceColors = _visualData.Colors;
+            for (int i = 0; i < sourceColors.Length; i++)
+            {
+                long cellIndex = i / 4;
+                if (!_cellToWaveIndex.ContainsKey(cellIndex))
+                {
+                    _animatedColors[i] = sourceColors[i];
+                }
+            }
+        }
+        
         public void FinishAllImmediately()
         {
             foreach (var wave in _activeWaves)

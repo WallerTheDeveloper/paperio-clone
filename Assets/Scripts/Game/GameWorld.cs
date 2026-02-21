@@ -285,7 +285,8 @@ namespace Game
                 if (changes.Count > 0)
                 {
                     _territoryRenderer.FlushToMesh(changes.Count);
-
+                    _territoryClaim.SyncNonAnimatedColors();
+                    
                     var playerData = _playerVisualsManager.PlayersContainer.TryGetPlayerById(changes[0].NewOwner);
                     if (playerData != null)
                     {
