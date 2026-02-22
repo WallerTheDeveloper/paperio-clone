@@ -169,6 +169,31 @@ namespace Game.Data
             return changes;
         }
 
+        public List<TerritoryChange> ClearOwnership(uint playerId)
+        {
+            var changes = new List<TerritoryChange>();
+
+            for (int i = 0; i < _cells.Length; i++)
+            {
+                if (_cells[i] == playerId)
+                {
+                    int x = i % Width;
+                    int y = i / Width;
+
+                    changes.Add(new TerritoryChange(x, y, playerId, 0));
+                    _cells[i] = 0;
+                }
+            }
+
+            if (changes.Count > 0)
+            {
+                RecalculateClaimedCells();
+                VisualData?.ApplyChanges(changes);
+            }
+
+            return changes;
+        }
+        
         private void DecodeRow(TerritoryRow row, List<TerritoryChange> changes)
         {
             int y = row.Y;

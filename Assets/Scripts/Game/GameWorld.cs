@@ -426,7 +426,16 @@ namespace Game
             }
         }
         
-
+        public void OnPlayerDisconnectedVisually(uint playerId)
+        {
+            Debug.Log($"[GameWorld] Player {playerId} disconnected — cleaning up visuals");
+    
+            _trailVisualsManager?.RemoveTrail(playerId);
+            _playerVisualsManager?.DespawnPlayer(playerId);
+    
+            _territoryData.Clear();
+        }
+        
         private void InitializeFromState(PaperioState initialState)
         {
             int width = (int)initialState.GridWidth;
@@ -473,28 +482,6 @@ namespace Game
                 resolved.b * 0.7f,
                 1f
             );
-        }
-        private Bounds GetGridBounds()
-        {
-            var center = GridHelper.GetGridCenter(GridWidth, GridHeight, config.CellSize);
-            var size = new Vector3(
-                GridWidth * config.CellSize,
-                10f,
-                GridHeight * config.CellSize
-            );
-            return new Bounds(center, size);
-        }
-
-        private void OnDrawGizmosSelected()
-        {
-            if (!_isGameActive || _territoryData == null) return;
-            
-            var bounds = GetGridBounds();
-            Gizmos.color = Color.yellow;
-            Gizmos.DrawWireCube(bounds.center, bounds.size);
-            
-            Gizmos.color = Color.red;
-            Gizmos.DrawSphere(GridHelper.GetGridCenter(_gridWidth, _gridHeight, config.CellSize), 1f);
         }
     }
 }

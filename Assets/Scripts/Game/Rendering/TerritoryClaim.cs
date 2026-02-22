@@ -168,7 +168,10 @@ namespace Game.Rendering
 
         public void SyncNonAnimatedColors()
         {
-            if (!_isInitialized || _visualData == null || !_visualData.IsInitialized) return;
+            if (!_isInitialized || _visualData == null || !_visualData.IsInitialized)
+            {
+                return;
+            }
 
             var sourceColors = _visualData.Colors;
             for (int i = 0; i < sourceColors.Length; i++)

@@ -3,6 +3,7 @@ using System.Collections;
 using Core.Services;
 using Game;
 using Game.Effects;
+using Game.Server;
 using Network;
 using UnityEngine;
 
@@ -34,7 +35,8 @@ namespace Core.GameStates.Types
             _serverStateHandler.OnStateUpdated += _gameWorld.OnServerStateUpdated;
             _serverStateHandler.OnPlayerEliminated += _gameWorld.OnPlayerEliminated;
             _serverStateHandler.OnPlayerRespawned += _gameWorld.OnPlayerRespawned;
-
+            _messageSender.OnPlayerDisconnected += HandlePlayerDisconnected;
+            
             if (!_serverStateHandler.HasJoinedGame)
             {
                 if (!_messageSender.IsJoined)
@@ -50,6 +52,11 @@ namespace Core.GameStates.Types
             {
                 Debug.Log("[GameRunning] Already joined game (reconnect path), skipping SendReady");
             }
+        }
+
+        private void HandlePlayerDisconnected(PlayerDisconnected obj)
+        {
+            _gameWorld.OnPlayerDisconnectedVisually(obj.PlayerId);
         }
 
         private IEnumerator WaitForJoinThenReady()
@@ -70,6 +77,7 @@ namespace Core.GameStates.Types
             _serverStateHandler.OnStateUpdated -= _gameWorld.OnServerStateUpdated;
             _serverStateHandler.OnPlayerEliminated -= _gameWorld.OnPlayerEliminated;
             _serverStateHandler.OnPlayerRespawned -= _gameWorld.OnPlayerRespawned;
+            _messageSender.OnPlayerDisconnected -= HandlePlayerDisconnected;
         }
     }
 }
