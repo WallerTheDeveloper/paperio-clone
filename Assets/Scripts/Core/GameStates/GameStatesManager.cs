@@ -9,6 +9,7 @@ namespace Core.GameStates
     {
         [SerializeField] private GameInitialize gameInitialize;
         [SerializeField] private GameConnect gameConnect;
+        [SerializeField] private GameMenu gameMenu;
         [SerializeField] private GameReconnect gameReconnect;
         [SerializeField] private GameJoinRoom gameJoinRoom;
         [SerializeField] private GameRunning gameRunning;
@@ -34,6 +35,7 @@ namespace Core.GameStates
             }
             else
             {
+                _pendingStates.Enqueue(gameMenu);
                 _pendingStates.Enqueue(gameJoinRoom);
             }
             
@@ -97,6 +99,7 @@ namespace Core.GameStates
             _currentState.TriggerStateSwitch -= SwitchState;
             
             _pendingStates.Clear();
+            _pendingStates.Enqueue(gameMenu);
             _pendingStates.Enqueue(gameJoinRoom);
             _pendingStates.Enqueue(gameRunning);
             

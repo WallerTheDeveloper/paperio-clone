@@ -107,7 +107,7 @@ namespace Game
         {
             if (!_isGameActive)
             {
-                Debug.Log("[GameWorld] Game is not active!");
+                //Debug.Log("[GameWorld] Game is not active!");
                 return;
             }
     

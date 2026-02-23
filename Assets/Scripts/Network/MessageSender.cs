@@ -107,6 +107,12 @@ namespace Network
                 _udpClient.Dispose();
             }
         }
+        
+        public void SetPlayerName(string name)
+        {
+            playerName = name;
+        }
+        
         #region Public API - Connection
 
         public bool Connect()
@@ -269,28 +275,33 @@ namespace Network
 
         private void HandleDataReceived(byte[] data)
         {
+            Debug.Log($"[NetworkManager] HandleDataReceived called with {data.Length} bytes");
+            
             try
             {
-                // Parse as ServerMessage
                 var serverMsg = new ServerMessage();
                 serverMsg.MergeFrom(new CodedInputStream(data));
 
-                // Track sequence for packet loss detection
+                Debug.Log($"[NetworkManager] Parsed ServerMessage: PayloadCase={serverMsg.PayloadCase}, Sequence={serverMsg.Sequence}");
+
                 _udpClient.UpdateReceivedSequence(serverMsg.Sequence);
 
-                // Route to appropriate handler based on payload type
                 switch (serverMsg.PayloadCase)
                 {
                     case ServerMessage.PayloadOneofCase.RoomJoined:
+                        Debug.Log($"[NetworkManager] >>> RoomJoined received! PlayerId={serverMsg.RoomJoined.PlayerId}, Room={serverMsg.RoomJoined.RoomCode}");
                         HandleRoomJoined(serverMsg.RoomJoined);
                         break;
                     case ServerMessage.PayloadOneofCase.RoomUpdate:
+                        Debug.Log("[NetworkManager] >>> RoomUpdate received");
                         OnRoomUpdate?.Invoke(serverMsg.RoomUpdate);
                         break;
                     case ServerMessage.PayloadOneofCase.GameStarting:
+                        Debug.Log($"[NetworkManager] >>> GameStarting received! Countdown={serverMsg.GameStarting.CountdownSeconds}");
                         OnGameStarting?.Invoke(serverMsg.GameStarting);
                         break;
                     case ServerMessage.PayloadOneofCase.GameMessage:
+                        Debug.Log($"[NetworkManager] >>> GameMessage received! FromPlayer={serverMsg.GameMessage.FromPlayerId}");
                         HandleGameMessage(serverMsg.GameMessage);
                         break;
                     case ServerMessage.PayloadOneofCase.GameEnded:
@@ -300,6 +311,7 @@ namespace Network
                         OnPlayerLeft?.Invoke(serverMsg.PlayerLeft);
                         break;
                     case ServerMessage.PayloadOneofCase.Error:
+                        Debug.Log($"[NetworkManager] >>> Error received: {serverMsg.Error.Message}");
                         HandleServerError(serverMsg.Error);
                         break;
                     case ServerMessage.PayloadOneofCase.Pong:
@@ -311,6 +323,10 @@ namespace Network
                     case ServerMessage.PayloadOneofCase.PlayerReconnected:
                         OnPlayerReconnected?.Invoke(serverMsg.PlayerReconnected);
                         break;
+                    case ServerMessage.PayloadOneofCase.None:
+                        Debug.LogWarning("[NetworkManager] >>> Received message with PayloadCase=None (empty payload!)");
+                        Debug.LogWarning($"[NetworkManager] Raw bytes ({data.Length}): {BitConverter.ToString(data, 0, Math.Min(data.Length, 64))}");
+                        break;
                     default:
                         Debug.LogWarning($"[NetworkManager] Unknown message type: {serverMsg.PayloadCase}");
                         break;
@@ -318,7 +334,8 @@ namespace Network
             }
             catch (Exception ex)
             {
-                Debug.LogError($"[NetworkManager] Error parsing message: {ex}");
+                Debug.LogError($"[NetworkManager] Error parsing message ({data.Length} bytes): {ex}");
+                Debug.LogError($"[NetworkManager] Raw bytes: {BitConverter.ToString(data, 0, Math.Min(data.Length, 64))}");
             }
         }
 

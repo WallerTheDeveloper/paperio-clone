@@ -35,6 +35,7 @@ Transform:
   - {fileID: 4229432018612913095}
   - {fileID: 2297979595147536310}
   - {fileID: 8657790370683559095}
+  - {fileID: 5799157714722442556}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!114 &4749236946027940803
@@ -51,6 +52,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::Core.GameStates.GameStatesManager
   gameInitialize: {fileID: 814878524916359868}
   gameConnect: {fileID: 6291362431772250547}
+  gameMenu: {fileID: 3178262568942595676}
   gameReconnect: {fileID: 6945327289409347925}
   gameJoinRoom: {fileID: 179237555441554091}
   gameRunning: {fileID: 5369221864247578084}
@@ -272,6 +274,79 @@ MonoBehaviour:
 Transform:
   m_CorrespondingSourceObject: {fileID: 1209959425916248501, guid: a1e70acc0de60e64c99c2b4c02f105a2, type: 3}
   m_PrefabInstance: {fileID: 4623704665487996920}
+  m_PrefabAsset: {fileID: 0}
+--- !u!1001 &5040700478503771329
+PrefabInstance:
+  m_ObjectHideFlags: 0
+  serializedVersion: 2
+  m_Modification:
+    serializedVersion: 3
+    m_TransformParent: {fileID: 2268572542605838765}
+    m_Modifications:
+    - target: {fileID: 1553343125574160893, guid: 4e16cfccccc99f7469c03630bfb496a0, type: 3}
+      propertyPath: m_LocalPosition.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 1553343125574160893, guid: 4e16cfccccc99f7469c03630bfb496a0, type: 3}
+      propertyPath: m_LocalPosition.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 1553343125574160893, guid: 4e16cfccccc99f7469c03630bfb496a0, type: 3}
+      propertyPath: m_LocalPosition.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 1553343125574160893, guid: 4e16cfccccc99f7469c03630bfb496a0, type: 3}
+      propertyPath: m_LocalRotation.w
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 1553343125574160893, guid: 4e16cfccccc99f7469c03630bfb496a0, type: 3}
+      propertyPath: m_LocalRotation.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 1553343125574160893, guid: 4e16cfccccc99f7469c03630bfb496a0, type: 3}
+      propertyPath: m_LocalRotation.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 1553343125574160893, guid: 4e16cfccccc99f7469c03630bfb496a0, type: 3}
+      propertyPath: m_LocalRotation.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 1553343125574160893, guid: 4e16cfccccc99f7469c03630bfb496a0, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 1553343125574160893, guid: 4e16cfccccc99f7469c03630bfb496a0, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 1553343125574160893, guid: 4e16cfccccc99f7469c03630bfb496a0, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 5806679093293198571, guid: 4e16cfccccc99f7469c03630bfb496a0, type: 3}
+      propertyPath: m_Name
+      value: Game Menu
+      objectReference: {fileID: 0}
+    m_RemovedComponents: []
+    m_RemovedGameObjects: []
+    m_AddedGameObjects: []
+    m_AddedComponents: []
+  m_SourcePrefab: {fileID: 100100000, guid: 4e16cfccccc99f7469c03630bfb496a0, type: 3}
+--- !u!114 &3178262568942595676 stripped
+MonoBehaviour:
+  m_CorrespondingSourceObject: {fileID: 7633423897138147997, guid: 4e16cfccccc99f7469c03630bfb496a0, type: 3}
+  m_PrefabInstance: {fileID: 5040700478503771329}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d496389bed4c4ea2973db268db3ba47d, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::Core.GameStates.Types.GameMenu
+--- !u!4 &5799157714722442556 stripped
+Transform:
+  m_CorrespondingSourceObject: {fileID: 1553343125574160893, guid: 4e16cfccccc99f7469c03630bfb496a0, type: 3}
+  m_PrefabInstance: {fileID: 5040700478503771329}
   m_PrefabAsset: {fileID: 0}
 --- !u!1001 &8180159879820353187
 PrefabInstance:

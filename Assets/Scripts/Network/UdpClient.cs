@@ -182,12 +182,12 @@ namespace Network
         private async Task ReceiveLoop(CancellationToken cancellationToken)
         {
             byte[] buffer = new byte[ReceiveBufferSize];
+            Debug.Log("[UdpClient] ReceiveLoop STARTED on thread " + System.Threading.Thread.CurrentThread.ManagedThreadId);
 
             while (!cancellationToken.IsCancellationRequested && _isConnected)
             {
                 try
                 {
-                    // Use async receive with timeout
                     var receiveTask = _client.ReceiveAsync();
                     var completedTask = await Task.WhenAny(
                         receiveTask,
@@ -197,37 +197,44 @@ namespace Network
                     if (completedTask == receiveTask && !cancellationToken.IsCancellationRequested)
                     {
                         var result = await receiveTask;
-                        
-                        // Copy received data
+
                         byte[] receivedData = new byte[result.Buffer.Length];
                         Array.Copy(result.Buffer, receivedData, result.Buffer.Length);
 
-                        // Dispatch to main thread via Unity's synchronization context
-                        DispatchToMainThread(() => OnDataReceived?.Invoke(receivedData));
+                        Debug.Log($"[UdpClient] RAW RECEIVED {receivedData.Length} bytes on thread {System.Threading.Thread.CurrentThread.ManagedThreadId}");
+
+                        // Always use MainThreadDispatcher - never trust SynchronizationContext from background threads
+                        MainThreadDispatcher.Enqueue(() =>
+                        {
+                            Debug.Log($"[UdpClient] DISPATCHING {receivedData.Length} bytes to OnDataReceived (subscribers: {OnDataReceived?.GetInvocationList()?.Length ?? 0})");
+                            OnDataReceived?.Invoke(receivedData);
+                        });
                     }
                 }
                 catch (OperationCanceledException)
                 {
-                    break; // Normal cancellation
+                    Debug.Log("[UdpClient] ReceiveLoop: OperationCanceledException (normal shutdown)");
+                    break;
                 }
                 catch (ObjectDisposedException)
                 {
-                    break; // Socket was closed
+                    Debug.Log("[UdpClient] ReceiveLoop: ObjectDisposedException (socket closed)");
+                    break;
                 }
                 catch (SocketException ex)
                 {
                     if (!cancellationToken.IsCancellationRequested)
                     {
+                        Debug.LogWarning($"[UdpClient] ReceiveLoop SocketException: {ex.Message}");
                         DispatchToMainThread(() => OnError?.Invoke($"Receive error: {ex.Message}"));
-                        Debug.LogWarning($"[UdpClient] Receive error: {ex.Message}");
                     }
                 }
                 catch (Exception ex)
                 {
                     if (!cancellationToken.IsCancellationRequested)
                     {
+                        Debug.LogError($"[UdpClient] ReceiveLoop unexpected: {ex}");
                         DispatchToMainThread(() => OnError?.Invoke($"Unexpected error: {ex.Message}"));
-                        Debug.LogError($"[UdpClient] Unexpected error: {ex}");
                     }
                 }
             }
@@ -275,17 +282,7 @@ namespace Network
         /// </summary>
         private void DispatchToMainThread(Action action)
         {
-            // If we have a SynchronizationContext, use it
-            var context = SynchronizationContext.Current;
-            if (context != null)
-            {
-                context.Post(_ => action(), null);
-            }
-            else
-            {
-                // Queue for manual processing if no context available
-                MainThreadDispatcher.Enqueue(action);
-            }
+            MainThreadDispatcher.Enqueue(action);
         }
 
         public void Dispose()
