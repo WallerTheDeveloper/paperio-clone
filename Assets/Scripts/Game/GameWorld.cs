@@ -430,10 +430,16 @@ namespace Game
         {
             Debug.Log($"[GameWorld] Player {playerId} disconnected — cleaning up visuals");
     
-            _trailVisualsManager?.RemoveTrail(playerId);
-            _playerVisualsManager?.DespawnPlayer(playerId);
+            _trailVisualsManager.RemoveTrail(playerId);
+            _playerVisualsManager.DespawnPlayer(playerId);
     
-            _territoryData.Clear();
+            var changes = _territoryData.ClearOwnership(playerId);
+            if (changes.Count > 0)
+            {
+                _territoryRenderer.FlushToMesh(changes.Count);
+                _territoryClaim.SyncNonAnimatedColors();
+                OnTerritoryChanged?.Invoke(changes);
+            }
         }
         
         private void InitializeFromState(PaperioState initialState)
