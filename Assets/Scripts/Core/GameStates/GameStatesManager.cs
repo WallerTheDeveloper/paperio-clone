@@ -7,7 +7,6 @@ namespace Core.GameStates
 {
     public class GameStatesManager : MonoBehaviour, IService
     {
-        [SerializeField] private GameInitialize gameInitialize;
         [SerializeField] private GameConnect gameConnect;
         [SerializeField] private GameMenu gameMenu;
         [SerializeField] private GameReconnect gameReconnect;
@@ -26,7 +25,6 @@ namespace Core.GameStates
             
             _pendingStates = new Queue<GameState>();
 
-            _pendingStates.Enqueue(gameInitialize);
             _pendingStates.Enqueue(gameConnect);
             
             if (GameReconnect.HasSavedToken())

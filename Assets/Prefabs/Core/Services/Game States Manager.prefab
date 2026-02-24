@@ -31,7 +31,6 @@ Transform:
   m_ConstrainProportionsScale: 0
   m_Children:
   - {fileID: 3334855739112691948}
-  - {fileID: 5827676930478298701}
   - {fileID: 4229432018612913095}
   - {fileID: 2297979595147536310}
   - {fileID: 8657790370683559095}
@@ -50,7 +49,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 08a072f7b5684102b68f0875e78a6692, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Core.GameStates.GameStatesManager
-  gameInitialize: {fileID: 814878524916359868}
   gameConnect: {fileID: 6291362431772250547}
   gameMenu: {fileID: 3178262568942595676}
   gameReconnect: {fileID: 6945327289409347925}
@@ -202,79 +200,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d8f379d3933f486cb4cbae3d0d62c35b, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Core.GameStates.Types.GameReconnect
---- !u!1001 &4623704665487996920
-PrefabInstance:
-  m_ObjectHideFlags: 0
-  serializedVersion: 2
-  m_Modification:
-    serializedVersion: 3
-    m_TransformParent: {fileID: 2268572542605838765}
-    m_Modifications:
-    - target: {fileID: 1209959425916248501, guid: a1e70acc0de60e64c99c2b4c02f105a2, type: 3}
-      propertyPath: m_LocalPosition.x
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 1209959425916248501, guid: a1e70acc0de60e64c99c2b4c02f105a2, type: 3}
-      propertyPath: m_LocalPosition.y
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 1209959425916248501, guid: a1e70acc0de60e64c99c2b4c02f105a2, type: 3}
-      propertyPath: m_LocalPosition.z
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 1209959425916248501, guid: a1e70acc0de60e64c99c2b4c02f105a2, type: 3}
-      propertyPath: m_LocalRotation.w
-      value: 1
-      objectReference: {fileID: 0}
-    - target: {fileID: 1209959425916248501, guid: a1e70acc0de60e64c99c2b4c02f105a2, type: 3}
-      propertyPath: m_LocalRotation.x
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 1209959425916248501, guid: a1e70acc0de60e64c99c2b4c02f105a2, type: 3}
-      propertyPath: m_LocalRotation.y
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 1209959425916248501, guid: a1e70acc0de60e64c99c2b4c02f105a2, type: 3}
-      propertyPath: m_LocalRotation.z
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 1209959425916248501, guid: a1e70acc0de60e64c99c2b4c02f105a2, type: 3}
-      propertyPath: m_LocalEulerAnglesHint.x
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 1209959425916248501, guid: a1e70acc0de60e64c99c2b4c02f105a2, type: 3}
-      propertyPath: m_LocalEulerAnglesHint.y
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 1209959425916248501, guid: a1e70acc0de60e64c99c2b4c02f105a2, type: 3}
-      propertyPath: m_LocalEulerAnglesHint.z
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 6574032659029032755, guid: a1e70acc0de60e64c99c2b4c02f105a2, type: 3}
-      propertyPath: m_Name
-      value: Game Initialize
-      objectReference: {fileID: 0}
-    m_RemovedComponents: []
-    m_RemovedGameObjects: []
-    m_AddedGameObjects: []
-    m_AddedComponents: []
-  m_SourcePrefab: {fileID: 100100000, guid: a1e70acc0de60e64c99c2b4c02f105a2, type: 3}
---- !u!114 &814878524916359868 stripped
-MonoBehaviour:
-  m_CorrespondingSourceObject: {fileID: -3790424129853614780, guid: a1e70acc0de60e64c99c2b4c02f105a2, type: 3}
-  m_PrefabInstance: {fileID: 4623704665487996920}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 0}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 0581f25e408f45949b51c51cc8eb0353, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::Core.GameStates.Types.GameInitialize
---- !u!4 &5827676930478298701 stripped
-Transform:
-  m_CorrespondingSourceObject: {fileID: 1209959425916248501, guid: a1e70acc0de60e64c99c2b4c02f105a2, type: 3}
-  m_PrefabInstance: {fileID: 4623704665487996920}
-  m_PrefabAsset: {fileID: 0}
 --- !u!1001 &5040700478503771329
 PrefabInstance:
   m_ObjectHideFlags: 0

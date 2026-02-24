@@ -37,7 +37,6 @@ namespace Core
             _playersContainer = new PlayersContainer();
             _inputService = new InputService();
             
-            
             _services.Register(messageSender);
             _services.Register(_playersContainer);
             _services.Register(serverStateHandler);

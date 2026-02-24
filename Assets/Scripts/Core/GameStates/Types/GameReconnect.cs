@@ -57,7 +57,10 @@ namespace Core.GameStates.Types
 
         public override void Tick()
         {
-            if (!_isWaitingForResponse) return;
+            if (!_isWaitingForResponse)
+            {
+                return;
+            }
 
             _timeoutTimer += Time.deltaTime;
             if (_timeoutTimer >= ReconnectTimeoutSeconds)
