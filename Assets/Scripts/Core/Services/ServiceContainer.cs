@@ -23,6 +23,7 @@ namespace Core.Services
             
             _initialized = false;
             _services[service] = new ServiceData { IsInitialized = false };
+            service.OnRegistered();
             return this;
         }
 

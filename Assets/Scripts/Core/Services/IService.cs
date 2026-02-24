@@ -13,6 +13,11 @@
         /// Not every Service is obligated to implement it
         /// </summary>
         void TickLate() {}
+        /// <summary>
+        /// Called when service is registered in ServiceContainer.
+        /// Not every Service is obligated to implement it.
+        /// </summary>
+        void OnRegistered() {}
         void Dispose();
     }
 }

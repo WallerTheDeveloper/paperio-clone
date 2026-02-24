@@ -210,7 +210,7 @@ namespace Game
             _moveProgress = 1f;
             _transform.position = worldPosition;
 
-            _interpolationBuffer.Clear();
+            _interpolationBuffer?.Clear();
         }
 
         private void SetColor(Color color)

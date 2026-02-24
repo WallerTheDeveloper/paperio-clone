@@ -58,7 +58,7 @@ namespace Game
 
             _hasBounds = _gameBounds != default;
             _isInitialized = true;
-
+            
             Debug.Log($"[CameraController] Initialized — height:{height} distance:{distance}");
         }
 

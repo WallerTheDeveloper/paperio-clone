@@ -30,31 +30,58 @@ namespace Core
         private PlayersContainer _playersContainer;
         private InputService _inputService;
         
+        private PlayerColorRegistry _colorRegistry;
+        private GameStateReceiver _stateReceiver;
+        private PredictionSystem _predictionSystem;
+        private TerritorySystem _territorySystem;
+        private EffectsCoordinator _effectsCoordinator;
+        
         private ServiceContainer _services;
+
         private void Awake()
         {
             _services = new ServiceContainer();
+            
             _playersContainer = new PlayersContainer();
             _inputService = new InputService();
+            _colorRegistry = new PlayerColorRegistry();
+            _stateReceiver = new GameStateReceiver();
+            _predictionSystem = new PredictionSystem();
+            _territorySystem = new TerritorySystem();
+            _effectsCoordinator = new EffectsCoordinator();
             
             _services.Register(messageSender);
             _services.Register(_playersContainer);
             _services.Register(serverStateHandler);
-            _services.Register(gameStatesManager); 
+            _services.Register(gameStatesManager);
             _services.Register(playerVisualsManager);
             _services.Register(_inputService);
-            _services.Register(gameWorld);
-            _services.Register(trailVisualsManager);
+            _services.Register(_colorRegistry);
             _services.Register(effectsManager);
             _services.Register(territoryRenderer);
+            _services.Register(trailVisualsManager);
             _services.Register(territoryClaim);
             _services.Register(minimapSystem);
             _services.Register(territoryClaimPopupManager);
             _services.Register(leaderboardUI);
             
+            // Game subsystems (depend on the above)
+            RegisterGameSubsystems();
+
             _services.InitDanglingServices();
+            return;
+
+            void RegisterGameSubsystems()
+            {
+                _services.Register(_territorySystem);
+                _services.Register(_effectsCoordinator);
+                _services.Register(_predictionSystem);
+                _services.Register(_stateReceiver);
+                
+                _services.Register(gameWorld);
+            }
         }
-        
+
         private void Update()
         {
             _services.TickAll();
