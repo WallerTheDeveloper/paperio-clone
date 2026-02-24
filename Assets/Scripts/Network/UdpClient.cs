@@ -181,14 +181,20 @@ namespace Network
 
         private async Task ReceiveLoop(CancellationToken cancellationToken)
         {
-            byte[] buffer = new byte[ReceiveBufferSize];
-            Debug.Log("[UdpClient] ReceiveLoop STARTED on thread " + System.Threading.Thread.CurrentThread.ManagedThreadId);
+            Debug.Log("[UdpClient] ReceiveLoop STARTED on thread " + 
+                      System.Threading.Thread.CurrentThread.ManagedThreadId);
+
+            Task<System.Net.Sockets.UdpReceiveResult> receiveTask = null;
 
             while (!cancellationToken.IsCancellationRequested && _isConnected)
             {
                 try
                 {
-                    var receiveTask = _client.ReceiveAsync();
+                    if (receiveTask == null)
+                    {
+                        receiveTask = _client.ReceiveAsync();
+                    }
+
                     var completedTask = await Task.WhenAny(
                         receiveTask,
                         Task.Delay(1000, cancellationToken)
@@ -197,16 +203,13 @@ namespace Network
                     if (completedTask == receiveTask && !cancellationToken.IsCancellationRequested)
                     {
                         var result = await receiveTask;
+                        receiveTask = null;
 
                         byte[] receivedData = new byte[result.Buffer.Length];
                         Array.Copy(result.Buffer, receivedData, result.Buffer.Length);
 
-                        Debug.Log($"[UdpClient] RAW RECEIVED {receivedData.Length} bytes on thread {System.Threading.Thread.CurrentThread.ManagedThreadId}");
-
-                        // Always use MainThreadDispatcher - never trust SynchronizationContext from background threads
                         MainThreadDispatcher.Enqueue(() =>
                         {
-                            Debug.Log($"[UdpClient] DISPATCHING {receivedData.Length} bytes to OnDataReceived (subscribers: {OnDataReceived?.GetInvocationList()?.Length ?? 0})");
                             OnDataReceived?.Invoke(receivedData);
                         });
                     }
@@ -223,18 +226,18 @@ namespace Network
                 }
                 catch (SocketException ex)
                 {
+                    receiveTask = null;
                     if (!cancellationToken.IsCancellationRequested)
                     {
-                        Debug.LogWarning($"[UdpClient] ReceiveLoop SocketException: {ex.Message}");
-                        DispatchToMainThread(() => OnError?.Invoke($"Receive error: {ex.Message}"));
+                        MainThreadDispatcher.Enqueue(() => OnError?.Invoke($"Receive error: {ex.Message}"));
                     }
                 }
                 catch (Exception ex)
                 {
+                    receiveTask = null;
                     if (!cancellationToken.IsCancellationRequested)
                     {
-                        Debug.LogError($"[UdpClient] ReceiveLoop unexpected: {ex}");
-                        DispatchToMainThread(() => OnError?.Invoke($"Unexpected error: {ex.Message}"));
+                        MainThreadDispatcher.Enqueue(() => OnError?.Invoke($"Unexpected error: {ex.Message}"));
                     }
                 }
             }
