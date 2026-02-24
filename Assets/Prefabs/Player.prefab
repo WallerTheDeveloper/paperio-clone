@@ -477,13 +477,11 @@ MonoBehaviour:
   minHeight: 9
   maxHeight: 10
   zoomSmoothTime: 0.5
-  followDirection: 0
+  followDirection: 1
   lookAheadDistance: 5
   rotationSmoothTime: 0.3
-  useBounds: 1
+  useBounds: 0
   boundsPadding: 5
-  enableShake: 1
-  defaultShakeIntensity: 0.5
 --- !u!1 &8853549766892748560
 GameObject:
   m_ObjectHideFlags: 0
@@ -494,7 +492,6 @@ GameObject:
   m_Component:
   - component: {fileID: 4664310557608096786}
   - component: {fileID: 616330970393636452}
-  - component: {fileID: 7454903516806906780}
   m_Layer: 0
   m_Name: Player
   m_TagString: Untagged
@@ -541,16 +538,3 @@ MonoBehaviour:
   maxExtrapolationTicks: 3
   snapshotBufferSize: 10
   playerCamera: {fileID: 6016450547738157281}
---- !u!114 &7454903516806906780
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 8853549766892748560}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: fedd8d898da04ee1b3bf64e6ad00feb3, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::Input.InputService
-  inputCooldown: 0.05
