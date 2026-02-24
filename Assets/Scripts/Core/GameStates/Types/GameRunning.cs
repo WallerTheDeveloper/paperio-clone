@@ -37,20 +37,9 @@ namespace Core.GameStates.Types
             _serverStateHandler.OnPlayerRespawned += _gameWorld.OnPlayerRespawned;
             _messageSender.OnPlayerDisconnected += HandlePlayerDisconnected;
             
-            Debug.Log($"[GameRunning] Initialize — HasJoinedGame={_serverStateHandler.HasJoinedGame}, IsJoined={_messageSender.IsJoined}");
-            
             if (!_serverStateHandler.HasJoinedGame)
             {
-                if (!_messageSender.IsJoined)
-                {
-                    Debug.Log("[GameRunning] Not yet joined room, starting WaitForJoinThenReady coroutine");
-                    StartCoroutine(WaitForJoinThenReady());
-                }
-                else
-                {
-                    Debug.Log("[GameRunning] Already joined room, sending Ready immediately");
-                    _messageSender.SendReady();
-                }
+                _messageSender.SendReady();
             }
             else
             {
@@ -63,44 +52,11 @@ namespace Core.GameStates.Types
             _gameWorld.OnPlayerDisconnectedVisually(obj.PlayerId);
         }
 
-        private IEnumerator WaitForJoinThenReady()
-        {
-            float startTime = Time.time;
-            float logInterval = 1f;
-            float nextLogTime = startTime + logInterval;
-            float timeout = 10f;
-            
-            Debug.Log("[GameRunning] WaitForJoinThenReady: waiting for IsJoined...");
-            
-            while (!_messageSender.IsJoined)
-            {
-                if (Time.time >= nextLogTime)
-                {
-                    float elapsed = Time.time - startTime;
-                    Debug.LogWarning($"[GameRunning] Still waiting for IsJoined after {elapsed:F1}s (connected={_messageSender.IsConnected})");
-                    nextLogTime = Time.time + logInterval;
-                }
-                
-                if (Time.time - startTime > timeout)
-                {
-                    Debug.LogError("[GameRunning] Timeout waiting for RoomJoined response! The server may not have sent it, or the client failed to parse it.");
-                    yield break;
-                }
-                
-                yield return null;
-            }
-            
-            Debug.Log("[GameRunning] IsJoined became true! Sending Ready...");
-            _messageSender.SendReady();
-        }
-
         public override void Tick()
         { }
 
         public override void Stop()
         {
-            StopAllCoroutines();
-            
             _serverStateHandler.OnJoinedGame -= _gameWorld.OnJoinedGame;
             _serverStateHandler.OnStateUpdated -= _gameWorld.OnServerStateUpdated;
             _serverStateHandler.OnPlayerEliminated -= _gameWorld.OnPlayerEliminated;
