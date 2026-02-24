@@ -21,11 +21,6 @@ namespace Game
         [Header("Bounds")] [SerializeField] private bool useBounds = true;
         [SerializeField] private float boundsPadding = 5f;
 
-        [Header("Screen Shake")] [SerializeField]
-        private bool enableShake = true;
-
-        [SerializeField] private float defaultShakeIntensity = 0.5f;
-
         private Camera _camera;
         private Transform _transform;
 

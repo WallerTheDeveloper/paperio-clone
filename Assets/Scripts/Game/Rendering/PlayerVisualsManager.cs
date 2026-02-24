@@ -133,11 +133,6 @@ namespace Game.Rendering
             if (isLocal)
             {
                 _localPlayerVisual = visual;
-                var localPlayerData = _playersContainer.TryGetPlayerById(protoPlayer.PlayerId);
-                if (localPlayerData != null && localPlayerData.InputService == null)
-                {
-                    localPlayerData.InputService = visual.GetComponent<InputService>();
-                }
             }
             
             Debug.Log($"[PlayerVisualsManager] Activated player: {protoPlayer.Name} (ID: {protoPlayer.PlayerId})" +

@@ -7,9 +7,9 @@ using UnityEngine.InputSystem;
 
 namespace Input
 {
-    public class InputService : MonoBehaviour, IService
+    public class InputService : IService
     {
-        [SerializeField] private float inputCooldown = 0.05f;
+        private const float InputCooldown = 0.15f;
         public event Action<Direction> OnDirectionChanged;
         
         private Direction _currentDirection = Direction.None;
@@ -19,12 +19,13 @@ namespace Input
         private MessageSender _messageSender;
         private PlayerInputActions _playerInputActions;
         
+        private bool _isEnabled;
+        
         public void Initialize(ServiceContainer services)
         {
             _messageSender = services.Get<MessageSender>();
         
             _playerInputActions = new PlayerInputActions();
-            _playerInputActions.Player.Enable();
             
             _playerInputActions.Player.Move.performed += OnMovePerformed;
         }
@@ -38,6 +39,18 @@ namespace Input
             }
         }
     
+        public void EnableInput()
+        {
+            _playerInputActions.Player.Enable();
+            _isEnabled = true;
+        }
+
+        public void DisableInput()
+        {
+            _playerInputActions.Player.Disable();
+            _isEnabled = false;
+        }
+        
         private void OnMovePerformed(InputAction.CallbackContext context)
         {
             var input = context.ReadValue<Vector2>();
@@ -57,7 +70,7 @@ namespace Input
             {
                 return;
             }
-            if (Time.time - _lastInputTime < inputCooldown)
+            if (Time.time - _lastInputTime < InputCooldown)
             {
                 return;
             }

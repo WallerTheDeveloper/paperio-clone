@@ -28,18 +28,22 @@ namespace Core
         [SerializeField] private LeaderboardUI leaderboardUI;
         
         private PlayersContainer _playersContainer;
+        private InputService _inputService;
         
         private ServiceContainer _services;
         private void Awake()
         {
             _services = new ServiceContainer();
             _playersContainer = new PlayersContainer();
+            _inputService = new InputService();
+            
             
             _services.Register(messageSender);
             _services.Register(_playersContainer);
             _services.Register(serverStateHandler);
             _services.Register(gameStatesManager); 
             _services.Register(playerVisualsManager);
+            _services.Register(_inputService);
             _services.Register(gameWorld);
             _services.Register(trailVisualsManager);
             _services.Register(effectsManager);
@@ -54,18 +58,6 @@ namespace Core
         
         private void Update()
         {
-            foreach (var alivePlayer in _playersContainer.GetAlivePlayers())
-            {
-                if (!alivePlayer.IsFinishedGamePreparation &&
-                    alivePlayer.InputService != null)
-                {
-                    _services.Register(alivePlayer.InputService);
-                    
-                    alivePlayer.IsFinishedGamePreparation = true;
-                    _services.InitDanglingServices();
-                    
-                }
-            }
             _services.TickAll();
         }
 

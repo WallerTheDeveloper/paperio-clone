@@ -213,12 +213,6 @@ namespace Network
             
             playerData.Direction = protoPlayer.Direction;
             
-            playerData.Trail.Clear();
-            foreach (var pos in protoPlayer.Trail)
-            {
-                playerData.Trail.Add(new Vector2Int(pos.X, pos.Y));
-            }
-            
             playerData.Alive = protoPlayer.Alive;
             playerData.Score = protoPlayer.Score;
             playerData.Color = UIntToColor(protoPlayer.Color);

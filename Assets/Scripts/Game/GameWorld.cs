@@ -7,6 +7,7 @@ using Game.Paperio;
 using Game.Rendering;
 using Game.UI;
 using Helpers;
+using Input;
 using Network;
 using UnityEngine;
 
@@ -91,6 +92,7 @@ namespace Game
         private TerritoryClaim _territoryClaim;
         private MinimapSystem _minimapSystem;
         private TerritoryClaimPopupManager _claimPopupManager;
+        private InputService _inputService;
         public void Initialize(ServiceContainer services)
         {
             _prediction = new ClientPrediction(_gridWidth, _gridHeight);
@@ -101,6 +103,9 @@ namespace Game
             _territoryClaim = services.Get<TerritoryClaim>();
             _minimapSystem = services.Get<MinimapSystem>();
             _claimPopupManager = services.Get<TerritoryClaimPopupManager>();
+            _inputService = services.Get<InputService>();
+
+            _inputService.OnDirectionChanged += OnLocalDirectionChanged;
         }
 
         public void Tick()
@@ -110,17 +115,7 @@ namespace Game
                 //Debug.Log("[GameWorld] Game is not active!");
                 return;
             }
-    
-            if (!_inputSubscribed && _prediction != null)
-            {
-                var localPlayerData = _playerVisualsManager.PlayersContainer.TryGetPlayerById(_localPlayerId);
-                if (localPlayerData?.InputService != null)
-                {
-                    localPlayerData.InputService.OnDirectionChanged += OnLocalDirectionChanged;
-                    _inputSubscribed = true;
-                    Debug.Log("[GameWorld] Subscribed to local player input for prediction");
-                }
-            }
+            
             if (_prediction != null && _tickRateMs > 0)
             {
                 _tickAccumulator += Time.deltaTime;
@@ -147,18 +142,12 @@ namespace Game
 
         public void Dispose()
         {
+            _inputService.OnDirectionChanged -= OnLocalDirectionChanged;
+            _inputService.DisableInput();
+            
             _territoryClaim.FinishAllImmediately();
             _playerVisualsManager.ClearAll();
             
-            if (_inputSubscribed)
-            {
-                var localPlayerData = _playerVisualsManager?.PlayersContainer?.TryGetPlayerById(_localPlayerId);
-                if (localPlayerData?.InputService != null)
-                {
-                    localPlayerData.InputService.OnDirectionChanged -= OnLocalDirectionChanged;
-                }
-                _inputSubscribed = false;
-            }
             _territoryData.Clear();
             _isGameActive = false;
             
@@ -221,6 +210,8 @@ namespace Game
                 _estimatedServerTick = response.InitialState.Tick;
                 _tickAccumulator = 0f;
             }
+            
+            _inputService.EnableInput();
             
             _isGameActive = true;
             _lastTickTime = Time.time;
@@ -382,6 +373,8 @@ namespace Game
             Debug.Log($"[GameWorld] Player {playerId} eliminated" + 
                       (isLocal ? " (LOCAL PLAYER!)" : ""));
             
+            _inputService.DisableInput();
+            
             var playerData = _playerVisualsManager.PlayersContainer.TryGetPlayerById(playerId);
             var playerCurrentPosition =
                 GridHelper.GridToWorld(playerData.GridPosition.x, playerData.GridPosition.y, Config.CellSize);
@@ -421,15 +414,16 @@ namespace Game
                     _prediction.SetMoveInterval(_moveIntervalTicks);
                     float moveDuration = _moveIntervalTicks * (_tickRateMs / 1000f);
                     LocalPlayerVisual.SetMoveDuration(moveDuration);
-                    
                 }
             }
+            _inputService.EnableInput();
         }
         
         public void OnPlayerDisconnectedVisually(uint playerId)
         {
             Debug.Log($"[GameWorld] Player {playerId} disconnected — cleaning up visuals");
     
+            _inputService.DisableInput();
             _trailVisualsManager.RemoveTrail(playerId);
             _playerVisualsManager.DespawnPlayer(playerId);
     
