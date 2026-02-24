@@ -1,6 +1,6 @@
 ﻿using UnityEngine;
 
-namespace Game.UI
+namespace Game.UI.Leaderboard
 {
     public readonly struct LeaderboardEntry
     {

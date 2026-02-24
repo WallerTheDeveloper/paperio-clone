@@ -2,7 +2,7 @@
 using UnityEngine;
 using UnityEngine.UI;
 
-namespace Game.UI
+namespace Game.UI.Leaderboard
 {
     public class LeaderboardRow : MonoBehaviour
     {

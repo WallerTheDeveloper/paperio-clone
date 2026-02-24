@@ -3,7 +3,7 @@ using Core.Services;
 using Game.Paperio;
 using UnityEngine;
 
-namespace Game.UI
+namespace Game.UI.Leaderboard
 {
     public class LeaderboardUI : MonoBehaviour, IService
     {

@@ -4,7 +4,7 @@ using Game.Data;
 using Game.Subsystems.Rendering;
 using UnityEngine;
 
-namespace Game.UI
+namespace Game.UI.Territory
 {
     public class TerritoryClaimPopupManager : MonoBehaviour, IService
     {
