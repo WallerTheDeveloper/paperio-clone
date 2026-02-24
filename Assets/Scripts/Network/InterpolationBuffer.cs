@@ -14,6 +14,17 @@ namespace Network
         public static PlayerSnapshot Invalid => new() { IsValid = false };
     }
 
+    public struct InterpolationResult
+    {
+        public Vector3 Position;
+        public Direction Direction;
+        public bool Alive;
+        public bool IsExtrapolating;
+        public bool IsValid;
+
+        public static InterpolationResult Invalid => new() { IsValid = false };
+    }
+    
     public class InterpolationBuffer
     {
         private readonly PlayerSnapshot[] _buffer;
@@ -220,16 +231,5 @@ namespace Network
             _writeIndex = 0;
             _latestTick = 0;
         }
-    }
-
-    public struct InterpolationResult
-    {
-        public Vector3 Position;
-        public Direction Direction;
-        public bool Alive;
-        public bool IsExtrapolating;
-        public bool IsValid;
-
-        public static InterpolationResult Invalid => new() { IsValid = false };
     }
 }

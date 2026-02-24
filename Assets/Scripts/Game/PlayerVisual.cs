@@ -8,26 +8,28 @@ namespace Game
 {
     public class PlayerVisual : MonoBehaviour
     {
-        [Header("Visual Components")]
+        [Header("Visual Components")] 
         [SerializeField] private MeshRenderer bodyRenderer;
+
         [SerializeField] private NameLabel nameLabel;
 
-        [Header("Configuration")]
+        [Header("Configuration")] 
         [SerializeField] private float bodyScale = 0.8f;
+
         [SerializeField] private float deathFadeDuration = 0.5f;
         [SerializeField] private float respawnScaleDuration = 0.3f;
         [SerializeField] private float localPlayerScaleMultiplier = 1.1f;
 
-        [Header("Interpolation")]
+        [Header("Interpolation")] 
         [SerializeField] private float renderDelayTicks = 1f;
+
         [SerializeField] private float maxExtrapolationTicks = 3f;
         [SerializeField] private int snapshotBufferSize = 10;
 
         [SerializeField] private Camera playerCamera;
-        
+
         private MaterialPropertyBlock _propertyBlock;
         private Transform _transform;
-        private Vector3 _smoothVelocity;
         private uint _playerId;
         private bool _isLocalPlayer;
         private bool _isAlive = true;
@@ -54,23 +56,12 @@ namespace Game
         private static readonly int ColorProperty = Shader.PropertyToID("_Color");
         private static readonly int BaseColorProperty = Shader.PropertyToID("_BaseColor");
 
-        public uint PlayerId => _playerId;
-        public bool IsLocalPlayer => _isLocalPlayer;
-        public bool IsAlive => _isAlive;
-        public Color PlayerColor => _playerColor;
-
         public void SetMoveDuration(float moveDurationSeconds)
         {
             _moveDuration = Mathf.Max(0.05f, moveDurationSeconds);
         }
 
-        public void Initialize(
-            uint playerId,
-            string playerName,
-            Color color,
-            Vector3 worldPosition,
-            bool isLocalPlayer,
-            float tickDurationSeconds = 0.05f)
+        public void Initialize(uint playerId, string playerName, Color color, Vector3 worldPosition, bool isLocalPlayer, float tickDurationSeconds = 0.05f)
         {
             _transform = transform;
             _propertyBlock = new MaterialPropertyBlock();
@@ -88,11 +79,9 @@ namespace Game
                 nameLabel.Setup(playerName, isLocalPlayer);
             }
 
-            float scale = _baseScale * (isLocalPlayer ? localPlayerScaleMultiplier : 1f);
+            var scale = _baseScale * (isLocalPlayer ? localPlayerScaleMultiplier : 1f);
             _transform.localScale = Vector3.one * scale;
 
-            _previousPosition = worldPosition;
-            _targetPosition = worldPosition;
             _lerpStart = worldPosition;
             _lerpEnd = worldPosition;
             _moveProgress = 1f;
@@ -110,9 +99,9 @@ namespace Game
 
             gameObject.SetActive(true);
             SetBodyVisible(true);
-            
+
             playerCamera.gameObject.SetActive(_isLocalPlayer);
-            
+
             Debug.Log($"[PlayerVisual] Initialized: {playerName} (ID: {playerId})" +
                       (isLocalPlayer ? " [LOCAL]" : ""));
         }
@@ -148,9 +137,13 @@ namespace Game
             if (playerData.Alive != _isAlive)
             {
                 if (playerData.Alive)
+                {
                     OnRespawn(worldPosition);
+                }
                 else
+                {
                     OnDeath();
+                }
             }
         }
 
@@ -195,41 +188,37 @@ namespace Game
 
         public void SetPredictedTarget(Vector3 predictedWorldPosition)
         {
-            if (!_isLocalPlayer)
-            {
-                return;
-            }
+            if (!_isLocalPlayer) return;
+
+            var dist = Vector3.Distance(_lerpEnd, predictedWorldPosition);
             
-            float dist = Vector3.Distance(_lerpEnd, predictedWorldPosition);
             // Same cell - ignore
             if (dist < 0.01f)
             {
                 return;
             }
-    
+
             _lerpStart = _transform.position;
             _lerpEnd = predictedWorldPosition;
             _moveProgress = 0f;
-            
-            _targetPosition = predictedWorldPosition;
         }
 
         public void SnapToPosition(Vector3 worldPosition)
         {
-            _previousPosition = worldPosition;
-            _targetPosition = worldPosition;
             _lerpStart = worldPosition;
             _lerpEnd = worldPosition;
             _moveProgress = 1f;
             _transform.position = worldPosition;
-            _smoothVelocity = Vector3.zero;
 
-            _interpolationBuffer?.Clear();
+            _interpolationBuffer.Clear();
         }
 
         private void SetColor(Color color)
         {
-            if (bodyRenderer == null) return;
+            if (bodyRenderer == null)
+            {
+                return;
+            }
 
             _propertyBlock.SetColor(ColorProperty, color);
             _propertyBlock.SetColor(BaseColorProperty, color);
@@ -239,7 +228,9 @@ namespace Game
         private void SetBodyVisible(bool visible)
         {
             if (bodyRenderer != null)
+            {
                 bodyRenderer.enabled = visible;
+            }
         }
 
         private void OnDeath()
@@ -280,10 +271,10 @@ namespace Game
                 }
                 else
                 {
-                    float scale = _baseScale * (1f - _deathAnimationProgress);
+                    var scale = _baseScale * (1f - _deathAnimationProgress);
                     _transform.localScale = Vector3.one * scale;
 
-                    Color fadedColor = _playerColor;
+                    var fadedColor = _playerColor;
                     fadedColor.a = 1f - _deathAnimationProgress;
                     SetColor(fadedColor);
                 }
@@ -295,14 +286,13 @@ namespace Game
                 if (_respawnAnimationProgress >= 1f)
                 {
                     _isPlayingRespawnAnimation = false;
-                    float finalScale = _baseScale * (_isLocalPlayer ? localPlayerScaleMultiplier : 1f);
+                    var finalScale = _baseScale * (_isLocalPlayer ? localPlayerScaleMultiplier : 1f);
                     _transform.localScale = Vector3.one * finalScale;
                     SetColor(_playerColor);
                 }
                 else
                 {
-                    float scale = _baseScale * _respawnAnimationProgress *
-                                  (_isLocalPlayer ? localPlayerScaleMultiplier : 1f);
+                    var scale = _baseScale * _respawnAnimationProgress * (_isLocalPlayer ? localPlayerScaleMultiplier : 1f);
                     _transform.localScale = Vector3.one * scale;
                 }
             }
@@ -327,27 +317,6 @@ namespace Game
             nameLabel.ResetForPool();
 
             gameObject.SetActive(false);
-        }
-
-        private void OnDrawGizmosSelected()
-        {
-            if (_isLocalPlayer)
-            {
-                Gizmos.color = Color.yellow;
-                Gizmos.DrawLine(_lerpStart, _lerpEnd);
-                Gizmos.color = Color.green;
-                Gizmos.DrawWireSphere(_lerpEnd, 0.2f);
-                Gizmos.color = Color.red;
-                Gizmos.DrawWireSphere(_lerpStart, 0.15f);
-            }
-            else if (_interpolationBuffer != null)
-            {
-                Gizmos.color = Color.cyan;
-                Gizmos.DrawWireSphere(_transform.position, 0.15f);
-
-                Gizmos.color = _interpolationBuffer.Count >= 2 ? Color.green : Color.red;
-                Gizmos.DrawWireSphere(_transform.position + Vector3.up * 0.5f, 0.1f);
-            }
         }
     }
 }
