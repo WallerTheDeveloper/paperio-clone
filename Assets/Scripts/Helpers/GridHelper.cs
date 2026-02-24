@@ -2,24 +2,8 @@
 
 namespace Helpers
 {
-    public class GridHelper
+    public static class GridHelper
     {
-        /// <summary>
-        /// Convert grid coordinates to world position (3D).
-        /// Grid (x, y) → World (x * cellSize, height, y * cellSize)
-        /// </summary>
-        public static Vector3 GridToWorld(Vector2Int gridPos, float cellSize, float height = 0f)
-        {
-            return new Vector3(
-                gridPos.x * cellSize,
-                height,
-                gridPos.y * cellSize
-            );
-        }
-
-        /// <summary>
-        /// Convert grid coordinates to world position (3D).
-        /// </summary>
         public static Vector3 GridToWorld(int gridX, int gridY, float cellSize, float height = 0f)
         {
             return new Vector3(
@@ -29,21 +13,6 @@ namespace Helpers
             );
         }
 
-        /// <summary>
-        /// Convert world position to grid coordinates.
-        /// World (x, y, z) → Grid (x / cellSize, z / cellSize)
-        /// </summary>
-        public static Vector2Int WorldToGrid(Vector3 worldPos, float cellSize)
-        {
-            return new Vector2Int(
-                Mathf.FloorToInt(worldPos.x / cellSize),
-                Mathf.FloorToInt(worldPos.z / cellSize)
-            );
-        }
-
-        /// <summary>
-        /// Get the center of the grid in world coordinates.
-        /// </summary>
         public static Vector3 GetGridCenter(uint gridWidth, uint gridHeight, float cellSize)
         {
             return new Vector3(
@@ -53,24 +22,11 @@ namespace Helpers
             );
         }
 
-        /// <summary>
-        /// Get the world bounds of the grid.
-        /// </summary>
         public static Bounds GetGridBounds(uint gridWidth, uint gridHeight, float cellSize)
         {
             var center = GetGridCenter(gridWidth, gridHeight, cellSize);
             var size = new Vector3(gridWidth * cellSize, 10f, gridHeight * cellSize);
             return new Bounds(center, size);
         }
-
-        /// <summary>
-        /// Check if a grid position is within bounds.
-        /// </summary>
-        public static bool IsInBounds(Vector2Int gridPos, int gridWidth, int gridHeight)
-        {
-            return gridPos.x >= 0 && gridPos.x < gridWidth &&
-                   gridPos.y >= 0 && gridPos.y < gridHeight;
-        }
-
     }
 }
