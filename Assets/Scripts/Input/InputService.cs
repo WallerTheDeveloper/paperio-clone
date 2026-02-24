@@ -19,8 +19,6 @@ namespace Input
         private MessageSender _messageSender;
         private PlayerInputActions _playerInputActions;
         
-        private bool _isEnabled;
-        
         public void Initialize(ServiceContainer services)
         {
             _messageSender = services.Get<MessageSender>();
@@ -42,13 +40,11 @@ namespace Input
         public void EnableInput()
         {
             _playerInputActions.Player.Enable();
-            _isEnabled = true;
         }
 
         public void DisableInput()
         {
             _playerInputActions.Player.Disable();
-            _isEnabled = false;
         }
         
         private void OnMovePerformed(InputAction.CallbackContext context)
