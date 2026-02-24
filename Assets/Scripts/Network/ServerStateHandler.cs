@@ -20,23 +20,18 @@ namespace Network
         private uint _tickRateMs;
         private uint _gridWidth;
         private uint _gridHeight;
-        private bool _hasJoinedGame;
-        
+
         private PaperioState _currentState;
         
         private MessageSender _messageSender;
         private PlayersContainer _playersContainer;
 
-        private uint _lastAppliedKeyframeTick;
-        
         private bool _hasValidBaseline;
         
-        private int _fullStatesReceived;
-        private int _deltaStatesReceived;
         private int _deltasSkipped;
         
-        public bool HasJoinedGame => _hasJoinedGame;
-        
+        public bool HasJoinedGame { get; private set; }
+
         public void Initialize(ServiceContainer services)
         {
             _messageSender = services.Get<MessageSender>();
@@ -56,7 +51,7 @@ namespace Network
                 _messageSender.OnPaperioJoinResponse -= HandleJoinResponse;
             }
             
-            _hasJoinedGame = false;
+            HasJoinedGame = false;
             _hasValidBaseline = false;
             _currentState = null;
         }
@@ -68,12 +63,9 @@ namespace Network
             _tickRateMs = 0;
             _gridWidth = 0;
             _gridHeight = 0;
-            _hasJoinedGame = false;
+            HasJoinedGame = false;
             _hasValidBaseline = false;
             _currentState = null;
-            _lastAppliedKeyframeTick = 0;
-            _fullStatesReceived = 0;
-            _deltaStatesReceived = 0;
             _deltasSkipped = 0;
 
             Debug.Log("[ServerStateHandler] Reset for reconnect");
@@ -95,7 +87,7 @@ namespace Network
         {
             _localPlayerId = response.YourPlayerId;
             _tickRateMs = response.TickRateMs;
-            _hasJoinedGame = true;
+            HasJoinedGame = true;
             
             if (response.InitialState != null)
             {
@@ -103,7 +95,6 @@ namespace Network
                 _gridHeight = response.InitialState.GridHeight;
                 
                 _hasValidBaseline = true;
-                _lastAppliedKeyframeTick = response.InitialState.Tick;
                 
                 ApplyState(response.InitialState);
             }
@@ -124,8 +115,6 @@ namespace Network
             
             if (isDeltaChange)
             {
-                _deltaStatesReceived++;
-                
                 if (!_hasValidBaseline)
                 {
                     _deltasSkipped++;
@@ -146,10 +135,7 @@ namespace Network
             }
             else
             {
-                _fullStatesReceived++;
-                
                 _hasValidBaseline = true;
-                _lastAppliedKeyframeTick = state.Tick;
                 _deltasSkipped = 0;
             }
             

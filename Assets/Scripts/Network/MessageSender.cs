@@ -8,11 +8,6 @@ using UnityEngine;
 
 namespace Network
 {
-    /// <summary>
-    /// Central hub for all network communication.
-    /// Think of this as a "switchboard operator" that routes messages
-    /// to the right handlers and coordinates sending messages to the server.
-    /// </summary>
     public class MessageSender : MonoBehaviour, IService
     {
         [Header("Connection Settings")]
@@ -25,7 +20,6 @@ namespace Network
         [SerializeField] private float pingInterval = 1.0f;
         [SerializeField] private float connectionTimeout = 10.0f;
 
-        // Network components
         private UdpClient _udpClient;
         private uint _sendSequence;
         private uint _pingSequence;
@@ -33,22 +27,14 @@ namespace Network
         private float _lastPongTime;
         private float _roundTripTime;
 
-        // Connection state
         private bool _isJoined;
         private uint _localPlayerId;
         private string _roomCode;
         private string _reconnectToken;
 
-        // Public properties
         public bool IsConnected => _udpClient?.IsConnected ?? false;
-        public bool IsJoined => _isJoined;
-        public uint LocalPlayerId => _localPlayerId;
         public string RoomCode => _roomCode;
-        public float RoundTripTime => _roundTripTime;
-        public string ServerHost => serverHost;
-        public int ServerPort => serverPort;
 
-        // Events for game state updates
         public event Action<RoomJoined> OnRoomJoined;
         public event Action<RoomUpdate> OnRoomUpdate;
         public event Action<GameStarting> OnGameStarting;
@@ -67,7 +53,6 @@ namespace Network
         
         public void Initialize(ServiceContainer services)
         {
-            // Ensure main thread dispatcher exists
             MainThreadDispatcher.Initialize();
 
             _udpClient = new UdpClient();
@@ -78,7 +63,6 @@ namespace Network
 
         public void Tick()
         {
-            // Regular ping to keep connection alive and measure latency
             if (IsConnected && _isJoined)
             {
                 if (Time.time - _lastPingTime >= pingInterval)
@@ -86,7 +70,6 @@ namespace Network
                     SendPing();
                 }
 
-                // Check for connection timeout
                 if (Time.time - _lastPongTime > connectionTimeout && _lastPongTime > 0)
                 {
                     Debug.LogWarning("[NetworkManager] Connection timeout - no pong received");
@@ -113,7 +96,6 @@ namespace Network
             playerName = name;
         }
         
-        #region Public API - Connection
 
         public bool Connect()
         {
@@ -127,9 +109,6 @@ namespace Network
             return false;
         }
 
-        /// <summary>
-        /// Disconnect from the server.
-        /// </summary>
         public void Disconnect()
         {
             _isJoined = false;
@@ -139,13 +118,6 @@ namespace Network
             _udpClient.Disconnect();
         }
 
-        #endregion
-
-        #region Public API - Room Management
-
-        /// <summary>
-        /// Join a room. Empty room code creates a new room.
-        /// </summary>
         public void SendJoinRoom()
         {
             if (!IsConnected)
@@ -168,12 +140,12 @@ namespace Network
             Debug.Log($"[NetworkManager] Joining room: {(string.IsNullOrEmpty(roomCode) ? "new" : roomCode)}");
         }
 
-        /// <summary>
-        /// Leave the current room.
-        /// </summary>
         public void SendLeaveRoom()
         {
-            if (!IsConnected || !_isJoined) return;
+            if (!IsConnected || !_isJoined)
+            {
+                return;
+            }
 
             var msg = new ClientMessage
             {
@@ -186,9 +158,6 @@ namespace Network
             Debug.Log("[NetworkManager] Leaving room");
         }
 
-        /// <summary>
-        /// Signal that player is ready to start the game.
-        /// </summary>
         public void SendReady()
         {
             if (!IsConnected || !_isJoined)
@@ -206,9 +175,6 @@ namespace Network
             Debug.Log("[NetworkManager] Sent ready signal");
         }
 
-        /// <summary>
-        /// Attempt to reconnect using a saved token.
-        /// </summary>
         public void SendReconnect(string token)
         {
             if (!IsConnected)
@@ -231,14 +197,6 @@ namespace Network
             Debug.Log("[NetworkManager] Attempting reconnect");
         }
 
-        #endregion
-
-        #region Public API - Game Input
-
-        /// <summary>
-        /// Send game-specific input (e.g., direction change in Paper.io).
-        /// The payload should be a serialized protobuf message specific to the game.
-        /// </summary>
         public void SendGameInput(byte[] payload)
         {
             if (!IsConnected || !_isJoined) return;
@@ -255,9 +213,6 @@ namespace Network
             SendMessage(msg);
         }
 
-        /// <summary>
-        /// Send direction input for Paper.io specifically.
-        /// </summary>
         public void SendDirection(Direction direction)
         {
             var input = new PaperioInput { Direction = direction };
@@ -268,10 +223,6 @@ namespace Network
                 SendGameInput(stream.ToArray());
             }
         }
-
-        #endregion
-
-        #region Private - Message Handling
 
         private void HandleDataReceived(byte[] data)
         {
@@ -346,7 +297,6 @@ namespace Network
 
             Debug.Log($"[NetworkManager] Joined room {_roomCode} as player {_localPlayerId}");
             
-            // Save reconnect token for later use
             PlayerPrefs.SetString("ReconnectToken", _reconnectToken);
             PlayerPrefs.Save();
 
@@ -355,45 +305,47 @@ namespace Network
 
         private void HandleGameMessage(Game.Server.GameMessage gameMessage)
         {
-            // First, notify general listeners
             OnGameMessage?.Invoke(gameMessage);
 
-            // Try to parse as Paper.io specific messages
             TryParsePaperioMessage(gameMessage.Payload.ToByteArray());
         }
 
         private void TryParsePaperioMessage(byte[] payload)
         {
-            // Try parsing as PaperioState
             try
             {
                 var state = new PaperioState();
                 state.MergeFrom(new CodedInputStream(payload));
                 
-                if (state.GridWidth > 0) // Valid state check
+                if (state.GridWidth > 0)
                 {
                     OnPaperioStateReceived?.Invoke(state);
                     return;
                 }
             }
-            catch { }
+            catch
+            {
+                // ignored
+            }
 
-            // Try parsing as PaperioJoinResponse
             try
             {
                 var response = new PaperioJoinResponse();
                 response.MergeFrom(new CodedInputStream(payload));
                 
-                if (response.YourPlayerId > 0) // Valid response check
+                if (response.YourPlayerId > 0)
                 {
                     OnPaperioJoinResponse?.Invoke(response);
                     return;
                 }
             }
-            catch { }
+            catch
+            {
+                // ignored
+            }
         }
 
-        private void HandleServerError(Game.Server.Error error)
+        private void HandleServerError(Error error)
         {
             Debug.LogError($"[NetworkManager] Server error: {error.Message}");
             OnError?.Invoke(error);
@@ -403,7 +355,6 @@ namespace Network
         {
             _lastPongTime = Time.time;
             
-            // Calculate round-trip time
             ulong now = (ulong)DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();
             _roundTripTime = (float)(now - pong.Timestamp);
 
@@ -421,10 +372,6 @@ namespace Network
             OnDisconnected?.Invoke();
             Debug.Log("[NetworkManager] Disconnected from server");
         }
-
-        #endregion
-
-        #region Private - Sending
 
         private void SendMessage(ClientMessage msg)
         {
@@ -464,24 +411,5 @@ namespace Network
         {
             return ++_sendSequence;
         }
-
-        #endregion
-
-        #region Debug UI
-
-        /// <summary>
-        /// Get connection statistics for debugging.
-        /// </summary>
-        public string GetDebugInfo()
-        {
-            return $"Connected: {IsConnected}\n" +
-                   $"Joined: {_isJoined}\n" +
-                   $"Player ID: {_localPlayerId}\n" +
-                   $"Room: {_roomCode}\n" +
-                   $"RTT: {_roundTripTime:F1}ms\n" +
-                   $"Send Seq: {_sendSequence}";
-        }
-
-        #endregion
     }
 }
