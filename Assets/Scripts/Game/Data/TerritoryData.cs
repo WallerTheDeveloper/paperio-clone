@@ -34,57 +34,15 @@ namespace Game.Data
 
         private readonly uint[] _cells;
 
-        public TerritoryData(int width, int height)
+        public TerritoryData(int width, int height, float cellSize, Color32 neutralColor, Func<uint, Color32> colorResolver)
         {
             Width = width;
             Height = height;
             ClaimedCells = 0;
             _cells = new uint[width * height];
-        }
-
-        public void InitializeVisuals(float cellSize, Color32 neutralColor, Func<uint, Color32> colorResolver)
-        {
+            
             VisualData = new TerritoryVisualData();
             VisualData.Initialize(Width, Height, cellSize, neutralColor, colorResolver);
-        }
-
-        public uint GetOwner(int x, int y)
-        {
-            if (!IsInBounds(x, y))
-            {
-                return 0;
-            }
-            return _cells[y * Width + x];
-        }
-
-        public uint GetOwner(Vector2Int position)
-        {
-            return GetOwner(position.x, position.y);
-        }
-
-        public bool IsInBounds(int x, int y)
-        {
-            return x >= 0 && x < Width && y >= 0 && y < Height;
-        }
-
-        public bool IsInBounds(Vector2Int position)
-        {
-            return IsInBounds(position.x, position.y);
-        }
-
-        public bool IsOwnedBy(int x, int y, uint playerId)
-        {
-            return GetOwner(x, y) == playerId;
-        }
-
-        public bool IsOwnedBy(Vector2Int position, uint playerId)
-        {
-            return IsOwnedBy(position.x, position.y, playerId);
-        }
-
-        public uint[] GetRawCells()
-        {
-            return _cells;
         }
 
         public List<TerritoryChange> ApplyFullState(IEnumerable<TerritoryRow> territoryRows)
@@ -123,11 +81,11 @@ namespace Game.Data
 
             RecalculateClaimedCells();
 
-            VisualData?.ApplyChanges(changes);
+            VisualData.ApplyChanges(changes);
 
             return changes;
         }
-
+        
         public List<TerritoryChange> ApplyDeltaChanges(IEnumerable<TerritoryCell> cellChanges)
         {
             var changes = new List<TerritoryChange>();
@@ -168,7 +126,7 @@ namespace Game.Data
 
             return changes;
         }
-
+        
         public List<TerritoryChange> ClearOwnership(uint playerId)
         {
             var changes = new List<TerritoryChange>();
@@ -192,6 +150,52 @@ namespace Game.Data
             }
 
             return changes;
+        }
+        
+        public float GetOwnershipPercentage(uint playerId)
+        {
+            if (TotalCells == 0 || playerId == 0)
+            {
+                return 0f;
+            }
+
+            int count = 0;
+            for (int i = 0; i < _cells.Length; i++)
+            {
+                if (_cells[i] == playerId)
+                {
+                    count++;
+                }
+            }
+
+            return (count * 100f) / TotalCells;
+        }
+        
+        public bool IsOwnedBy(int x, int y, uint playerId)
+        {
+            return GetOwner(x, y) == playerId;
+        }
+        
+        public void Clear()
+        {
+            System.Array.Clear(_cells, 0, _cells.Length);
+            ClaimedCells = 0;
+
+            VisualData.RebuildAllColors(_cells);
+        }
+        
+        private uint GetOwner(int x, int y)
+        {
+            if (!IsInBounds(x, y))
+            {
+                return 0;
+            }
+            return _cells[y * Width + x];
+        }
+
+        private bool IsInBounds(int x, int y)
+        {
+            return x >= 0 && x < Width && y >= 0 && y < Height;
         }
         
         private void DecodeRow(TerritoryRow row, List<TerritoryChange> changes)
@@ -218,25 +222,6 @@ namespace Game.Data
             }
         }
 
-        public float GetOwnershipPercentage(uint playerId)
-        {
-            if (TotalCells == 0 || playerId == 0)
-            {
-                return 0f;
-            }
-
-            int count = 0;
-            for (int i = 0; i < _cells.Length; i++)
-            {
-                if (_cells[i] == playerId)
-                {
-                    count++;
-                }
-            }
-
-            return (count * 100f) / TotalCells;
-        }
-
         private void RecalculateClaimedCells()
         {
             ClaimedCells = 0;
@@ -247,14 +232,6 @@ namespace Game.Data
                     ClaimedCells++;
                 }
             }
-        }
-
-        public void Clear()
-        {
-            System.Array.Clear(_cells, 0, _cells.Length);
-            ClaimedCells = 0;
-
-            VisualData.RebuildAllColors(_cells);
         }
     }
 }

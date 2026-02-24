@@ -37,9 +37,6 @@ namespace Game
         
         public event Action OnGameStarted;
         public event Action<PaperioState> OnStateRefreshed;
-        public event Action OnGameEnded;
-        public event Action<uint> OnLocalPlayerSpawned;
-        public event Action<List<TerritoryChange>> OnTerritoryChanged;
         public PlayerVisual LocalPlayerVisual => _playerVisualsManager?.LocalPlayerVisual;
         public GameWorldConfig Config => config;
         public TerritoryData Territory => _territoryData;
@@ -223,7 +220,6 @@ namespace Game
                       $"TickRate={_tickRateMs}ms");
             
             OnGameStarted?.Invoke();
-            OnLocalPlayerSpawned?.Invoke(_localPlayerId);
             
             _minimapSystem.CreateUI();
         }
@@ -305,8 +301,6 @@ namespace Game
                             }
                         }
                     }
-
-                    OnTerritoryChanged?.Invoke(changes);
                 }
             }
             
@@ -432,7 +426,6 @@ namespace Game
             {
                 _territoryRenderer.FlushToMesh(changes.Count);
                 _territoryClaim.SyncNonAnimatedColors();
-                OnTerritoryChanged?.Invoke(changes);
             }
         }
         
@@ -441,9 +434,7 @@ namespace Game
             int width = (int)initialState.GridWidth;
             int height = (int)initialState.GridHeight;
 
-            _territoryData = new TerritoryData(width, height);
-
-            _territoryData.InitializeVisuals(config.CellSize, config.NeutralColor, ResolveTerritoryColor);
+            _territoryData = new TerritoryData(width, height, config.CellSize, config.NeutralColor, ResolveTerritoryColor);
 
             if (initialState.Territory != null)
             {

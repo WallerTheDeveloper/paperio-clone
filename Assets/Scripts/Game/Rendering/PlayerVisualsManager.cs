@@ -1,11 +1,8 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
+﻿using System.Collections.Generic;
 using Core.Services;
 using Game.Data;
 using Game.Paperio;
 using Helpers;
-using Input;
 using UnityEngine;
 
 namespace Game.Rendering

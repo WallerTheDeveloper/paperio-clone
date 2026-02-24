@@ -17,7 +17,9 @@ namespace Game.Data
         { }
 
         public void Dispose()
-        { }
+        {
+            Clear();
+        }
 
         public PlayerData Register(PlayerInfo playerInfo)
         {
@@ -43,19 +45,8 @@ namespace Game.Data
             _playersContainer.TryGetValue(playerId, out PlayerData player);
             return player;
         }
-        
-        public IEnumerable<PlayerData> GetAlivePlayers()
-        {
-            foreach (var player in _playersContainer.Values)
-            {
-                if (player.Alive)
-                {
-                    yield return player;
-                }
-            }
-        }
 
-        public void Clear()
+        private void Clear()
         {
             _playersContainer.Clear();
         }
