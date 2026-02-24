@@ -1,11 +1,10 @@
 ﻿using Core.Services;
 using Game.Data;
 using Game.Effects;
-using Game.Rendering;
+using Game.Subsystems.Rendering;
 using Helpers;
-using UnityEngine;
 
-namespace Game
+namespace Game.Subsystems
 {
     public class EffectsCoordinator : IService
     {
@@ -13,7 +12,6 @@ namespace Game
         private PlayerVisualsManager _playerVisualsManager;
         private GameSessionData _sessionData;
         private GameWorldConfig _config;
-
         public void Initialize(ServiceContainer services)
         {
             _effectsManager = services.Get<EffectsManager>();

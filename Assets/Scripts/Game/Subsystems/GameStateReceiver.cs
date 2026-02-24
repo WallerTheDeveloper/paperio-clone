@@ -3,25 +3,23 @@ using System.Collections.Generic;
 using Core.Services;
 using Game.Data;
 using Game.Paperio;
-using Game.Rendering;
-using Helpers;
+using Game.Subsystems.Rendering;
 using UnityEngine;
 
-namespace Game
+namespace Game.Subsystems
 {
     public class GameStateReceiver : IService
     {
+        public event Action<PaperioState> OnStateProcessed;
+
+        public event Action<List<TerritoryChange>> OnTerritoryChanged;
+
         private GameSessionData _sessionData;
         private PlayerColorRegistry _colorRegistry;
         private TerritorySystem _territorySystem;
         private PredictionSystem _predictionSystem;
         private PlayerVisualsManager _playerVisualsManager;
         private TrailVisualsManager _trailVisualsManager;
-
-        public event Action<PaperioState> OnStateProcessed;
-
-        public event Action<List<TerritoryChange>> OnTerritoryChanged;
-
         public void Initialize(ServiceContainer services)
         {
             _colorRegistry = services.Get<PlayerColorRegistry>();

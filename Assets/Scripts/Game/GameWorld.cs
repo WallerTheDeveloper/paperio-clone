@@ -3,8 +3,9 @@ using System.Collections.Generic;
 using Core.Services;
 using Game.Data;
 using Game.Paperio;
-using Game.Rendering;
-using Input;
+using Game.Subsystems;
+using Game.Subsystems.Input;
+using Game.Subsystems.Rendering;
 using UnityEngine;
 
 namespace Game
@@ -12,20 +13,7 @@ namespace Game
     public class GameWorld : MonoBehaviour, IService, IGameWorldDataProvider
     {
         [SerializeField] private GameWorldConfig config;
-
-        private GameSessionData _sessionData;
-        private GameStateReceiver _stateReceiver;
-        private PredictionSystem _predictionSystem;
-        private TerritorySystem _territorySystem;
-        private EffectsCoordinator _effectsCoordinator;
-        private PlayerColorRegistry _colorRegistry;
-
-        private PlayerVisualsManager _playerVisualsManager;
-        private TrailVisualsManager _trailVisualsManager;
-        private CameraController _cameraController;
-        private MinimapSystem _minimapSystem;
-        private InputService _inputService;
-
+        
         private float _lastTickTime;
 
         public GameWorldConfig Config => config;
@@ -74,6 +62,17 @@ namespace Game
             _sessionData = new GameSessionData();
         }
 
+        private GameSessionData _sessionData;
+        private GameStateReceiver _stateReceiver;
+        private PredictionSystem _predictionSystem;
+        private TerritorySystem _territorySystem;
+        private EffectsCoordinator _effectsCoordinator;
+        private PlayerColorRegistry _colorRegistry;
+        private PlayerVisualsManager _playerVisualsManager;
+        private TrailVisualsManager _trailVisualsManager;
+        private CameraController _cameraController;
+        private MinimapSystem _minimapSystem;
+        private InputService _inputService;
         public void Initialize(ServiceContainer services)
         {
             _colorRegistry = services.Get<PlayerColorRegistry>();

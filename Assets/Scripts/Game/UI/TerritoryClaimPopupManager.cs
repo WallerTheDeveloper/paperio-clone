@@ -1,7 +1,7 @@
 ﻿using System.Collections.Generic;
 using Core.Services;
 using Game.Data;
-using Game.Rendering;
+using Game.Subsystems.Rendering;
 using UnityEngine;
 
 namespace Game.UI

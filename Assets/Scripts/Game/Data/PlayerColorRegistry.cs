@@ -1,6 +1,6 @@
 ﻿using System.Collections.Generic;
 using Core.Services;
-using Game.Rendering;
+using Game.Subsystems.Rendering;
 using UnityEngine;
 
 namespace Game.Data
@@ -9,10 +9,10 @@ namespace Game.Data
     {
         private readonly Dictionary<uint, Color> _colors = new();
         
-        private PlayerVisualsManager _playerVisualsManager;
 
         public IReadOnlyDictionary<uint, Color> Colors => _colors;
 
+        private PlayerVisualsManager _playerVisualsManager;
         public void Initialize(ServiceContainer services)
         {
             _playerVisualsManager = services.Get<PlayerVisualsManager>();

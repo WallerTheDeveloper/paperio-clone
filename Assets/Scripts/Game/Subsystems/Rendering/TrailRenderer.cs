@@ -1,7 +1,7 @@
 ﻿using System.Collections.Generic;
 using UnityEngine;
 
-namespace Game.Rendering
+namespace Game.Subsystems.Rendering
 {
     [RequireComponent(typeof(MeshFilter), typeof(MeshRenderer))]
     public class TrailRenderer : MonoBehaviour

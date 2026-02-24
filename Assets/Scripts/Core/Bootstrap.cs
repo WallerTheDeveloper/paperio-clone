@@ -4,9 +4,10 @@ using Core.Services;
 using Game;
 using Game.Data;
 using Game.Effects;
-using Game.Rendering;
+using Game.Subsystems;
+using Game.Subsystems.Input;
+using Game.Subsystems.Rendering;
 using Game.UI;
-using Input;
 using Network;
 using UnityEngine;
 

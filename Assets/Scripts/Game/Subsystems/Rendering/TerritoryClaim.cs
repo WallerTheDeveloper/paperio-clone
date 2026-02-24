@@ -4,7 +4,7 @@ using Game.Data;
 using Game.Effects;
 using UnityEngine;
 
-namespace Game.Rendering
+namespace Game.Subsystems.Rendering
 {
     public class TerritoryClaim : MonoBehaviour, IService
     {

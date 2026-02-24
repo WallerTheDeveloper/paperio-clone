@@ -2,14 +2,16 @@
 using Core.Services;
 using Game.Data;
 using Game.Paperio;
-using Game.Rendering;
+using Game.Subsystems.Rendering;
 using Game.UI;
 using UnityEngine;
 
-namespace Game
+namespace Game.Subsystems
 {
     public class TerritorySystem : IService
     {
+        public TerritoryData Data => _territoryData;
+
         private TerritoryData _territoryData;
         private TerritoryRenderer _territoryRenderer;
         private TerritoryClaim _territoryClaim;
@@ -18,9 +20,6 @@ namespace Game
         private PlayerVisualsManager _playerVisualsManager;
         private GameSessionData _sessionData;
         private GameWorldConfig _config;
-
-        public TerritoryData Data => _territoryData;
-
         public void Initialize(ServiceContainer services)
         {
             _territoryRenderer = services.Get<TerritoryRenderer>();

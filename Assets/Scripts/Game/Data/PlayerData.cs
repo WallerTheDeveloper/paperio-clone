@@ -1,6 +1,5 @@
 ﻿using System.Collections.Generic;
 using Game.Paperio;
-using Input;
 using UnityEngine;
 
 namespace Game.Data

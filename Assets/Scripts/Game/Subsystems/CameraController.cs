@@ -2,7 +2,7 @@
 using Helpers;
 using UnityEngine;
 
-namespace Game
+namespace Game.Subsystems
 {
     public class CameraController : MonoBehaviour
     {

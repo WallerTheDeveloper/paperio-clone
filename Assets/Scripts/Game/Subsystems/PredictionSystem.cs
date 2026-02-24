@@ -1,25 +1,24 @@
 ﻿using Core.Services;
 using Game.Data;
 using Game.Paperio;
-using Game.Rendering;
+using Game.Subsystems.Input;
+using Game.Subsystems.Rendering;
 using Helpers;
-using Input;
 using Network;
 using UnityEngine;
 
-namespace Game
+namespace Game.Subsystems
 {
     public class PredictionSystem : IService
     {
+        private uint _estimatedServerTick;
+        private float _tickAccumulator;
+        
         private ClientPrediction _prediction;
         private GameSessionData _sessionData;
         private PlayerVisualsManager _playerVisualsManager;
         private InputService _inputService;
         private GameWorldConfig _config;
-
-        private uint _estimatedServerTick;
-        private float _tickAccumulator;
-
         public void Initialize(ServiceContainer services)
         {
             _sessionData = services.Get<GameWorld>().SessionData;

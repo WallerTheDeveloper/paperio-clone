@@ -5,7 +5,7 @@ using Network;
 using UnityEngine;
 using UnityEngine.InputSystem;
 
-namespace Input
+namespace Game.Subsystems.Input
 {
     public class InputService : IService
     {

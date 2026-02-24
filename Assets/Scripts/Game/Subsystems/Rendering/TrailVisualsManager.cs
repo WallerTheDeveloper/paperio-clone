@@ -2,7 +2,7 @@
 using Core.Services;
 using UnityEngine;
 
-namespace Game.Rendering
+namespace Game.Subsystems.Rendering
 {
     public class TrailVisualsManager : MonoBehaviour, IService
     {

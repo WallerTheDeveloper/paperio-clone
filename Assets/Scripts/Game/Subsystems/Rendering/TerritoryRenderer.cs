@@ -1,9 +1,8 @@
-﻿using System.Collections.Generic;
-using Core.Services;
+﻿using Core.Services;
 using Game.Data;
 using UnityEngine;
 
-namespace Game.Rendering
+namespace Game.Subsystems.Rendering
 {
     [RequireComponent(typeof(MeshFilter), typeof(MeshRenderer))]
     public class TerritoryRenderer : MonoBehaviour, IService
