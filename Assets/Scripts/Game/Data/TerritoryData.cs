@@ -41,8 +41,7 @@ namespace Game.Data
             ClaimedCells = 0;
             _cells = new uint[width * height];
             
-            VisualData = new TerritoryVisualData();
-            VisualData.Initialize(Width, Height, cellSize, neutralColor, colorResolver);
+            VisualData = new TerritoryVisualData(Width, Height, cellSize, neutralColor, colorResolver);
         }
 
         public List<TerritoryChange> ApplyFullState(IEnumerable<TerritoryRow> territoryRows)

@@ -21,7 +21,7 @@ namespace Game.Data
 
         private Func<uint, Color32> _colorResolver;
 
-        public void Initialize(int width, int height, float cellSize, Color32 neutralColor, Func<uint, Color32> colorResolver)
+        public TerritoryVisualData(int width, int height, float cellSize, Color32 neutralColor, Func<uint, Color32> colorResolver)
         {
             _width = width;
             _height = height;
@@ -43,7 +43,10 @@ namespace Game.Data
 
         public void ApplyChanges(List<TerritoryChange> changes)
         {
-            if (!IsInitialized || changes == null) return;
+            if (!IsInitialized || changes == null)
+            {
+                return;
+            }
 
             foreach (var change in changes)
             {
