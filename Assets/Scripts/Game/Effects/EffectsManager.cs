@@ -147,7 +147,10 @@ namespace Game.Effects
 
         private void OnReleaseEffect(IEffect effect)
         {
-            if (effect == null) return;
+            if (effect == null)
+            {
+                return;
+            }
             
             effect.Stop();
             effect.Reset();

@@ -27,8 +27,14 @@ namespace Game.Effects.Implementations
         {
             get
             {
-                if (_glowParticles != null && _glowParticles.isPlaying) return true;
-                if (_ringCoroutine != null) return true;
+                if (_glowParticles != null && _glowParticles.isPlaying)
+                {
+                    return true;
+                }
+                if (_ringCoroutine != null)
+                {
+                    return true;
+                }
                 return false;
             }
         }
