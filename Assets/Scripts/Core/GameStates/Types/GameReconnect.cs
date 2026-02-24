@@ -8,13 +8,11 @@ namespace Core.GameStates.Types
     public class GameReconnect : GameState
     {
         public override Action TriggerStateSwitch { get; set; }
-        
-        public Action OnReconnectFailed;
 
         private MessageSender _messageSender;
         private bool _isWaitingForResponse;
         private float _timeoutTimer;
-        
+
         private const float ReconnectTimeoutSeconds = 5f;
         private const string ReconnectTokenKey = "ReconnectToken";
         private const string ReconnectRoomKey = "ReconnectRoomCode";
@@ -24,6 +22,7 @@ namespace Core.GameStates.Types
             _messageSender = container.Get<MessageSender>();
             _isWaitingForResponse = false;
             _timeoutTimer = 0f;
+            Succeeded = true;
 
             string savedToken = PlayerPrefs.GetString(ReconnectTokenKey, "");
             string savedRoom = PlayerPrefs.GetString(ReconnectRoomKey, "");
@@ -31,25 +30,27 @@ namespace Core.GameStates.Types
             if (string.IsNullOrEmpty(savedToken))
             {
                 Debug.Log("[GameReconnect] No saved reconnect token, falling back to join");
-                FallbackToJoin();
+                Succeeded = false;
+                TriggerStateSwitch?.Invoke();
                 return;
             }
 
-            if (!string.IsNullOrEmpty(_messageSender.RoomCode) && 
-                !string.IsNullOrEmpty(savedRoom) && 
+            if (!string.IsNullOrEmpty(_messageSender.RoomCode) &&
+                !string.IsNullOrEmpty(savedRoom) &&
                 _messageSender.RoomCode != savedRoom)
             {
                 Debug.Log($"[GameReconnect] Room mismatch (saved: {savedRoom}, target: {_messageSender.RoomCode}), falling back to join");
                 ClearSavedToken();
-                FallbackToJoin();
+                Succeeded = false;
+                TriggerStateSwitch?.Invoke();
                 return;
             }
 
             Debug.Log($"[GameReconnect] Attempting reconnect with saved token for room {savedRoom}");
-            
+
             _messageSender.OnRoomJoined += OnRoomJoined;
             _messageSender.OnError += OnError;
-            
+
             _messageSender.SendReconnect(savedToken);
             _isWaitingForResponse = true;
             _timeoutTimer = 0f;
@@ -57,18 +58,16 @@ namespace Core.GameStates.Types
 
         public override void Tick()
         {
-            if (!_isWaitingForResponse)
-            {
-                return;
-            }
+            if (!_isWaitingForResponse) return;
 
             _timeoutTimer += Time.deltaTime;
             if (_timeoutTimer >= ReconnectTimeoutSeconds)
             {
-                Debug.LogWarning("[GameReconnect] Reconnect timed out, falling back to join");
+                Debug.LogWarning("[GameReconnect] Reconnect timed out");
                 ClearSavedToken();
                 Cleanup();
-                FallbackToJoin();
+                Succeeded = false;
+                TriggerStateSwitch?.Invoke();
             }
         }
 
@@ -80,28 +79,21 @@ namespace Core.GameStates.Types
         private void OnRoomJoined(Game.Server.RoomJoined roomJoined)
         {
             Debug.Log($"[GameReconnect] Reconnected successfully as player {roomJoined.PlayerId} in room {roomJoined.RoomCode}");
-            
             SaveToken(roomJoined.ReconnectToken, roomJoined.RoomCode);
-            
             _isWaitingForResponse = false;
             Cleanup();
-            
+            Succeeded = true;
             TriggerStateSwitch?.Invoke();
         }
 
         private void OnError(Game.Server.Error error)
         {
             Debug.LogWarning($"[GameReconnect] Reconnect failed: {error.Message}");
-            
             ClearSavedToken();
             _isWaitingForResponse = false;
             Cleanup();
-            FallbackToJoin();
-        }
-
-        private void FallbackToJoin()
-        {
-            OnReconnectFailed?.Invoke();
+            Succeeded = false;
+            TriggerStateSwitch?.Invoke();
         }
 
         private void Cleanup()
