@@ -1,6 +1,6 @@
 ﻿using System;
 using Core.Services;
-using Game.Rendering;
+using Game.Server;
 using Network;
 
 namespace Core.GameStates.Types
@@ -16,13 +16,20 @@ namespace Core.GameStates.Types
              
              _messageSender.SendJoinRoom();
              
-             TriggerStateSwitch?.Invoke();
+             _messageSender.OnRoomJoined += OnRoomJoined;
         }
 
         public override void Tick()
         { }
 
         public override void Stop()
-        { }
+        {
+            _messageSender.OnRoomJoined -= OnRoomJoined;
+        }
+        
+        private void OnRoomJoined(RoomJoined obj)
+        {
+            TriggerStateSwitch?.Invoke();
+        }
     }
 }
