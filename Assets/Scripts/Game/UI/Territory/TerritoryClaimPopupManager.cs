@@ -59,8 +59,6 @@ namespace Game.UI.Territory
             }
         }
 
-        public void TickLate() { }
-
         public void Dispose()
         {
             foreach (var popup in _active)

@@ -2,7 +2,7 @@
 using Game.Data;
 using Game.Effects;
 using Game.Subsystems.Rendering;
-using Helpers;
+using Utils;
 
 namespace Game.Subsystems
 {

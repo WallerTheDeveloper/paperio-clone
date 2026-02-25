@@ -1,6 +1,6 @@
 ﻿using UnityEngine;
 
-namespace Helpers
+namespace Utils
 {
     public static class GridHelper
     {
