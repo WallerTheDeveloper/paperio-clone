@@ -2,6 +2,7 @@
 using Game.Data;
 using Game.UI.Leaderboard;
 using UnityEngine;
+using Utils;
 
 namespace Game.Subsystems.UI
 {
@@ -17,10 +18,17 @@ namespace Game.Subsystems.UI
             _stateReceiver = services.Get<GameStateReceiver>();
             _colorDataProvider = services.Get<ColorsRegistry>();
             _gameSessionData = services.Get<GameWorld>().GameSessionData;
-            
-            leaderboardUI.Bind(_stateReceiver, _colorDataProvider, _gameSessionData);
         }
 
+        public void CreateAndInitializeGameUI()
+        {
+            var hud = GameObject.FindWithTag(Constants.Tags.HUD);
+            
+            var leaderboardUIInstance = Instantiate(leaderboardUI, hud.transform);
+            
+            leaderboardUIInstance.Bind(_stateReceiver, _colorDataProvider, _gameSessionData);
+        }
+        
         public void Dispose()
         {
             leaderboardUI.Unbind();

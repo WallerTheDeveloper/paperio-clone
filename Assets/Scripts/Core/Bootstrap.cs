@@ -84,7 +84,6 @@ namespace Core
                 _services.Register(_predictionSystem);
                 _services.Register(_stateReceiver);
                 _services.Register(gameUICoordinator);
-                
             }
         }
 

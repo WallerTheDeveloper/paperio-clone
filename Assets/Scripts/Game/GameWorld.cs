@@ -6,7 +6,9 @@ using Game.Paperio;
 using Game.Subsystems;
 using Game.Subsystems.Input;
 using Game.Subsystems.Rendering;
+using Game.Subsystems.UI;
 using UnityEngine;
+using Utils;
 
 namespace Game
 {
@@ -31,7 +33,7 @@ namespace Game
         {
             get
             {
-                var camObj = GameObject.FindWithTag("LocalPlayerCamera");
+                var camObj = GameObject.FindWithTag(Constants.Tags.LocalPlayerCamera);
                 return camObj != null ? camObj.GetComponent<Camera>() : null;
             }
         }
@@ -73,6 +75,7 @@ namespace Game
         private CameraController _cameraController;
         private MinimapSystem _minimapSystem;
         private InputService _inputService;
+        private GameUICoordinator _gameUICoordinator;
         public void Initialize(ServiceContainer services)
         {
             _colorRegistry = services.Get<ColorsRegistry>();
@@ -84,7 +87,8 @@ namespace Game
             _trailVisualsManager = services.Get<TrailVisualsManager>();
             _minimapSystem = services.Get<MinimapSystem>();
             _inputService = services.Get<InputService>();
-
+            _gameUICoordinator = services.Get<GameUICoordinator>();
+            
             _stateReceiver.OnStateProcessed += state => OnStateRefreshed?.Invoke(state);
             _stateReceiver.OnTerritoryChanged += changes => OnTerritoryChanged?.Invoke(changes);
         }
@@ -169,6 +173,8 @@ namespace Game
                 _predictionSystem.SyncToServerTick(response.InitialState.Tick);
             }
 
+            _gameUICoordinator.CreateAndInitializeGameUI();
+            
             _inputService.EnableInput();
             _lastTickTime = Time.time;
             _sessionData.StartGame();

@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using Game.Data;
 using Game.Paperio;
 using Game.Subsystems;
@@ -26,18 +27,11 @@ namespace Game.UI.Leaderboard
             BuildRows();
         }
 
-        private void OnDestroy()
-        {
-            Unbind();
-        }
-
         private IGameStateReceiver _stateReceiver;
         private IColorDataProvider _colorData;
         private IGameSessionData _sessionData;
         public void Bind(IGameStateReceiver stateReceiver, IColorDataProvider colorData, IGameSessionData sessionData)
         {
-            Unbind();
-
             _stateReceiver = stateReceiver;
             _colorData = colorData;
             _sessionData = sessionData;
@@ -122,9 +116,10 @@ namespace Game.UI.Leaderboard
 
             _sortBuffer.Sort((a, b) => b.Percentage.CompareTo(a.Percentage));
         }
-
+        
         private void RefreshRows()
         {
+            
             var visible = Mathf.Min(_sortBuffer.Count, maxRows);
 
             for (var i = 0; i < maxRows; i++)
