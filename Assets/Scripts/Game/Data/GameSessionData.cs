@@ -17,7 +17,7 @@ namespace Game.Data
 
         public float MoveDuration => MoveIntervalTicks * (TickRateMs / 1000f);
         
-        public void SetFromJoinResponse(uint playerId, uint tickRateMs, uint moveIntervalTicks, uint gridWidth, uint gridHeight)
+        public void SetData(uint playerId, uint tickRateMs, uint moveIntervalTicks, uint gridWidth, uint gridHeight)
         {
             LocalPlayerId = playerId;
             TickRateMs = tickRateMs;
