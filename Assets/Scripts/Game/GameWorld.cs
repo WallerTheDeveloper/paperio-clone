@@ -119,7 +119,7 @@ namespace Game
 
         public void OnJoinedGame(PaperioJoinResponse response)
         {
-            _sessionData.SetFromJoinResponse(
+            _sessionData.SetData(
                 response.YourPlayerId,
                 response.TickRateMs,
                 response.MoveIntervalTicks,
