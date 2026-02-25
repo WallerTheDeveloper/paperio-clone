@@ -42,11 +42,13 @@ namespace Game.Subsystems.Rendering
 
         private IGameWorldDataProvider _gameData;
         private PlayerVisualsManager _playerVisualsManager;
+        private IColorDataProvider _colorDataProvider;
         public void Initialize(ServiceContainer services)
         {
             _gameData = services.Get<GameWorld>();
             _playerVisualsManager = services.Get<PlayerVisualsManager>();
-
+            _colorDataProvider = services.Get<ColorsRegistry>();
+            
             if (minimapCamera == null)
             {
                 Debug.LogError("[MinimapSystem] No camera assigned! Drag your minimap camera into the Inspector.");
@@ -119,7 +121,7 @@ namespace Game.Subsystems.Rendering
 
             if (debugLog)
             {
-                Debug.Log($"[MinimapSystem] Initialized — Grid: {_gameData.GridWidth}x{_gameData.GridHeight}, " +
+                Debug.Log($"[MinimapSystem] Initialized — Grid: {_gameData.GameSessionData.GridWidth}x{_gameData.GameSessionData.GridHeight}, " +
                           $"OrthoSize: {minimapCamera.orthographicSize:F1}");
             }
         }
@@ -147,11 +149,11 @@ namespace Game.Subsystems.Rendering
 
         private void FitCameraToGrid()
         {
-            float gridWorldWidth = _gameData.GridWidth * _gameData.Config.CellSize;
-            float gridWorldHeight = _gameData.GridHeight * _gameData.Config.CellSize;
+            float gridWorldWidth = _gameData.GameSessionData.GridWidth * _gameData.Config.CellSize;
+            float gridWorldHeight = _gameData.GameSessionData.GridHeight * _gameData.Config.CellSize;
 
             Vector3 gridCenter = GridHelper.GetGridCenter(
-                _gameData.GridWidth, _gameData.GridHeight, _gameData.Config.CellSize);
+                _gameData.GameSessionData.GridWidth, _gameData.GameSessionData.GridHeight, _gameData.Config.CellSize);
 
             minimapCamera.transform.position = new Vector3(gridCenter.x, cameraHeight, gridCenter.z);
 
@@ -182,9 +184,12 @@ namespace Game.Subsystems.Rendering
                 PlayerVisual visual = kvp.Value;
                 activePlayers.Add(playerId);
 
-                if (visual == null || !visual.gameObject.activeInHierarchy) continue;
+                if (visual == null || !visual.gameObject.activeInHierarchy)
+                {
+                    continue;
+                }
 
-                bool isLocal = playerId == _gameData.LocalPlayerId;
+                bool isLocal = playerId == _gameData.GameSessionData.LocalPlayerId;
 
                 if (!_indicators.TryGetValue(playerId, out var indicator) || indicator == null)
                 {
@@ -225,7 +230,7 @@ namespace Game.Subsystems.Rendering
         private GameObject CreateIndicator(uint playerId, bool isLocal)
         {
             float size = isLocal ? localIndicatorSize : indicatorSize;
-            Color color = _playerVisualsManager.GetPlayerColor(playerId);
+            Color color = _colorDataProvider.GetColorOf(playerId);
 
             var indicator = GameObject.CreatePrimitive(PrimitiveType.Quad);
             indicator.name = $"MinimapIndicator_{playerId}";
@@ -327,8 +332,8 @@ namespace Game.Subsystems.Rendering
         {
             if (_gameData == null) return Vector2.zero;
 
-            float gridWorldWidth = _gameData.GridWidth * _gameData.Config.CellSize;
-            float gridWorldHeight = _gameData.GridHeight * _gameData.Config.CellSize;
+            float gridWorldWidth = _gameData.GameSessionData.GridWidth * _gameData.Config.CellSize;
+            float gridWorldHeight = _gameData.GameSessionData.GridHeight * _gameData.Config.CellSize;
 
             return new Vector2(
                 Mathf.Clamp01(worldPos.x / gridWorldWidth),
@@ -339,8 +344,8 @@ namespace Game.Subsystems.Rendering
         {
             if (_gameData == null) return Vector3.zero;
 
-            float gridWorldWidth = _gameData.GridWidth * _gameData.Config.CellSize;
-            float gridWorldHeight = _gameData.GridHeight * _gameData.Config.CellSize;
+            float gridWorldWidth = _gameData.GameSessionData.GridWidth * _gameData.Config.CellSize;
+            float gridWorldHeight = _gameData.GameSessionData.GridHeight * _gameData.Config.CellSize;
 
             return new Vector3(uv.x * gridWorldWidth, 0f, uv.y * gridWorldHeight);
         }

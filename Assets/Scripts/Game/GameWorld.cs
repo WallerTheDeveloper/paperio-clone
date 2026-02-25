@@ -17,9 +17,9 @@ namespace Game
         private float _lastTickTime;
 
         public GameWorldConfig Config => config;
-        public GameSessionData SessionData => _sessionData;
         public TerritoryData Territory => _territorySystem?.Data;
         public Dictionary<uint, Color> PlayerColors => new(_colorRegistry?.Colors ?? new Dictionary<uint, Color>());
+        public IGameSessionData GameSessionData => _sessionData;
         public uint LocalPlayerId => _sessionData.LocalPlayerId;
         public bool IsGameActive => _sessionData.IsGameActive;
         public uint GridWidth => _sessionData.GridWidth;
@@ -67,7 +67,7 @@ namespace Game
         private PredictionSystem _predictionSystem;
         private TerritorySystem _territorySystem;
         private EffectsCoordinator _effectsCoordinator;
-        private PlayerColorRegistry _colorRegistry;
+        private ColorsRegistry _colorRegistry;
         private PlayerVisualsManager _playerVisualsManager;
         private TrailVisualsManager _trailVisualsManager;
         private CameraController _cameraController;
@@ -75,7 +75,7 @@ namespace Game
         private InputService _inputService;
         public void Initialize(ServiceContainer services)
         {
-            _colorRegistry = services.Get<PlayerColorRegistry>();
+            _colorRegistry = services.Get<ColorsRegistry>();
             _stateReceiver = services.Get<GameStateReceiver>();
             _predictionSystem = services.Get<PredictionSystem>();
             _territorySystem = services.Get<TerritorySystem>();

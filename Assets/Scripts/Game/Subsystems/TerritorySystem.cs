@@ -17,20 +17,20 @@ namespace Game.Subsystems
         private TerritoryRenderer _territoryRenderer;
         private TerritoryClaim _territoryClaim;
         private TerritoryClaimPopupManager _claimPopupManager;
-        private PlayerColorRegistry _colorRegistry;
+        private IColorDataProvider _colorDataProvider;
         private PlayerVisualsManager _playerVisualsManager;
-        private GameSessionData _sessionData;
+        private IGameSessionData _sessionData;
         private GameWorldConfig _config;
         public void Initialize(ServiceContainer services)
         {
             _territoryRenderer = services.Get<TerritoryRenderer>();
             _territoryClaim = services.Get<TerritoryClaim>();
             _claimPopupManager = services.Get<TerritoryClaimPopupManager>();
-            _colorRegistry = services.Get<PlayerColorRegistry>();
+            _colorDataProvider = services.Get<ColorsRegistry>();
             _playerVisualsManager = services.Get<PlayerVisualsManager>();
             
             var gameWorld = services.Get<GameWorld>();
-            _sessionData = gameWorld.SessionData;
+            _sessionData = gameWorld.GameSessionData;
             _config = gameWorld.Config;
         }
 
@@ -52,7 +52,7 @@ namespace Game.Subsystems
                 height,
                 _config.CellSize,
                 _config.NeutralColor,
-                ownerId => _colorRegistry.GetTerritoryColor(ownerId, _config.NeutralColor));
+                ownerId => _colorDataProvider.GetTerritoryColor(ownerId, _config.NeutralColor));
             
             if (initialState.Territory != null)
             {
@@ -132,7 +132,7 @@ namespace Game.Subsystems
                             localClaimCount++;
                             if (localColor == Color.white)
                             {
-                                localColor = _colorRegistry.GetColor(_sessionData.LocalPlayerId);
+                                localColor = _colorDataProvider.GetColorOf(_sessionData.LocalPlayerId);
                             }
                         }
                     }

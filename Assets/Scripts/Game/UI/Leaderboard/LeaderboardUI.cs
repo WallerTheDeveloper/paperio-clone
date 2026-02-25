@@ -1,42 +1,70 @@
 ﻿using System.Collections.Generic;
-using Core.Services;
+using Game.Data;
 using Game.Paperio;
+using Game.Subsystems;
 using UnityEngine;
 
 namespace Game.UI.Leaderboard
 {
-    public class LeaderboardUI : MonoBehaviour, IService
+    public class LeaderboardUI : MonoBehaviour
     {
         [SerializeField] private LeaderboardRow rowPrefab;
         [SerializeField] private Transform rowContainer;
         [SerializeField] private int maxRows = 5;
         [SerializeField] private int refreshEveryTicks = 4;
 
-        private GameWorld _gameWorld;
         private LeaderboardRow[] _rows;
         private uint _localPlayerId;
         private uint _totalCells;
         private int _ticksSinceRefresh;
+        private bool _isBound;
 
         private readonly List<LeaderboardEntry> _sortBuffer = new(16);
-
-        public void Initialize(ServiceContainer services)
-        {
-            _gameWorld = services.Get<GameWorld>();
-            _gameWorld.OnGameStarted += HandleGameStarted;
-            _gameWorld.OnStateRefreshed += HandleStateUpdated;
-        }
-
-        public void Dispose()
-        {
-            if (_gameWorld == null) return;
-            _gameWorld.OnGameStarted -= HandleGameStarted;
-            _gameWorld.OnStateRefreshed -= HandleStateUpdated;
-        }
 
         private void Awake()
         {
             BuildRows();
+        }
+
+        private void OnDestroy()
+        {
+            Unbind();
+        }
+
+        private IGameStateReceiver _stateReceiver;
+        private IColorDataProvider _colorData;
+        private IGameSessionData _sessionData;
+        public void Bind(IGameStateReceiver stateReceiver, IColorDataProvider colorData, IGameSessionData sessionData)
+        {
+            Unbind();
+
+            _stateReceiver = stateReceiver;
+            _colorData = colorData;
+            _sessionData = sessionData;
+
+            _localPlayerId = _sessionData.LocalPlayerId;
+            _totalCells = _sessionData.GridWidth * _sessionData.GridHeight;
+
+            _stateReceiver.OnStateProcessed += HandleStateUpdated;
+            _isBound = true;
+        }
+
+        public void Unbind()
+        {
+            if (!_isBound)
+            {
+                return;
+            }
+
+            if (_stateReceiver != null)
+            {
+                _stateReceiver.OnStateProcessed -= HandleStateUpdated;
+            }
+
+            _stateReceiver = null;
+            _colorData = null;
+            _sessionData = null;
+            _isBound = false;
         }
 
         private void BuildRows()
@@ -52,12 +80,6 @@ namespace Game.UI.Leaderboard
                 _rows[i] = Instantiate(rowPrefab, rowContainer);
                 _rows[i].gameObject.SetActive(false);
             }
-        }
-
-        private void HandleGameStarted()
-        {
-            _localPlayerId = _gameWorld.LocalPlayerId;
-            _totalCells = _gameWorld.GridWidth * _gameWorld.GridHeight;
         }
 
         private void HandleStateUpdated(PaperioState state)
@@ -87,9 +109,7 @@ namespace Game.UI.Leaderboard
                 }
 
                 var pct = player.Score / divisor * 100f;
-                var color = _gameWorld.PlayerColors.TryGetValue(player.PlayerId, out var c)
-                    ? c
-                    : Color.white;
+                var color = _colorData.GetColorOf(player.PlayerId);
 
                 _sortBuffer.Add(new LeaderboardEntry(
                     player.PlayerId,

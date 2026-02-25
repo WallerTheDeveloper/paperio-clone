@@ -31,21 +31,13 @@ namespace Game.Subsystems.Rendering
         public PlayersContainer PlayersContainer { get; private set; }
         public IReadOnlyDictionary<uint, PlayerVisual> ActiveVisuals => _activeVisuals;
         
-        private readonly Color32[] _playerColors = {
-            new(255, 77, 77, 255),   // Red
-            new(77, 153, 255, 255),  // Blue  
-            new(77, 255, 77, 255),   // Green
-            new(255, 255, 77, 255),  // Yellow
-            new(255, 77, 255, 255),  // Magenta
-            new(77, 255, 255, 255),  // Cyan
-            new(255, 153, 77, 255),  // Orange
-            new(153, 77, 255, 255),  // Purple
-        };
-        
         private PlayersContainer _playersContainer;
+        private IColorDataProvider _colorDataProvider;
         public void Initialize(ServiceContainer services)
         {
             _playersContainer = services.Get<PlayersContainer>();
+            _colorDataProvider = services.Get<ColorsRegistry>();
+            
             PlayersContainer = _playersContainer;
             
             // Create container for player game objects if not assigned
@@ -113,7 +105,7 @@ namespace Game.Subsystems.Rendering
             
             Vector3 worldPos = CalculateWorldPosition(protoPlayer);
 
-            Color color = GetPlayerColor(protoPlayer.PlayerId);
+            Color color = _colorDataProvider.GetColorOf(protoPlayer.PlayerId);
             
             bool isLocal = protoPlayer.PlayerId == _localPlayerId;
             
@@ -135,22 +127,7 @@ namespace Game.Subsystems.Rendering
             Debug.Log($"[PlayerVisualsManager] Activated player: {protoPlayer.Name} (ID: {protoPlayer.PlayerId})" +
                       (isLocal ? " [LOCAL]" : ""));
         }
-        public Color GetPlayerColor(uint playerId)
-        {
-            if (playerId == 0)
-            {
-                return config.NeutralColor;
-            }
-            
-            var playerData = _playersContainer?.TryGetPlayerById(playerId);
-            if (playerData != null && playerData.Color != default)
-            {
-                return playerData.Color;
-            }
-            
-            int index = (int)((playerId - 1) % _playerColors.Length);
-            return _playerColors[index];
-        }
+        
         public void DespawnPlayer(uint playerId)
         {
             if (!_activeVisuals.TryGetValue(playerId, out var visual))

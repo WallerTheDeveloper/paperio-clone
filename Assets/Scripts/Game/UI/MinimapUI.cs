@@ -33,7 +33,7 @@ namespace Game.UI
         {
             var territory = _gameData.Territory;
             
-            float pct = territory.GetOwnershipPercentage(_gameData.LocalPlayerId);
+            float pct = territory.GetOwnershipPercentage(_gameData.GameSessionData.LocalPlayerId);
             percentageText.text = string.Format(percentageFormat, pct);
         }
     }

@@ -10,7 +10,7 @@ namespace Game.Subsystems
     {
         private EffectsManager _effectsManager;
         private PlayerVisualsManager _playerVisualsManager;
-        private GameSessionData _sessionData;
+        private IGameSessionData _sessionData;
         private GameWorldConfig _config;
         public void Initialize(ServiceContainer services)
         {
@@ -18,7 +18,7 @@ namespace Game.Subsystems
             _playerVisualsManager = services.Get<PlayerVisualsManager>();
             var gameWorld = services.Get<GameWorld>();
             
-            _sessionData = gameWorld.SessionData;
+            _sessionData = gameWorld.GameSessionData;
             _config = gameWorld.Config;
         }
 

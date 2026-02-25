@@ -42,7 +42,6 @@ namespace Game.Subsystems.Rendering
         public bool IsAnimating => _activeWaves.Count > 0;
 
         private IGameWorldDataProvider _gameData;
-
         public void Initialize(ServiceContainer services)
         {
             _gameData = services.Get<GameWorld>();
@@ -50,8 +49,8 @@ namespace Game.Subsystems.Rendering
 
         public void Prepare()
         {
-            _width = _gameData.GridWidth;
-            _height = _gameData.GridHeight;
+            _width = _gameData.GameSessionData.GridWidth;
+            _height = _gameData.GameSessionData.GridHeight;
 
             _visualData = _gameData.Territory.VisualData;
 
@@ -60,7 +59,10 @@ namespace Game.Subsystems.Rendering
 
         public void Tick()
         {
-            if (_activeWaves.Count == 0) return;
+            if (_activeWaves.Count == 0)
+            {
+                return;
+            }
 
             bool meshDirty = false;
             float currentTime = Time.time;

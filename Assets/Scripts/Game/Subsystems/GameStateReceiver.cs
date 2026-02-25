@@ -8,28 +8,34 @@ using UnityEngine;
 
 namespace Game.Subsystems
 {
-    public class GameStateReceiver : IService
+    public interface IGameStateReceiver
+    {
+        public event Action<PaperioState> OnStateProcessed;
+
+        public event Action<List<TerritoryChange>> OnTerritoryChanged;
+    }
+    public class GameStateReceiver : IService, IGameStateReceiver
     {
         public event Action<PaperioState> OnStateProcessed;
 
         public event Action<List<TerritoryChange>> OnTerritoryChanged;
 
-        private GameSessionData _sessionData;
-        private PlayerColorRegistry _colorRegistry;
+        private IGameSessionData _sessionData;
+        private ColorsRegistry _colorRegistry;
         private TerritorySystem _territorySystem;
         private PredictionSystem _predictionSystem;
         private PlayerVisualsManager _playerVisualsManager;
         private TrailVisualsManager _trailVisualsManager;
         public void Initialize(ServiceContainer services)
         {
-            _colorRegistry = services.Get<PlayerColorRegistry>();
+            _colorRegistry = services.Get<ColorsRegistry>();
             _territorySystem = services.Get<TerritorySystem>();
             _predictionSystem = services.Get<PredictionSystem>();
             _playerVisualsManager = services.Get<PlayerVisualsManager>();
             _trailVisualsManager = services.Get<TrailVisualsManager>();
 
             var gameWorld = services.Get<GameWorld>();
-            _sessionData = gameWorld.SessionData;
+            _sessionData = gameWorld.GameSessionData;
         }
 
         public void Tick() { }
@@ -86,7 +92,7 @@ namespace Game.Subsystems
                     gridPoints.Add(new Vector2Int(trailPos.X, trailPos.Y));
                 }
 
-                Color playerColor = _colorRegistry.GetColor(player.PlayerId);
+                Color playerColor = _colorRegistry.GetColorOf(player.PlayerId);
                 _trailVisualsManager.UpdatePlayerTrail(player.PlayerId, gridPoints, playerColor);
             }
         }

@@ -7,6 +7,7 @@ using Game.Effects;
 using Game.Subsystems;
 using Game.Subsystems.Input;
 using Game.Subsystems.Rendering;
+using Game.Subsystems.UI;
 using Game.UI;
 using Game.UI.Leaderboard;
 using Game.UI.Territory;
@@ -28,12 +29,12 @@ namespace Core
         [SerializeField] private TerritoryClaim territoryClaim;
         [SerializeField] private MinimapSystem minimapSystem;
         [SerializeField] private TerritoryClaimPopupManager territoryClaimPopupManager;
-        [SerializeField] private LeaderboardUI leaderboardUI;
+        [SerializeField] private GameUICoordinator gameUICoordinator;
         
         private PlayersContainer _playersContainer;
         private InputService _inputService;
         
-        private PlayerColorRegistry _colorRegistry;
+        private ColorsRegistry _colorRegistry;
         private GameStateReceiver _stateReceiver;
         private PredictionSystem _predictionSystem;
         private TerritorySystem _territorySystem;
@@ -47,7 +48,7 @@ namespace Core
             
             _playersContainer = new PlayersContainer();
             _inputService = new InputService();
-            _colorRegistry = new PlayerColorRegistry();
+            _colorRegistry = new ColorsRegistry();
             _stateReceiver = new GameStateReceiver();
             _predictionSystem = new PredictionSystem();
             _territorySystem = new TerritorySystem();
@@ -66,12 +67,14 @@ namespace Core
             _services.Register(territoryClaim);
             _services.Register(minimapSystem);
             _services.Register(territoryClaimPopupManager);
-            _services.Register(leaderboardUI);
             
             // Game subsystems (depend on the above)
             RegisterGameSubsystems();
-
+            
+            _services.Register(gameWorld);
+            
             _services.InitDanglingServices();
+            
             return;
 
             void RegisterGameSubsystems()
@@ -80,8 +83,8 @@ namespace Core
                 _services.Register(_effectsCoordinator);
                 _services.Register(_predictionSystem);
                 _services.Register(_stateReceiver);
+                _services.Register(gameUICoordinator);
                 
-                _services.Register(gameWorld);
             }
         }
 

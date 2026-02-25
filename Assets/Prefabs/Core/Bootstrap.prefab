@@ -98,7 +98,7 @@ MonoBehaviour:
   territoryClaim: {fileID: 8024467393430731447}
   minimapSystem: {fileID: 6238893011917576472}
   territoryClaimPopupManager: {fileID: 47805915002826995}
-  leaderboardUI: {fileID: 0}
+  gameUICoordinator: {fileID: 8814867320761021441, guid: bc06507510eac1b478f3669d570294b0, type: 3}
 --- !u!1001 &132887165304699107
 PrefabInstance:
   m_ObjectHideFlags: 0

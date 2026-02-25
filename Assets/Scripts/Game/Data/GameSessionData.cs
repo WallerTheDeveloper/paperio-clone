@@ -1,9 +1,20 @@
 ﻿using System;
-using UnityEngine;
 
 namespace Game.Data
 {
-    public class GameSessionData
+    public interface IGameSessionData
+    {
+        public uint LocalPlayerId { get; }
+        public uint GridWidth { get; }
+        public uint GridHeight { get; }
+        public uint TickRateMs { get; }
+        public uint MoveIntervalTicks { get; }
+        public bool IsGameActive { get; }
+
+        public event Action OnGameStarted;
+        public event Action OnGameEnded;
+    }
+    public class GameSessionData : IGameSessionData
     {
         public uint LocalPlayerId { get; private set; }
         public uint GridWidth { get; private set; }

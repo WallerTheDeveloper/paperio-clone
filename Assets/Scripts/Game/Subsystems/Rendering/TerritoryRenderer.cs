@@ -23,7 +23,6 @@ namespace Game.Subsystems.Rendering
         public bool IsInitialized => _mesh != null;
 
         private IGameWorldDataProvider _gameWorldData;
-
         public void Initialize(ServiceContainer services)
         {
             _gameWorldData = services.Get<GameWorld>();
@@ -50,7 +49,7 @@ namespace Game.Subsystems.Rendering
 
             CreateMeshFromVisualData();
 
-            Debug.Log($"[TerritoryRenderer] Initialized: {_gameWorldData.GridWidth}x{_gameWorldData.GridHeight} grid, " +
+            Debug.Log($"[TerritoryRenderer] Initialized: {_gameWorldData.GameSessionData.GridWidth}x{_gameWorldData.GameSessionData.GridHeight} grid, " +
                       $"{_mesh.vertexCount} vertices, {_mesh.triangles.Length / 3} triangles");
         }
 
@@ -115,9 +114,9 @@ namespace Game.Subsystems.Rendering
 
             Gizmos.color = Color.green;
             Vector3 size = new Vector3(
-                _gameWorldData.GridWidth * _gameWorldData.Config.CellSize,
+                _gameWorldData.GameSessionData.GridWidth * _gameWorldData.Config.CellSize,
                 0.1f,
-                _gameWorldData.GridHeight * _gameWorldData.Config.CellSize);
+                _gameWorldData.GameSessionData.GridHeight * _gameWorldData.Config.CellSize);
             Vector3 center = size / 2f;
             Gizmos.DrawWireCube(center, size);
 

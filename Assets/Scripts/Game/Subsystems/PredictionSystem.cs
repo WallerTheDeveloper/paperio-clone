@@ -15,13 +15,13 @@ namespace Game.Subsystems
         private float _tickAccumulator;
         
         private ClientPrediction _prediction;
-        private GameSessionData _sessionData;
+        private IGameSessionData _sessionData;
         private PlayerVisualsManager _playerVisualsManager;
         private InputService _inputService;
         private GameWorldConfig _config;
         public void Initialize(ServiceContainer services)
         {
-            _sessionData = services.Get<GameWorld>().SessionData;
+            _sessionData = services.Get<GameWorld>().GameSessionData;
             _playerVisualsManager = services.Get<PlayerVisualsManager>();
             _inputService = services.Get<InputService>();
             _config = services.Get<GameWorld>().Config;

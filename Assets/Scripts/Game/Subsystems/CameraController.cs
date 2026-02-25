@@ -52,8 +52,8 @@ namespace Game.Subsystems
             _currentYaw = _transform.eulerAngles.y;
 
             _gameBounds = GridHelper.GetGridBounds(
-                gameWorldData.GridWidth,
-                gameWorldData.GridHeight,
+                gameWorldData.GameSessionData.GridWidth,
+                gameWorldData.GameSessionData.GridHeight,
                 gameWorldData.Config.CellSize);
 
             _hasBounds = _gameBounds != default;
