@@ -17,9 +17,10 @@ namespace Game.Subsystems.UI
     {
         IGameUIEventsProvider GameUIEventsProvider { get; }
         void CreateMainMenu();
-        void ClearMainMenu();
         void CreateAndInitializeGameUI(ITerritoryDataProvider territoryDataProvider);
+        void ClearMainMenu();
     }
+    
     public class GameUICoordinator : MonoBehaviour, IService, IGameUICoordinator, IGameUIEventsProvider
     {
         [SerializeField] private LeaderboardUI leaderboardUIPrefab;
@@ -65,12 +66,7 @@ namespace Game.Subsystems.UI
             
             _mainMenu.Setup();
         }
-
-        public void ClearMainMenu()
-        {
-            _mainMenu.Clear();
-        }
-
+        
         public void CreateAndInitializeGameUI(ITerritoryDataProvider territoryDataProvider)
         {
             _hud = GameObject.FindWithTag(Constants.Tags.HUD);
@@ -86,6 +82,11 @@ namespace Game.Subsystems.UI
             _gameUiInitialized = true;
         }
 
+        public void ClearMainMenu()
+        {
+            _mainMenu.Clear();
+        }
+        
         public void Tick()
         {
             if (!_gameUiInitialized)
