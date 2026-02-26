@@ -67,7 +67,7 @@ namespace Game.UI.Territory
             }
         }
 
-        public void Dispose()
+        public void Unbind()
         {
             _territoryEventsHandler.OnLocalClaim -= ShowClaimPopup;
             foreach (var popup in _active)

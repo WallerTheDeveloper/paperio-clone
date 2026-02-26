@@ -119,7 +119,6 @@ namespace Game.UI.Leaderboard
         
         private void RefreshRows()
         {
-            
             var visible = Mathf.Min(_sortBuffer.Count, maxRows);
 
             for (var i = 0; i < maxRows; i++)

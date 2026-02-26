@@ -13,6 +13,11 @@ namespace Game.Subsystems.UI
         [SerializeField] private LeaderboardUI leaderboardUIPrefab;
         [SerializeField] private TerritoryClaimPopupManager territoryClaimPopupManagerPrefab;
         
+        private LeaderboardUI _leaderboardUI;
+        private TerritoryClaimPopupManager _territoryClaimPopupManager;
+        
+        private bool _gameUiInitialized = false;
+        
         private IGameStateReceiver _stateReceiver;
         private IColorDataProvider _colorDataProvider;
         private IGameSessionData _gameSessionData;
@@ -33,16 +38,28 @@ namespace Game.Subsystems.UI
         {
             var hud = GameObject.FindWithTag(Constants.Tags.HUD);
             
-            var leaderboardUI = Instantiate(leaderboardUIPrefab, hud.transform);
-            var territoryClaimPopupManager = Instantiate(territoryClaimPopupManagerPrefab, hud.transform);
+            _leaderboardUI = Instantiate(leaderboardUIPrefab, hud.transform);
+            _territoryClaimPopupManager = Instantiate(territoryClaimPopupManagerPrefab, hud.transform);
             
-            leaderboardUI.Bind(_stateReceiver, _colorDataProvider, _gameSessionData);
-            territoryClaimPopupManager.Bind(_territoryEventsHandler, _gameWorldDataProvider, _playerVisualsData);
+            _leaderboardUI.Bind(_stateReceiver, _colorDataProvider, _gameSessionData);
+            _territoryClaimPopupManager.Bind(_territoryEventsHandler, _gameWorldDataProvider, _playerVisualsData);
+
+            _gameUiInitialized = true;
         }
-        
+
+        public void Tick()
+        {
+            if (_gameUiInitialized)
+            {
+                _territoryClaimPopupManager.Tick();
+            }
+        }
+
         public void Dispose()
         {
-            leaderboardUIPrefab.Unbind();
+            _gameUiInitialized = false;
+            _leaderboardUI.Unbind();
+            _territoryClaimPopupManager.Unbind();
         }
     }
 }
