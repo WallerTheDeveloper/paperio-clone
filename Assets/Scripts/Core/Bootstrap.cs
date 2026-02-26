@@ -28,7 +28,6 @@ namespace Core
         [SerializeField] private TrailVisualsManager trailVisualsManager;
         [SerializeField] private TerritoryClaim territoryClaim;
         [SerializeField] private MinimapSystem minimapSystem;
-        [SerializeField] private TerritoryClaimPopupManager territoryClaimPopupManager;
         [SerializeField] private GameUICoordinator gameUICoordinator;
         
         private PlayersContainer _playersContainer;
@@ -66,7 +65,6 @@ namespace Core
             _services.Register(trailVisualsManager);
             _services.Register(territoryClaim);
             _services.Register(minimapSystem);
-            _services.Register(territoryClaimPopupManager);
             
             // Game subsystems (depend on the above)
             RegisterGameSubsystems();

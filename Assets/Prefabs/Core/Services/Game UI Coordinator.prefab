@@ -44,4 +44,5 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 8f8f711573fc46b6a3e04289ac5a0b40, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Game.Subsystems.UI.GameUICoordinator
-  leaderboardUI: {fileID: 1841886651393859897, guid: 80698b4ed0e745444a71c55a39bc85f5, type: 3}
+  leaderboardUIPrefab: {fileID: 1841886651393859897, guid: 80698b4ed0e745444a71c55a39bc85f5, type: 3}
+  territoryClaimPopupManagerPrefab: {fileID: 6407980700538477194, guid: 29a1a069026de334a836d054ba20dd65, type: 3}

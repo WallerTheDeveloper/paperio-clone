@@ -22,14 +22,14 @@ namespace Game.Subsystems
 
         private IGameSessionData _sessionData;
         private ColorsRegistry _colorRegistry;
-        private TerritorySystem _territorySystem;
+        private ITerritoryStateHandler _territoryStateHandler;
         private PredictionSystem _predictionSystem;
         private PlayerVisualsManager _playerVisualsManager;
         private TrailVisualsManager _trailVisualsManager;
         public void Initialize(ServiceContainer services)
         {
             _colorRegistry = services.Get<ColorsRegistry>();
-            _territorySystem = services.Get<TerritorySystem>();
+            _territoryStateHandler = services.Get<TerritorySystem>();
             _predictionSystem = services.Get<PredictionSystem>();
             _playerVisualsManager = services.Get<PlayerVisualsManager>();
             _trailVisualsManager = services.Get<TrailVisualsManager>();
@@ -53,7 +53,7 @@ namespace Game.Subsystems
                 _colorRegistry.Register(player.PlayerId);
             }
 
-            var territoryChanges = _territorySystem.ProcessStateUpdate(state);
+            var territoryChanges = _territoryStateHandler.ProcessStateUpdate(state);
             if (territoryChanges.Count > 0)
             {
                 OnTerritoryChanged?.Invoke(territoryChanges);

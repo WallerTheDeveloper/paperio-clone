@@ -34,13 +34,13 @@ namespace Game.UI.Territory
                 canvasGroup = GetComponent<CanvasGroup>();
         }
 
-        public void Show(Transform trackTarget, int cellsClaimed, int totalCells, Color playerColor, Camera camera)
+        public void Show(Transform trackTarget, int cellsClaimed, int totalCells, Color playerColor, Camera playerCamera)
         {
             gameObject.SetActive(true);
             EnsureReferences();
     
             _trackTarget = trackTarget;
-            _camera = camera;
+            _camera = playerCamera;
             _elapsed = 0f;
             _isPlaying = true;
 
@@ -127,7 +127,10 @@ namespace Game.UI.Territory
 
         private void UpdateScreenPosition(float t)
         {
-            if (_trackTarget == null || _camera == null) return;
+            if (_trackTarget == null || _camera == null)
+            {
+                return;
+            }
 
             Vector3 screenPos = _camera.WorldToScreenPoint(_trackTarget.position);
 

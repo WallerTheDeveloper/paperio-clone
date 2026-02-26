@@ -1,22 +1,33 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using Core.Services;
 using Game.Data;
 using Game.Paperio;
 using Game.Subsystems.Rendering;
-using Game.UI;
 using Game.UI.Territory;
 using UnityEngine;
 
 namespace Game.Subsystems
 {
-    public class TerritorySystem : IService
+    public interface ITerritoryStateHandler
     {
+        List<TerritoryChange> ProcessStateUpdate(PaperioState state);
+    }
+
+    public interface ITerritoryEventsHandler
+    {
+        Action<int, Color> OnLocalClaim { get; set; }
+    }
+    
+    public class TerritorySystem : IService, ITerritoryStateHandler, ITerritoryEventsHandler
+    {
+        public Action<int, Color> OnLocalClaim { get; set; }
+        
         public TerritoryData Data => _territoryData;
 
         private TerritoryData _territoryData;
         private TerritoryRenderer _territoryRenderer;
         private TerritoryClaim _territoryClaim;
-        private TerritoryClaimPopupManager _claimPopupManager;
         private IColorDataProvider _colorDataProvider;
         private PlayerVisualsManager _playerVisualsManager;
         private IGameSessionData _sessionData;
@@ -25,7 +36,6 @@ namespace Game.Subsystems
         {
             _territoryRenderer = services.Get<TerritoryRenderer>();
             _territoryClaim = services.Get<TerritoryClaim>();
-            _claimPopupManager = services.Get<TerritoryClaimPopupManager>();
             _colorDataProvider = services.Get<ColorsRegistry>();
             _playerVisualsManager = services.Get<PlayerVisualsManager>();
             
@@ -120,27 +130,24 @@ namespace Game.Subsystems
             {
                 _territoryClaim.AddWave(changes, playerData.PlayerId, playerData.Color);
 
-                if (_claimPopupManager != null)
-                {
-                    int localClaimCount = 0;
-                    Color localColor = Color.white;
+                int localClaimCount = 0;
+                Color localColor = Color.white;
 
-                    foreach (var change in changes)
+                foreach (var change in changes)
+                {
+                    if (change.NewOwner == _sessionData.LocalPlayerId)
                     {
-                        if (change.NewOwner == _sessionData.LocalPlayerId)
+                        localClaimCount++;
+                        if (localColor == Color.white)
                         {
-                            localClaimCount++;
-                            if (localColor == Color.white)
-                            {
-                                localColor = _colorDataProvider.GetColorOf(_sessionData.LocalPlayerId);
-                            }
+                            localColor = _colorDataProvider.GetColorOf(_sessionData.LocalPlayerId);
                         }
                     }
+                }
 
-                    if (localClaimCount > 0)
-                    {
-                        _claimPopupManager.ShowClaimPopup(localClaimCount, localColor);
-                    }
+                if (localClaimCount > 0)
+                {
+                    OnLocalClaim?.Invoke(localClaimCount, localColor);
                 }
             }
         }

@@ -203,8 +203,8 @@ MonoBehaviour:
   label: {fileID: 9031963211165721990}
   canvasGroup: {fileID: 8462302049978695903}
   duration: 1
-  floatPixels: 80
-  peakScale: 1.15
+  flyPixelsValue: 50
+  peakScale: 1.35
   scalePeakTime: 0.25
   fadeStartTime: 0.4
   screenOffsetY: 60

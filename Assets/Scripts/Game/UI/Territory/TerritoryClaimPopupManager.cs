@@ -1,12 +1,13 @@
 ﻿using System.Collections.Generic;
 using Core.Services;
 using Game.Data;
+using Game.Subsystems;
 using Game.Subsystems.Rendering;
 using UnityEngine;
 
 namespace Game.UI.Territory
 {
-    public class TerritoryClaimPopupManager : MonoBehaviour, IService
+    public class TerritoryClaimPopupManager : MonoBehaviour
     {
         [Header("Prefab")]
         [SerializeField] private TerritoryClaimPopup popupPrefab;
@@ -15,9 +16,6 @@ namespace Game.UI.Territory
         [SerializeField] private int initialPoolSize = 4;
         [SerializeField] private int maxPoolSize = 10;
 
-        [Header("Claim Threshold")]
-        [Tooltip("Minimum cells claimed to show the popup. " +
-                 "Prevents spam from trail-only claims (1-2 cells).")]
         [SerializeField] private int minCellsToShow = 3;
 
         private Canvas _overlayCanvas;
@@ -25,24 +23,34 @@ namespace Game.UI.Territory
         private readonly Queue<TerritoryClaimPopup> _pool = new();
         private readonly List<TerritoryClaimPopup> _active = new();
 
-        private Camera _mainCamera;
+        
+        private Camera _localPlayerCamera;
+        private ITerritoryEventsHandler _territoryEventsHandler;
         private IGameWorldDataProvider _gameData;
-        private PlayerVisualsManager _playerVisualsManager;
-        public void Initialize(ServiceContainer services)
+        private IPlayerVisualsDataProvider _playerVisualsData;
+        public void Bind(
+            ITerritoryEventsHandler territoryEventsHandler,
+            IGameWorldDataProvider gameData,
+            IPlayerVisualsDataProvider playerVisualsData)
         {
-            _playerVisualsManager = services.Get<PlayerVisualsManager>();
-            _gameData = services.Get<GameWorld>();
-
+            _territoryEventsHandler = territoryEventsHandler;
+            _gameData = gameData;
+            _playerVisualsData = playerVisualsData;
+            _localPlayerCamera = _gameData.LocalPlayerCamera;
+            
+            territoryEventsHandler.OnLocalClaim += ShowClaimPopup;
             CreateOverlayCanvas();
+            PopulatePopupPool();
+        }
 
+        private void PopulatePopupPool()
+        {
             for (int i = 0; i < initialPoolSize; i++)
             {
                 var popup = CreatePopup();
                 popup.gameObject.SetActive(false);
                 _pool.Enqueue(popup);
             }
-
-            _mainCamera = Camera.main;
         }
 
         public void Tick()
@@ -61,6 +69,7 @@ namespace Game.UI.Territory
 
         public void Dispose()
         {
+            _territoryEventsHandler.OnLocalClaim -= ShowClaimPopup;
             foreach (var popup in _active)
             {
                 popup.ForceFinish();
@@ -69,36 +78,22 @@ namespace Game.UI.Territory
             _pool.Clear();
         }
 
-        public void ShowClaimPopup(int cellsClaimed, Color playerColor)
+        private void ShowClaimPopup(int cellsClaimed, Color playerColor)
         {
             if (cellsClaimed < minCellsToShow)
             {
                 return;
             }
 
-            var localVisual = _playerVisualsManager.LocalPlayerVisual;
-            if (localVisual == null)
-            {
-                return;
-            }
-
-            if (_mainCamera == null)
-            {
-                // TODO: must get reference to camera dedicated to rendering UI, not main
-                _mainCamera = Camera.main;
-            }
-            if (_mainCamera == null)
-            {
-                return;
-            }
-
+            var localVisual = _playerVisualsData.LocalPlayerVisual;
+            
             var popup = GetPopup();
             popup.Show(
                 localVisual.transform,
                 cellsClaimed,
                 _gameData.Territory.TotalCells,
                 playerColor,
-                _mainCamera
+                _localPlayerCamera
             );
             _active.Add(popup);
         }

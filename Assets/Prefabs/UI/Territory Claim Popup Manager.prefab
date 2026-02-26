@@ -47,5 +47,4 @@ MonoBehaviour:
   popupPrefab: {fileID: 9222353643507692112, guid: 5db8f7e3d776aa4499b1b76f18b7cde7, type: 3}
   initialPoolSize: 4
   maxPoolSize: 10
-  spawnHeightOffset: 3
   minCellsToShow: 3

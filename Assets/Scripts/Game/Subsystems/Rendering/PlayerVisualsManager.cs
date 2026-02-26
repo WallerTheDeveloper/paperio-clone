@@ -7,7 +7,12 @@ using Utils;
 
 namespace Game.Subsystems.Rendering
 {
-    public class PlayerVisualsManager : MonoBehaviour, IService
+    public interface IPlayerVisualsDataProvider
+    {
+        PlayerVisual LocalPlayerVisual { get; }
+        IReadOnlyDictionary<uint, PlayerVisual> ActiveVisuals { get; }
+    }
+    public class PlayerVisualsManager : MonoBehaviour, IService, IPlayerVisualsDataProvider
     {
         [SerializeField] private GameWorldConfig config;
         [SerializeField] private PlayerConfig playerConfig;

@@ -38,7 +38,6 @@ Transform:
   - {fileID: 6379334918656550766}
   - {fileID: 1869685868033950362}
   - {fileID: 4964019846055364368}
-  - {fileID: 3810449814368389951}
   - {fileID: 2390072777921918637}
   - {fileID: 6012307420406993309}
   m_Father: {fileID: 6979031964787616009}
@@ -98,7 +97,6 @@ MonoBehaviour:
   trailVisualsManager: {fileID: 2964248837408592466}
   territoryClaim: {fileID: 8024467393430731447}
   minimapSystem: {fileID: 6238893011917576472}
-  territoryClaimPopupManager: {fileID: 47805915002826995}
   gameUICoordinator: {fileID: 2826846046607641607}
 --- !u!1001 &132887165304699107
 PrefabInstance:
@@ -465,79 +463,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 50f95666f2f3483c9434142601780e75, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Game.Rendering.MinimapSystem
---- !u!1001 &6360330924265073273
-PrefabInstance:
-  m_ObjectHideFlags: 0
-  serializedVersion: 2
-  m_Modification:
-    serializedVersion: 3
-    m_TransformParent: {fileID: 6534864659616298208}
-    m_Modifications:
-    - target: {fileID: 2264794612655273564, guid: 29a1a069026de334a836d054ba20dd65, type: 3}
-      propertyPath: m_Name
-      value: Territory Claim Popup Manager
-      objectReference: {fileID: 0}
-    - target: {fileID: 7828664266275283270, guid: 29a1a069026de334a836d054ba20dd65, type: 3}
-      propertyPath: m_LocalPosition.x
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 7828664266275283270, guid: 29a1a069026de334a836d054ba20dd65, type: 3}
-      propertyPath: m_LocalPosition.y
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 7828664266275283270, guid: 29a1a069026de334a836d054ba20dd65, type: 3}
-      propertyPath: m_LocalPosition.z
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 7828664266275283270, guid: 29a1a069026de334a836d054ba20dd65, type: 3}
-      propertyPath: m_LocalRotation.w
-      value: 1
-      objectReference: {fileID: 0}
-    - target: {fileID: 7828664266275283270, guid: 29a1a069026de334a836d054ba20dd65, type: 3}
-      propertyPath: m_LocalRotation.x
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 7828664266275283270, guid: 29a1a069026de334a836d054ba20dd65, type: 3}
-      propertyPath: m_LocalRotation.y
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 7828664266275283270, guid: 29a1a069026de334a836d054ba20dd65, type: 3}
-      propertyPath: m_LocalRotation.z
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 7828664266275283270, guid: 29a1a069026de334a836d054ba20dd65, type: 3}
-      propertyPath: m_LocalEulerAnglesHint.x
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 7828664266275283270, guid: 29a1a069026de334a836d054ba20dd65, type: 3}
-      propertyPath: m_LocalEulerAnglesHint.y
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 7828664266275283270, guid: 29a1a069026de334a836d054ba20dd65, type: 3}
-      propertyPath: m_LocalEulerAnglesHint.z
-      value: 0
-      objectReference: {fileID: 0}
-    m_RemovedComponents: []
-    m_RemovedGameObjects: []
-    m_AddedGameObjects: []
-    m_AddedComponents: []
-  m_SourcePrefab: {fileID: 100100000, guid: 29a1a069026de334a836d054ba20dd65, type: 3}
---- !u!114 &47805915002826995 stripped
-MonoBehaviour:
-  m_CorrespondingSourceObject: {fileID: 6407980700538477194, guid: 29a1a069026de334a836d054ba20dd65, type: 3}
-  m_PrefabInstance: {fileID: 6360330924265073273}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 0}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: b19355d377fa45f28ab5296e7df018e0, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::Game.UI.TerritoryClaimPopupManager
---- !u!4 &3810449814368389951 stripped
-Transform:
-  m_CorrespondingSourceObject: {fileID: 7828664266275283270, guid: 29a1a069026de334a836d054ba20dd65, type: 3}
-  m_PrefabInstance: {fileID: 6360330924265073273}
-  m_PrefabAsset: {fileID: 0}
 --- !u!1001 &6578725164724081141
 PrefabInstance:
   m_ObjectHideFlags: 0
