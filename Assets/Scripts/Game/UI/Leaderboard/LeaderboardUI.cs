@@ -30,7 +30,7 @@ namespace Game.UI.Leaderboard
         private IGameStateReceiver _stateReceiver;
         private IColorDataProvider _colorData;
         private IGameSessionData _sessionData;
-        public void Bind(IGameStateReceiver stateReceiver, IColorDataProvider colorData, IGameSessionData sessionData)
+        public void Setup(IGameStateReceiver stateReceiver, IColorDataProvider colorData, IGameSessionData sessionData)
         {
             _stateReceiver = stateReceiver;
             _colorData = colorData;
@@ -43,7 +43,7 @@ namespace Game.UI.Leaderboard
             _isBound = true;
         }
 
-        public void Unbind()
+        public void Clear()
         {
             if (!_isBound)
             {

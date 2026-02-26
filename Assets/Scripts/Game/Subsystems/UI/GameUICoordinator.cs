@@ -2,23 +2,40 @@
 using Game.Data;
 using Game.Subsystems.Rendering;
 using Game.UI.Leaderboard;
+using Game.UI.Menu;
 using Game.UI.Territory;
 using UnityEngine;
 using Utils;
 
 namespace Game.Subsystems.UI
 {
-    public class GameUICoordinator : MonoBehaviour, IService
+    public interface IGameUIEventsProvider
+    {
+        public IMainMenuEventsHandler MainMenuEventsHandler { get; }
+    }
+    public interface IGameUICoordinator
+    {
+        IGameUIEventsProvider GameUIEventsProvider { get; }
+        void CreateMainMenu();
+        void ClearMainMenu();
+        void CreateAndInitializeGameUI(ITerritoryDataProvider territoryDataProvider);
+    }
+    public class GameUICoordinator : MonoBehaviour, IService, IGameUICoordinator, IGameUIEventsProvider
     {
         [SerializeField] private LeaderboardUI leaderboardUIPrefab;
         [SerializeField] private TerritoryClaimPopupManager territoryClaimPopupManagerPrefab;
         [SerializeField] private MinimapUI minimapUIPrefab;
+        [SerializeField] private MainMenu mainMenuPrefab;
         
         private LeaderboardUI _leaderboardUI;
         private TerritoryClaimPopupManager _territoryClaimPopupManager;
         private MinimapUI _minimapUI;
-        
+
+        private GameObject _hud;
         private bool _gameUiInitialized = false;
+        
+        public IGameUIEventsProvider GameUIEventsProvider { get; private set; }
+        public IMainMenuEventsHandler MainMenuEventsHandler { get; private set; }
         
         private IGameStateReceiver _stateReceiver;
         private IColorDataProvider _colorDataProvider;
@@ -28,6 +45,8 @@ namespace Game.Subsystems.UI
         private IPlayerVisualsDataProvider _playerVisualsData;
         public void Initialize(ServiceContainer services)
         {
+            GameUIEventsProvider = this;
+            
             _stateReceiver = services.Get<GameStateReceiver>();
             _colorDataProvider = services.Get<ColorsRegistry>();
             _gameWorldDataProvider = services.Get<GameWorld>();
@@ -35,18 +54,34 @@ namespace Game.Subsystems.UI
             _territoryEventsHandler = services.Get<TerritorySystem>();
             _playerVisualsData = services.Get<PlayerVisualsManager>();
         }
-        
+
+        private MainMenu _mainMenu;
+
+        public void CreateMainMenu()
+        {
+            _hud = GameObject.FindWithTag(Constants.Tags.HUD);
+            _mainMenu = Instantiate(mainMenuPrefab, _hud.transform);
+            MainMenuEventsHandler = _mainMenu;
+            
+            _mainMenu.Setup();
+        }
+
+        public void ClearMainMenu()
+        {
+            _mainMenu.Clear();
+        }
+
         public void CreateAndInitializeGameUI(ITerritoryDataProvider territoryDataProvider)
         {
-            var hud = GameObject.FindWithTag(Constants.Tags.HUD);
+            _hud = GameObject.FindWithTag(Constants.Tags.HUD);
             
-            _leaderboardUI = Instantiate(leaderboardUIPrefab, hud.transform);
-            _territoryClaimPopupManager = Instantiate(territoryClaimPopupManagerPrefab, hud.transform);
-            _minimapUI = Instantiate(minimapUIPrefab, hud.transform);
+            _leaderboardUI = Instantiate(leaderboardUIPrefab, _hud.transform);
+            _territoryClaimPopupManager = Instantiate(territoryClaimPopupManagerPrefab, _hud.transform);
+            _minimapUI = Instantiate(minimapUIPrefab, _hud.transform);
             
-            _leaderboardUI.Bind(_stateReceiver, _colorDataProvider, _gameSessionData);
-            _territoryClaimPopupManager.Bind(_territoryEventsHandler, _gameWorldDataProvider, _playerVisualsData);
-            _minimapUI.Bind(_gameSessionData, territoryDataProvider, _playerVisualsData, _colorDataProvider);
+            _leaderboardUI.Setup(_stateReceiver, _colorDataProvider, _gameSessionData);
+            _territoryClaimPopupManager.Setup(_territoryEventsHandler, _gameWorldDataProvider, _playerVisualsData);
+            _minimapUI.Setup(_gameSessionData, territoryDataProvider, _playerVisualsData, _colorDataProvider);
             
             _gameUiInitialized = true;
         }
@@ -73,9 +108,9 @@ namespace Game.Subsystems.UI
         public void Dispose()
         {
             _gameUiInitialized = false;
-            _leaderboardUI.Unbind();
-            _territoryClaimPopupManager.Unbind();
-            _minimapUI.Unbind();
+            _leaderboardUI.Clear();
+            _territoryClaimPopupManager.Clear();
+            _minimapUI.Clear();
         }
     }
 }

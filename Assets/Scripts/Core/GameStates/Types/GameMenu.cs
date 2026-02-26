@@ -1,87 +1,56 @@
 ﻿using System;
 using Core.Services;
+using Game.Subsystems.UI;
+using Game.UI.Menu;
 using Network;
-using TMPro;
 using UnityEngine;
-using UnityEngine.UI;
 
 namespace Core.GameStates.Types
 {
     public class GameMenu : GameState
     {
-        [Header("UI References")]
-        [SerializeField] private GameObject menuPanel;
-        [SerializeField] private TMP_InputField nameInputField;
-        [SerializeField] private Button playButton;
-
-        [Header("Settings")]
-        [SerializeField] private int maxNameLength = 16;
-        [SerializeField] private string defaultName = "Player";
-
         public override Action TriggerStateSwitch { get; set; }
-
+        
         private MessageSender _messageSender;
-
+        private bool _isMainMenuCreated = false;
+        
+        private IGameUICoordinator _gameUICoordinator;
+        private IMainMenuEventsHandler _mainMenuEvents;
         public override void Initialize(ServiceContainer container)
         {
             _messageSender = container.Get<MessageSender>();
-
-            menuPanel.SetActive(true);
-
-            nameInputField.characterLimit = maxNameLength;
-            nameInputField.onValueChanged.AddListener(OnNameChanged);
-
-            string savedName = PlayerPrefs.GetString("PlayerName", "");
-            if (!string.IsNullOrEmpty(savedName))
-            {
-                nameInputField.text = savedName;
-            }
-
-            UpdatePlayButtonState();
-            playButton.onClick.AddListener(OnPlayClicked);
-
-            nameInputField.Select();
-            nameInputField.ActivateInputField();
-
-            Debug.Log("[GameMenu] Menu opened — waiting for player input");
+            _gameUICoordinator = container.Get<GameUICoordinator>();
+            
         }
 
         public override void Tick()
-        { }
+        {
+            if (!_isMainMenuCreated)
+            {
+                _gameUICoordinator.CreateMainMenu();
+                _isMainMenuCreated = true;
+            }
+            
+            if (_mainMenuEvents == null)
+            {
+                _mainMenuEvents = _gameUICoordinator.GameUIEventsProvider.MainMenuEventsHandler;
+                _mainMenuEvents.OnPlayButtonClicked += OnChangeState;
+            }
+        }
 
         public override void Stop()
         {
-            menuPanel.SetActive(false);
-
-            nameInputField.onValueChanged.RemoveListener(OnNameChanged);
-            playButton.onClick.RemoveListener(OnPlayClicked);
+            _mainMenuEvents.OnPlayButtonClicked -= OnChangeState;
+            _gameUICoordinator.ClearMainMenu();
+            _isMainMenuCreated = false;
         }
 
-        private void OnNameChanged(string newName)
+        private void OnChangeState(string playerName)
         {
-            UpdatePlayButtonState();
-        }
+            _messageSender.SetPlayerName(playerName);
 
-        private void OnPlayClicked()
-        {
-            string trimmedName = nameInputField.text.Trim();
-            if (string.IsNullOrEmpty(trimmedName))
-            {
-                trimmedName = defaultName;
-            }
-
-            PlayerPrefs.SetString("PlayerName", trimmedName);
-            PlayerPrefs.Save();
-
-            _messageSender.SetPlayerName(trimmedName);
-
-            Debug.Log($"[GameMenu] Player name set to '{trimmedName}', transitioning to JoinRoom");
+            Debug.Log($"[GameMenu] Player name set to '{playerName}', transitioning to JoinRoom");
             TriggerStateSwitch?.Invoke();
-        }
-
-        private void UpdatePlayButtonState()
-        {
-            playButton.interactable = true;
         }
     }
 }

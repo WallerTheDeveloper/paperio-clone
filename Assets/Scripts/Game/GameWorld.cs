@@ -39,8 +39,6 @@ namespace Game
         }
 
         public event Action<PaperioState> OnStateRefreshed;
-        // public event Action OnGameStarted;
-        public event Action OnGameEnded;
         public event Action<uint> OnLocalPlayerSpawned;
         public event Action<List<TerritoryChange>> OnTerritoryChanged;
 
@@ -74,7 +72,7 @@ namespace Game
         private TrailVisualsManager _trailVisualsManager;
         private CameraController _cameraController;
         private InputService _inputService;
-        private GameUICoordinator _gameUICoordinator;
+        private IGameUICoordinator _gameUICoordinator;
         public void Initialize(ServiceContainer services)
         {
             _colorRegistry = services.Get<ColorsRegistry>();

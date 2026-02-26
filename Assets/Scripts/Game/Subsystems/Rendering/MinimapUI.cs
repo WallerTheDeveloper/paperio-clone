@@ -1,7 +1,5 @@
 ﻿using System.Collections.Generic;
-using Core.Services;
 using Game.Data;
-using Game.UI;
 using TMPro;
 using UnityEngine;
 using Utils;
@@ -46,7 +44,7 @@ namespace Game.Subsystems.Rendering
         private ITerritoryDataProvider _territoryDataProvider;
         private IPlayerVisualsDataProvider _playerVisualsDataProvider;
         private IColorDataProvider _colorDataProvider;
-        public void Bind(
+        public void Setup(
             IGameSessionData gameSessionData,
             ITerritoryDataProvider territoryDataProvider,
             IPlayerVisualsDataProvider playerVisualsDataProvider,
@@ -98,7 +96,7 @@ namespace Game.Subsystems.Rendering
             UpdatePercentage();
         }
         
-        public void Unbind()
+        public void Clear()
         {
             Cleanup();
 

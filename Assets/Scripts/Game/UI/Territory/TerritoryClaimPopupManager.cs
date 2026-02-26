@@ -28,7 +28,7 @@ namespace Game.UI.Territory
         private ITerritoryEventsHandler _territoryEventsHandler;
         private IGameWorldDataProvider _gameData;
         private IPlayerVisualsDataProvider _playerVisualsData;
-        public void Bind(
+        public void Setup(
             ITerritoryEventsHandler territoryEventsHandler,
             IGameWorldDataProvider gameData,
             IPlayerVisualsDataProvider playerVisualsData)
@@ -67,7 +67,7 @@ namespace Game.UI.Territory
             }
         }
 
-        public void Unbind()
+        public void Clear()
         {
             _territoryEventsHandler.OnLocalClaim -= ShowClaimPopup;
             foreach (var popup in _active)

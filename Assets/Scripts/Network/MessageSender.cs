@@ -95,7 +95,6 @@ namespace Network
         {
             playerName = name;
         }
-        
 
         public bool Connect()
         {
