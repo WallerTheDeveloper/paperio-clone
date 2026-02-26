@@ -23,7 +23,17 @@ namespace Game.Data
         public Vector2Int Position => new Vector2Int(X, Y);
     }
 
-    public class TerritoryData
+    public interface ITerritoryDataProvider
+    {
+        int Width { get; }
+        int Height { get; }
+        int ClaimedCells { get; }
+        int TotalCells { get; }
+        float GetOwnershipPercentage(uint playerId);
+        bool IsOwnedBy(int x, int y, uint playerId);
+    }
+    
+    public class TerritoryData : ITerritoryDataProvider
     {
         public int Width { get; }
         public int Height { get; }

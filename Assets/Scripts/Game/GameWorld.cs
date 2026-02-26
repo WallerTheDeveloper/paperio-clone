@@ -39,7 +39,7 @@ namespace Game
         }
 
         public event Action<PaperioState> OnStateRefreshed;
-        public event Action OnGameStarted;
+        // public event Action OnGameStarted;
         public event Action OnGameEnded;
         public event Action<uint> OnLocalPlayerSpawned;
         public event Action<List<TerritoryChange>> OnTerritoryChanged;
@@ -73,7 +73,6 @@ namespace Game
         private PlayerVisualsManager _playerVisualsManager;
         private TrailVisualsManager _trailVisualsManager;
         private CameraController _cameraController;
-        private MinimapSystem _minimapSystem;
         private InputService _inputService;
         private GameUICoordinator _gameUICoordinator;
         public void Initialize(ServiceContainer services)
@@ -85,7 +84,6 @@ namespace Game
             _effectsCoordinator = services.Get<EffectsCoordinator>();
             _playerVisualsManager = services.Get<PlayerVisualsManager>();
             _trailVisualsManager = services.Get<TrailVisualsManager>();
-            _minimapSystem = services.Get<MinimapSystem>();
             _inputService = services.Get<InputService>();
             _gameUICoordinator = services.Get<GameUICoordinator>();
             
@@ -173,7 +171,7 @@ namespace Game
                 _predictionSystem.SyncToServerTick(response.InitialState.Tick);
             }
 
-            _gameUICoordinator.CreateAndInitializeGameUI();
+            _gameUICoordinator.CreateAndInitializeGameUI(Territory);
             
             _inputService.EnableInput();
             _lastTickTime = Time.time;
@@ -184,9 +182,7 @@ namespace Game
                       $"Grid={GridWidth}x{GridHeight}, " +
                       $"TickRate={TickRateMs}ms");
 
-            OnGameStarted?.Invoke();
             OnLocalPlayerSpawned?.Invoke(_sessionData.LocalPlayerId);
-            _minimapSystem.CreateUI();
         }
 
         public void OnServerStateUpdated(PaperioState state)

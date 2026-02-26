@@ -11,8 +11,8 @@ namespace Game.Data
         public uint MoveIntervalTicks { get; }
         public bool IsGameActive { get; }
 
-        public event Action OnGameStarted;
-        public event Action OnGameEnded;
+        public Action OnGameStarted { get; set; }
+        public Action OnGameEnded { get; set; }
     }
     public class GameSessionData : IGameSessionData
     {
@@ -22,9 +22,8 @@ namespace Game.Data
         public uint TickRateMs { get; private set; }
         public uint MoveIntervalTicks { get; private set; }
         public bool IsGameActive { get; private set; }
-
-        public event Action OnGameStarted;
-        public event Action OnGameEnded;
+        public Action OnGameStarted { get; set; }
+        public Action OnGameEnded { get; set; }
 
         public float MoveDuration => MoveIntervalTicks * (TickRateMs / 1000f);
         
