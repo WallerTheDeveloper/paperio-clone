@@ -39,8 +39,6 @@ namespace Game.Data
             _playersContainer = services.Get<PlayersContainer>();
         }
 
-        public void Tick() { }
-
         public void Dispose()
         {
             _colors.Clear();

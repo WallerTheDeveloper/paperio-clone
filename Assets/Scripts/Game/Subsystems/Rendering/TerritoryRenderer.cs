@@ -30,7 +30,6 @@ namespace Game.Subsystems.Rendering
             _meshFilter = GetComponent<MeshFilter>();
             _meshRenderer = GetComponent<MeshRenderer>();
         }
-
         public void Dispose()
         {
             if (_mesh != null)
@@ -103,10 +102,6 @@ namespace Game.Subsystems.Rendering
 
             _meshFilter.mesh = _mesh;
         }
-
-        public void Tick() { }
-
-        public void Dispose(bool _) { }
 
         private void OnDrawGizmosSelected()
         {

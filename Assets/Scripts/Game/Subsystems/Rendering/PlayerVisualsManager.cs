@@ -55,9 +55,6 @@ namespace Game.Subsystems.Rendering
             Debug.Log($"[PlayerVisualsManager] Initialized with pool size {_pool.Count}");
         }
 
-        public void Tick()
-        { }
-
         public void Dispose()
         {
             ClearAll();

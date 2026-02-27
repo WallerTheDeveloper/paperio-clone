@@ -14,7 +14,7 @@ namespace Game.Effects
         public IEffect Effect => Prefab as IEffect;
     }
     
-    public class EffectsManager : MonoBehaviour, IService
+    public class EffectsManager : MonoBehaviour, ITickableService
     {
         [SerializeField] private List<EffectPrefab> effectPrefabs = new();
         [SerializeField] private int defaultPoolSize = 4;

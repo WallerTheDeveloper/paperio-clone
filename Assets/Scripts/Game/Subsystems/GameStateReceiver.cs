@@ -38,7 +38,6 @@ namespace Game.Subsystems
             _sessionData = gameWorld.GameSessionData;
         }
 
-        public void Tick() { }
         public void Dispose() { }
 
         public void ProcessState(PaperioState state)

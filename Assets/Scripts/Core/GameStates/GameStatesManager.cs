@@ -5,7 +5,7 @@ using UnityEngine;
 
 namespace Core.GameStates
 {
-    public class GameStatesManager : MonoBehaviour, IService
+    public class GameStatesManager : MonoBehaviour, ITickableService
     {
         [SerializeField] private GameConnect gameConnect;
         [SerializeField] private GameMenu gameMenu;

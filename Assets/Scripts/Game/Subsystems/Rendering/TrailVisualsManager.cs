@@ -4,7 +4,7 @@ using UnityEngine;
 
 namespace Game.Subsystems.Rendering
 {
-    public class TrailVisualsManager : MonoBehaviour, IService
+    public class TrailVisualsManager : MonoBehaviour, ITickableService
     {
         [Header("Configuration")]
         [SerializeField] private Material trailMaterial;

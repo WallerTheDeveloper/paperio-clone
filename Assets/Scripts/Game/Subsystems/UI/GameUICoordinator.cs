@@ -21,7 +21,7 @@ namespace Game.Subsystems.UI
         void ClearMainMenu();
     }
     
-    public class GameUICoordinator : MonoBehaviour, IService, IGameUICoordinator, IGameUIEventsProvider
+    public class GameUICoordinator : MonoBehaviour, ITickableService, IGameUICoordinator, IGameUIEventsProvider
     {
         [SerializeField] private LeaderboardUI leaderboardUIPrefab;
         [SerializeField] private TerritoryClaimPopupManager territoryClaimPopupManagerPrefab;

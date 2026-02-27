@@ -8,7 +8,7 @@ using UnityEngine;
 
 namespace Network
 {
-    public class MessageSender : MonoBehaviour, IService
+    public class MessageSender : MonoBehaviour, ITickableService
     {
         [Header("Connection Settings")]
         [SerializeField] private string serverHost = "127.0.0.1";

@@ -6,7 +6,7 @@ using UnityEngine;
 
 namespace Game.Subsystems.Rendering
 {
-    public class TerritoryClaim : MonoBehaviour, IService
+    public class TerritoryClaim : MonoBehaviour, ITickableService
     {
         [Header("Animation Settings")]
         [SerializeField] private float waveDuration = 0.4f;
@@ -42,9 +42,11 @@ namespace Game.Subsystems.Rendering
         public bool IsAnimating => _activeWaves.Count > 0;
 
         private IGameWorldDataProvider _gameData;
+        private MeshFilter _meshFilter;
         public void Initialize(ServiceContainer services)
         {
             _gameData = services.Get<GameWorld>();
+            _meshFilter = services.Get<TerritoryRenderer>().MeshFilter;
         }
 
         public void Prepare()
@@ -209,13 +211,17 @@ namespace Game.Subsystems.Rendering
 
         private void CaptureFromVisualData()
         {
-            if (_visualData == null || !_visualData.IsInitialized) return;
+            if (_visualData == null || !_visualData.IsInitialized)
+            {
+                return;
+            }
+            
+            if (_meshFilter == null || _meshFilter.sharedMesh == null)
+            {
+                return;
+            }
 
-            // TODO: Too hacky to find the mesh filter like this
-            var meshFilter = FindAnyObjectByType<TerritoryRenderer>()?.MeshFilter;
-            if (meshFilter == null || meshFilter.sharedMesh == null) return;
-
-            _mesh = meshFilter.sharedMesh;
+            _mesh = _meshFilter.sharedMesh;
 
             _originalVertices = _mesh.vertices;
             _animatedVertices = (Vector3[])_originalVertices.Clone();

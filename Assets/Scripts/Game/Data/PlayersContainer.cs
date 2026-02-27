@@ -13,9 +13,6 @@ namespace Game.Data
         public void Initialize(ServiceContainer services)
         { }
 
-        public void Tick()
-        { }
-
         public void Dispose()
         {
             Clear();

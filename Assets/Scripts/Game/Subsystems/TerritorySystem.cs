@@ -44,8 +44,6 @@ namespace Game.Subsystems
             _config = gameWorld.Config;
         }
 
-        public void Tick() { }
-
         public void Dispose()
         {
             _territoryClaim?.FinishAllImmediately();

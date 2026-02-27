@@ -9,7 +9,7 @@ using Utils;
 
 namespace Game.Subsystems
 {
-    public class PredictionSystem : IService
+    public class PredictionSystem : ITickableService
     {
         private uint _estimatedServerTick;
         private float _tickAccumulator;

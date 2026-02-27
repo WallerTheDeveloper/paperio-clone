@@ -12,7 +12,7 @@ using Utils;
 
 namespace Game
 {
-    public class GameWorld : MonoBehaviour, IService, IGameWorldDataProvider
+    public class GameWorld : MonoBehaviour, ITickableService, IGameWorldDataProvider
     {
         [SerializeField] private GameWorldConfig config;
         

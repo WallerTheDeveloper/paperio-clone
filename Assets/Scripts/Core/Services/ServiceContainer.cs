@@ -11,7 +11,7 @@ namespace Core.Services
     public class ServiceContainer
     {
         private readonly Dictionary<IService, ServiceData> _services = new();
-        private readonly List<IService> _tickableServices = new();
+        private readonly List<ITickableService> _tickableServices = new();
         private bool _initialized;
 
         public ServiceContainer Register<T>(T service) where T : class, IService
@@ -57,7 +57,10 @@ namespace Core.Services
                     {
                         service.Initialize(this);
                         data.IsInitialized = true;
-                        _tickableServices.Add(service);
+                        if (service is ITickableService tickableService)
+                        {
+                            _tickableServices.Add(tickableService);
+                        }
                         Debug.Log($"[Services] Initialized: {service.GetType().Name}");
                     }
                     catch (Exception e)

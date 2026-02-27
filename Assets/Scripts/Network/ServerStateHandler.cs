@@ -40,8 +40,6 @@ namespace Network
             _messageSender.OnPaperioStateReceived += HandleStateReceived;
             _messageSender.OnPaperioJoinResponse += HandleJoinResponse;
         }
-        public void Tick()
-        { }
 
         public void Dispose()
         {
