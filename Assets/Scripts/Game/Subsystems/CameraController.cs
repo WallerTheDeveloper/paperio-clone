@@ -5,7 +5,7 @@ using Utils;
 
 namespace Game.Subsystems
 {
-    public class CameraController : MonoBehaviour, IService
+    public class CameraController : MonoBehaviour
     {
         [Header("Follow")] [SerializeField] private float height = 30f;
         [SerializeField] private float distance = 10f;
@@ -44,11 +44,6 @@ namespace Game.Subsystems
 
         public bool IsFollowing => _localTarget != null && _isInitialized;
 
-        public void Initialize(ServiceContainer services)
-        {
-            
-        }
-        
         public void Initialize(uint gridWidth, uint gridHeight, float cellSize)
         {
             _transform = transform;
@@ -82,15 +77,6 @@ namespace Game.Subsystems
             Debug.Log($"[CameraController] Local target locked → {localPlayerTransform.name}");
         }
 
-        public void SnapToTarget()
-        {
-            if (_localTarget == null) return;
-
-            _transform.position = CalculateDesiredPosition(_localTarget.position);
-            _currentVelocity = Vector3.zero;
-            LookAtTarget();
-        }
-
         public void TickLate()
         {
             if (!_isInitialized || _localTarget == null) return;
@@ -109,10 +95,19 @@ namespace Game.Subsystems
             }
         }
 
-        public void Dispose()
+        public void Clear()
         {
             _localTarget = null;
             _isInitialized = false;
+        }
+        
+        private void SnapToTarget()
+        {
+            if (_localTarget == null) return;
+
+            _transform.position = CalculateDesiredPosition(_localTarget.position);
+            _currentVelocity = Vector3.zero;
+            LookAtTarget();
         }
 
         private void UpdateFollowPosition()

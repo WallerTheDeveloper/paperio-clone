@@ -12,8 +12,6 @@ namespace Game.Subsystems
     public class GameSessionCoordinator : ITickableService
     {
         private CameraController _cameraController;
-
-        public CameraController CameraController => _cameraController;
         
         private GameSessionData _sessionData;
         private GameWorldConfigProvider _configProvider;
@@ -49,9 +47,9 @@ namespace Game.Subsystems
 
         public void TickLate()
         {
-            if (_sessionData.IsGameActive)
+            if (_sessionData.IsGameActive && _cameraController != null)
             {
-                CameraController.TickLate();
+                _cameraController.TickLate();
             }
         }
 
@@ -59,7 +57,7 @@ namespace Game.Subsystems
         {
             _inputService.DisableInput();
             _sessionData.SetEndGameData();
-            _cameraController?.Dispose();
+            _cameraController.Clear();
         }
         
         public void OnJoinedGame(PaperioJoinResponse response)
@@ -81,12 +79,13 @@ namespace Game.Subsystems
                 _playerVisualsManager.SpawnPlayers();
                 _sessionData.SetLocalPlayerCamera(FindLocalPlayerCamera());
 
+                LocateCamera();
+                
                 if (_playerVisualsManager.LocalPlayerVisual != null)
                 {
                     _playerVisualsManager.LocalPlayerVisual.SetMoveDuration(_sessionData.MoveDuration);
                 }
 
-                _cameraController = UnityEngine.Object.FindFirstObjectByType<CameraController>();
                 _cameraController.Initialize(
                     _territoryDataProvider.Width,
                     _territoryDataProvider.Height,
@@ -174,10 +173,19 @@ namespace Game.Subsystems
             _territorySystem.ClearOwnership(playerId);
         }
         
-        private static Camera FindLocalPlayerCamera()
+        private Camera FindLocalPlayerCamera()
         {
             var camObj = GameObject.FindWithTag(Constants.Tags.LocalPlayerCamera);
             return camObj != null ? camObj.GetComponent<Camera>() : null;
+        }
+        
+        private void LocateCamera()
+        {
+            _cameraController = UnityEngine.Object.FindFirstObjectByType<CameraController>();
+            if (_cameraController == null)
+            {
+                Debug.LogError("[GameSessionCoordinator] CameraController not found in scene after player spawn!");
+            }
         }
     }
 }
