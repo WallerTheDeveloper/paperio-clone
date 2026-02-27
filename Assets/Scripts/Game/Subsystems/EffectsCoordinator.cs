@@ -11,15 +11,14 @@ namespace Game.Subsystems
         private EffectsManager _effectsManager;
         private PlayerVisualsManager _playerVisualsManager;
         private IGameSessionDataProvider _sessionDataProvider;
-        private GameWorldConfig _config;
+        private GameWorldConfigProvider _configProvider;
         public void Initialize(ServiceContainer services)
         {
             _effectsManager = services.Get<EffectsManager>();
             _playerVisualsManager = services.Get<PlayerVisualsManager>();
             
-            var gameWorld = services.Get<GameWorld>();
             _sessionDataProvider = services.Get<GameSessionData>();
-            _config = gameWorld.Config;
+            _configProvider = services.Get<GameWorldConfigProvider>();
         }
 
         public void Dispose() { }
@@ -42,7 +41,7 @@ namespace Game.Subsystems
             var worldPos = GridHelper.GridToWorld(
                 playerData.GridPosition.x,
                 playerData.GridPosition.y,
-                _config.CellSize
+                _configProvider.Config.CellSize
             );
 
             var effectData = new EffectData(position: worldPos, color: playerData.Color);
@@ -65,7 +64,7 @@ namespace Game.Subsystems
             var worldPos = GridHelper.GridToWorld(
                 playerData.GridPosition.x,
                 playerData.GridPosition.y,
-                _config.CellSize
+                _configProvider.Config.CellSize
             );
 
             var effectData = new EffectData(position: worldPos, color: playerData.Color);

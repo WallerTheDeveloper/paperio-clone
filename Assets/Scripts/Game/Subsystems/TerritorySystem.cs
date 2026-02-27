@@ -28,7 +28,7 @@ namespace Game.Subsystems
         private IColorDataProvider _colorDataProvider;
         private PlayerVisualsManager _playerVisualsManager;
         private IGameSessionDataProvider _sessionDataProvider;
-        private GameWorldConfig _config;
+        private GameWorldConfigProvider _configProvider;
         public void Initialize(ServiceContainer services)
         {
             _territoryDataHandler = services.Get<TerritoryData>();
@@ -38,8 +38,7 @@ namespace Game.Subsystems
             _playerVisualsManager = services.Get<PlayerVisualsManager>();
             _sessionDataProvider = services.Get<GameSessionData>();
 
-            var gameWorld = services.Get<GameWorld>();
-            _config = gameWorld.Config;
+            _configProvider = services.Get<GameWorldConfigProvider>();
         }
 
         public void Dispose()
@@ -55,9 +54,9 @@ namespace Game.Subsystems
             _territoryDataHandler.SetData(
                 width,
                 height,
-                _config.CellSize,
-                _config.NeutralColor,
-                ownerId => _colorDataProvider.GetTerritoryColor(ownerId, _config.NeutralColor));
+                _configProvider.Config.CellSize,
+                _configProvider.Config.NeutralColor,
+                ownerId => _colorDataProvider.GetTerritoryColor(ownerId, _configProvider.Config.NeutralColor));
             
             if (initialState.Territory != null)
             {

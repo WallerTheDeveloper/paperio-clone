@@ -35,6 +35,7 @@ namespace Core
         private GameSessionData _gameSessionData;
         private TerritoryVisualData _territoryVisualData;
         private TerritoryData _territoryData;
+        private GameWorldConfigProvider _gameWorldConfigProvider;
         
         private ColorsRegistry _colorRegistry;
         private GameStateReceiver _stateReceiver;
@@ -58,7 +59,9 @@ namespace Core
             _gameSessionData = new GameSessionData();
             _territoryVisualData = new TerritoryVisualData();
             _territoryData = new TerritoryData();
-            
+            _gameWorldConfigProvider = new GameWorldConfigProvider(gameWorld.Config);
+
+            _services.Register(_gameWorldConfigProvider);
             _services.Register(_territoryVisualData);
             _services.Register(_territoryData);
             _services.Register(_gameSessionData);

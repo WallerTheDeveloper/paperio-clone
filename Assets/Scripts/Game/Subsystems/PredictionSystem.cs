@@ -19,14 +19,14 @@ namespace Game.Subsystems
         private ITerritoryDataProvider _territoryData;
         private PlayerVisualsManager _playerVisualsManager;
         private InputService _inputService;
-        private GameWorldConfig _config;
+        private GameWorldConfigProvider _config;
         public void Initialize(ServiceContainer services)
         {
             _sessionDataProvider = services.Get<GameSessionData>();
             _playerVisualsManager = services.Get<PlayerVisualsManager>();
             _inputService = services.Get<InputService>();
             _territoryData = services.Get<TerritoryData>();
-            _config = services.Get<GameWorld>().Config;
+            _config = services.Get<GameWorldConfigProvider>();
 
             _inputService.OnDirectionChanged += OnDirectionChanged;
         }
@@ -53,7 +53,7 @@ namespace Game.Subsystems
                 var predictedWorldPos = GridHelper.GridToWorld(
                     _prediction.PredictedPosition.x,
                     _prediction.PredictedPosition.y,
-                    _config.CellSize,
+                    _config.Config.CellSize,
                     _playerVisualsManager.LocalPlayerVisual.transform.position.y
                 );
                 _playerVisualsManager.LocalPlayerVisual.SetPredictedTarget(predictedWorldPos);

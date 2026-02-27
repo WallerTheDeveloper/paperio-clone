@@ -12,13 +12,7 @@ using Utils;
 
 namespace Game
 {
-    public interface IGameWorldDataProvider
-    {
-        public GameWorldConfig Config { get; }
-        // public Camera LocalPlayerCamera { get; }
-    }
-    
-    public class GameWorld : MonoBehaviour, ITickableService, IGameWorldDataProvider
+    public class GameWorld : MonoBehaviour, ITickableService
     {
         [SerializeField] private GameWorldConfig config;
         

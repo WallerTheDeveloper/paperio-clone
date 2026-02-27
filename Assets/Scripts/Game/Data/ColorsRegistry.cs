@@ -30,11 +30,10 @@ namespace Game.Data
         public IReadOnlyDictionary<uint, Color> Colors => _colors;
 
         private PlayersContainer _playersContainer;
-        private GameWorldConfig _gameConfig;
+        private GameWorldConfigProvider _gameWorldConfigProvider;
         public void Initialize(ServiceContainer services)
         {
-            var gameWorld = services.Get<GameWorld>();
-            _gameConfig = gameWorld.Config;
+            _gameWorldConfigProvider = services.Get<GameWorldConfigProvider>();
             
             _playersContainer = services.Get<PlayersContainer>();
         }
@@ -92,7 +91,7 @@ namespace Game.Data
         {
             if (playerId == 0)
             {
-                return _gameConfig.NeutralColor;
+                return _gameWorldConfigProvider.Config.NeutralColor;
             }
             
             var playerData = _playersContainer?.TryGetPlayerById(playerId);

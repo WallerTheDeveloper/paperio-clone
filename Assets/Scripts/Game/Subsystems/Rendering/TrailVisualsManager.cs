@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using Core.Services;
+using Game.Data;
 using UnityEngine;
 
 namespace Game.Subsystems.Rendering
@@ -20,14 +21,13 @@ namespace Game.Subsystems.Rendering
         private readonly Dictionary<uint, TrailRenderer> _activeTrails = new();
         private readonly Queue<TrailRenderer> _pool = new();
         private Transform _container;
-        private float _cellSize;
 
         public int ActiveTrailCount => _activeTrails.Count;
 
+        private GameWorldConfigProvider _configProvider;
         public void Initialize(ServiceContainer services)
         {
-            var gameData = services.Get<GameWorld>();
-            _cellSize = gameData.Config.CellSize;
+            _configProvider = services.Get<GameWorldConfigProvider>();
             
             _container = new GameObject("TrailContainer").transform;
             _container.SetParent(transform, false);
@@ -142,7 +142,7 @@ namespace Game.Subsystems.Rendering
                 meshRenderer.material = new Material(trailMaterial);
             }
 
-            trail.Initialize(_cellSize, meshRenderer.material);
+            trail.Initialize(_configProvider.Config.CellSize, meshRenderer.material);
             
             return trail;
         }
