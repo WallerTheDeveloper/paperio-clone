@@ -11,7 +11,7 @@ GameObject:
   - component: {fileID: 8443326232665562532}
   - component: {fileID: 1192957365939615663}
   m_Layer: 0
-  m_Name: Message Sender
+  m_Name: Network Manager
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -47,5 +47,6 @@ MonoBehaviour:
   serverHost: 127.0.0.1
   serverPort: 9000
   playerName: TestPlayer
+  roomCode: TEST2
   pingInterval: 1
   connectionTimeout: 10
