@@ -8,12 +8,16 @@ using UnityEngine;
 
 namespace Game.Subsystems
 {
+    public interface IGameStateProcessor
+    {
+        void ProcessState(PaperioState state);
+    }
     public interface IGameStateReceiver
     {
         public event Action<PaperioState> OnStateProcessed;
         public event Action<List<TerritoryChange>> OnTerritoryChanged;
     }
-    public class GameStateReceiver : IService, IGameStateReceiver
+    public class GameStateReceiver : IService, IGameStateReceiver, IGameStateProcessor
     {
         public event Action<PaperioState> OnStateProcessed;
 

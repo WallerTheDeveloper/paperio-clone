@@ -28,7 +28,7 @@ namespace Game.Subsystems
         private InputService _inputService;
         private IGameUICoordinator _gameUICoordinator;
         private IGameTickHandler _gameTickHandler;
-        private GameStateReceiver _stateReceiver;
+        private IGameStateProcessor _gameStateProcessor;
         public void Initialize(ServiceContainer services)
         {
             _sessionData = services.Get<GameSessionData>();
@@ -42,7 +42,7 @@ namespace Game.Subsystems
             _predictionSystem = services.Get<PredictionSystem>();
             _inputService = services.Get<InputService>();
             _gameUICoordinator = services.Get<GameUICoordinator>();
-            _stateReceiver = services.Get<GameStateReceiver>();
+            _gameStateProcessor = services.Get<GameStateReceiver>();
             _gameTickHandler = services.Get<GameWorld>();
             _playerDataProvider = services.Get<PlayersContainer>();
         }
@@ -132,7 +132,7 @@ namespace Game.Subsystems
         public void OnServerStateUpdated(PaperioState state)
         {
             _gameTickHandler.ResetTickTime();
-            _stateReceiver.ProcessState(state);
+            _gameStateProcessor.ProcessState(state);
         }
 
         public void OnPlayerEliminated(uint playerId)
