@@ -106,7 +106,10 @@ namespace Game.Subsystems
 
         public List<TerritoryChange> ClearOwnership(uint playerId)
         {
-            if (_territoryData == null) return new List<TerritoryChange>();
+            if (_territoryData == null)
+            {
+                return new List<TerritoryChange>();
+            }
 
             var changes = _territoryData.ClearOwnership(playerId);
             if (changes.Count > 0)

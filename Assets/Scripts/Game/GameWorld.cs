@@ -85,8 +85,8 @@ namespace Game
             _inputService = services.Get<InputService>();
             _gameUICoordinator = services.Get<GameUICoordinator>();
             
-            _stateReceiver.OnStateProcessed += state => OnStateRefreshed?.Invoke(state);
-            _stateReceiver.OnTerritoryChanged += changes => OnTerritoryChanged?.Invoke(changes);
+            _stateReceiver.OnStateProcessed += OnStateProcessed;
+            _stateReceiver.OnTerritoryChanged += OnTerritoryChangedReceived;
         }
 
         public void Tick()
@@ -110,6 +110,9 @@ namespace Game
 
         public void Dispose()
         {
+            _stateReceiver.OnStateProcessed -= OnStateProcessed;
+            _stateReceiver.OnTerritoryChanged -= OnTerritoryChangedReceived;
+            
             _inputService.DisableInput();
             _territorySystem.Dispose();
             _playerVisualsManager.ClearAll();
@@ -117,6 +120,16 @@ namespace Game
             _cameraController?.Dispose();
         }
 
+        private void OnStateProcessed(PaperioState state)
+        {
+            OnStateRefreshed?.Invoke(state);
+        }
+        
+        private void OnTerritoryChangedReceived(List<TerritoryChange> changes)
+        {
+            OnTerritoryChanged?.Invoke(changes);
+        }
+        
         public void OnJoinedGame(PaperioJoinResponse response)
         {
             _sessionData.SetData(
