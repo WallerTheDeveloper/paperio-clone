@@ -26,7 +26,7 @@ namespace Game.Subsystems
         private TerritoryRenderer _territoryRenderer;
         private TerritoryClaim _territoryClaim;
         private IColorDataProvider _colorDataProvider;
-        private PlayerVisualsManager _playerVisualsManager;
+        private IPlayerDataProvider _playerDataProvider;
         private IGameSessionDataProvider _sessionDataProvider;
         private GameWorldConfigProvider _configProvider;
         public void Initialize(ServiceContainer services)
@@ -35,7 +35,7 @@ namespace Game.Subsystems
             _territoryRenderer = services.Get<TerritoryRenderer>();
             _territoryClaim = services.Get<TerritoryClaim>();
             _colorDataProvider = services.Get<ColorsRegistry>();
-            _playerVisualsManager = services.Get<PlayerVisualsManager>();
+            _playerDataProvider = services.Get<PlayersContainer>();
             _sessionDataProvider = services.Get<GameSessionData>();
 
             _configProvider = services.Get<GameWorldConfigProvider>();
@@ -121,7 +121,7 @@ namespace Game.Subsystems
             _territoryRenderer.FlushToMesh(changes.Count);
             _territoryClaim.SyncNonAnimatedColors();
 
-            var playerData = _playerVisualsManager.PlayersContainer.TryGetPlayerById(changes[0].NewOwner);
+            var playerData = _playerDataProvider.TryGetPlayerById(changes[0].NewOwner);
             if (playerData != null)
             {
                 _territoryClaim.AddWave(changes, playerData.PlayerId, playerData.Color);

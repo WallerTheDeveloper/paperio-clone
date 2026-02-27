@@ -19,7 +19,8 @@ namespace Game.Subsystems
         private GameWorldConfigProvider _configProvider;
         private ITerritoryDataProvider _territoryDataProvider;
         private IColorRegistry _colorRegistry;
-        private PlayerVisualsManager _playerVisualsManager;
+        private IPlayerVisualsManager _playerVisualsManager;
+        private IPlayerDataProvider _playerDataProvider;
         private TrailVisualsManager _trailVisualsManager;
         private TerritorySystem _territorySystem;
         private EffectsCoordinator _effectsCoordinator;
@@ -43,6 +44,7 @@ namespace Game.Subsystems
             _gameUICoordinator = services.Get<GameUICoordinator>();
             _stateReceiver = services.Get<GameStateReceiver>();
             _gameTickHandler = services.Get<GameWorld>();
+            _playerDataProvider = services.Get<PlayersContainer>();
         }
 
         public void TickLate()
@@ -56,8 +58,6 @@ namespace Game.Subsystems
         public void Dispose()
         {
             _inputService.DisableInput();
-            _territorySystem.Dispose();
-            _playerVisualsManager.ClearAll();
             _sessionData.SetEndGameData();
             _cameraController?.Dispose();
         }
@@ -152,7 +152,7 @@ namespace Game.Subsystems
             {
                 _cameraController.SetLocalTarget(_playerVisualsManager.LocalPlayerVisual.transform);
 
-                var playerData = _playerVisualsManager.PlayersContainer.TryGetPlayerById(playerId);
+                var playerData = _playerDataProvider.TryGetPlayerById(playerId);
                 if (playerData != null)
                 {
                     _predictionSystem.ReinitializeAfterRespawn(playerData.GridPosition, Direction.None);

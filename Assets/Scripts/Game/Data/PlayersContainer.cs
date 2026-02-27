@@ -5,11 +5,19 @@ using Game.Server;
 
 namespace Game.Data
 {
-    public class PlayersContainer : IService
+    public interface IPlayersContainer : IPlayerDataProvider
+    {
+        PlayerData Register(PlayerInfo playerInfo);
+        bool Unregister(uint playerID);
+    }
+    public interface IPlayerDataProvider
+    {
+        PlayerData TryGetPlayerById(uint playerId);
+    }
+    public class PlayersContainer : IService, IPlayersContainer
     {
         private readonly Dictionary<uint, PlayerData> _playersContainer = new();
 
-        public Action OnPlayerRegistered;
         public void Initialize(ServiceContainer services)
         { }
 
@@ -27,7 +35,6 @@ namespace Game.Data
                 IsReady = playerInfo.Ready
             };
             _playersContainer[playerInfo.PlayerId] = newPlayer;
-            OnPlayerRegistered?.Invoke();
             
             return _playersContainer[playerInfo.PlayerId];
         }

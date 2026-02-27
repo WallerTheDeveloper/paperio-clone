@@ -33,13 +33,12 @@ namespace Game.Data
         
         public IReadOnlyDictionary<uint, Color> Colors => _colors;
 
-        private PlayersContainer _playersContainer;
+        private IPlayerDataProvider _playersDataProvider;
         private GameWorldConfigProvider _gameWorldConfigProvider;
         public void Initialize(ServiceContainer services)
         {
             _gameWorldConfigProvider = services.Get<GameWorldConfigProvider>();
-            
-            _playersContainer = services.Get<PlayersContainer>();
+            _playersDataProvider = services.Get<PlayersContainer>();
         }
 
         public void Dispose()
@@ -98,7 +97,7 @@ namespace Game.Data
                 return _gameWorldConfigProvider.Config.NeutralColor;
             }
             
-            var playerData = _playersContainer?.TryGetPlayerById(playerId);
+            var playerData = _playersDataProvider.TryGetPlayerById(playerId);
             if (playerData != null && playerData.Color != default)
             {
                 return playerData.Color;

@@ -24,7 +24,7 @@ namespace Network
         private PaperioState _currentState;
         
         private MessageSender _messageSender;
-        private PlayersContainer _playersContainer;
+        private IPlayersContainer _playersContainer;
 
         private bool _hasValidBaseline;
         
@@ -152,7 +152,10 @@ namespace Network
         
         private void UpdatePlayersFromState(PaperioState state, PaperioState previousState)
         {
-            if (_playersContainer == null) return;
+            if (_playersContainer == null)
+            {
+                return;
+            }
             
             var currentPlayerIds = new HashSet<uint>();
             

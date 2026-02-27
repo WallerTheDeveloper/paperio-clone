@@ -7,12 +7,18 @@ using Utils;
 
 namespace Game.Subsystems.Rendering
 {
+    public interface IPlayerVisualsManager : IPlayerVisualsDataProvider
+    {
+        void UpdateFromState(PaperioState state, uint localPlayerId);
+        void SpawnPlayers();
+        void DespawnPlayer(uint playerId);
+    }
     public interface IPlayerVisualsDataProvider
     {
         PlayerVisual LocalPlayerVisual { get; }
         IReadOnlyDictionary<uint, PlayerVisual> ActiveVisuals { get; }
     }
-    public class PlayerVisualsManager : MonoBehaviour, IService, IPlayerVisualsDataProvider
+    public class PlayerVisualsManager : MonoBehaviour, IService, IPlayerVisualsManager
     {
         [SerializeField] private GameWorldConfig config;
         [SerializeField] private PlayerConfig playerConfig;
@@ -33,17 +39,14 @@ namespace Game.Subsystems.Rendering
         private uint _currentTick;
         public int ActiveCount => _activeVisuals.Count;
         public PlayerVisual LocalPlayerVisual => _localPlayerVisual;
-        public PlayersContainer PlayersContainer { get; private set; }
         public IReadOnlyDictionary<uint, PlayerVisual> ActiveVisuals => _activeVisuals;
         
-        private PlayersContainer _playersContainer;
         private IColorDataProvider _colorDataProvider;
+        private IPlayerDataProvider _playerDataProvider;
         public void Initialize(ServiceContainer services)
         {
-            _playersContainer = services.Get<PlayersContainer>();
+            _playerDataProvider = services.Get<PlayersContainer>();
             _colorDataProvider = services.Get<ColorsRegistry>();
-            
-            PlayersContainer = _playersContainer;
             
             // Create container for player game objects if not assigned
             if (visualsContainer == null)
@@ -159,7 +162,7 @@ namespace Game.Subsystems.Rendering
 
         private void UpdateVisualFromProto(PlayerVisual visual, PaperioPlayer protoPlayer)
         {
-            var playerData = _playersContainer.TryGetPlayerById(protoPlayer.PlayerId);
+            var playerData = _playerDataProvider.TryGetPlayerById(protoPlayer.PlayerId);
             if (playerData == null)
             {
                 return;
@@ -205,7 +208,7 @@ namespace Game.Subsystems.Rendering
             }
         }
 
-        public void ClearAll()
+        private void ClearAll()
         {
             foreach (var visual in _activeVisuals.Values)
             {

@@ -30,6 +30,7 @@ namespace Game.Subsystems.Input
         
         public void Dispose()
         {
+            DisableInput();
             if (_playerInputActions != null)
             {
                 _playerInputActions.Player.Move.performed -= OnMovePerformed;

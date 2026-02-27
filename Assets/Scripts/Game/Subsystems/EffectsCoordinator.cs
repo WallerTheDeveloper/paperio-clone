@@ -9,13 +9,13 @@ namespace Game.Subsystems
     public class EffectsCoordinator : IService
     {
         private EffectsManager _effectsManager;
-        private PlayerVisualsManager _playerVisualsManager;
+        private IPlayerDataProvider _playerDataProvider;
         private IGameSessionDataProvider _sessionDataProvider;
         private GameWorldConfigProvider _configProvider;
         public void Initialize(ServiceContainer services)
         {
             _effectsManager = services.Get<EffectsManager>();
-            _playerVisualsManager = services.Get<PlayerVisualsManager>();
+            _playerDataProvider = services.Get<PlayersContainer>();
             
             _sessionDataProvider = services.Get<GameSessionData>();
             _configProvider = services.Get<GameWorldConfigProvider>();
@@ -32,7 +32,7 @@ namespace Game.Subsystems
         {
             bool isLocal = playerId == _sessionDataProvider.LocalPlayerId;
 
-            var playerData = _playerVisualsManager.PlayersContainer.TryGetPlayerById(playerId);
+            var playerData = _playerDataProvider.TryGetPlayerById(playerId);
             if (playerData == null)
             {
                 return;
@@ -55,7 +55,7 @@ namespace Game.Subsystems
 
         public void OnPlayerRespawned(uint playerId)
         {
-            var playerData = _playerVisualsManager.PlayersContainer.TryGetPlayerById(playerId);
+            var playerData = _playerDataProvider.TryGetPlayerById(playerId);
             if (playerData == null)
             {
                 return;

@@ -11,7 +11,6 @@ namespace Game.Subsystems
     public interface IGameStateReceiver
     {
         public event Action<PaperioState> OnStateProcessed;
-
         public event Action<List<TerritoryChange>> OnTerritoryChanged;
     }
     public class GameStateReceiver : IService, IGameStateReceiver
