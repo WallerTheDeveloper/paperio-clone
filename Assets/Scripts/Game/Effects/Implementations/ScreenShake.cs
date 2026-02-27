@@ -35,10 +35,9 @@ namespace Game.Effects.Implementations
         public GameObject GameObject => this.gameObject;
         public bool IsPlaying => _isShaking;
         
-        public void Prepare(IGameWorldDataProvider gameData)
+        public void Prepare(IGameSessionDataProvider gameSessionData)
         {
-            
-            _targetTransform = gameData.LocalPlayerCamera.transform;
+            _targetTransform = gameSessionData.LocalPlayerCamera.transform;
             _originalLocalPosition = _targetTransform.localPosition;
             _seed = Random.Range(0, 1000);
         }

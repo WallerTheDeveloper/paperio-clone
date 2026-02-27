@@ -1,5 +1,4 @@
-﻿using System.Collections.Generic;
-using Game.Paperio;
+﻿using Game.Paperio;
 using UnityEngine;
 
 namespace Game.Data

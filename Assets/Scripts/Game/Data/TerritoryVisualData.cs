@@ -1,10 +1,21 @@
 ﻿using System;
 using System.Collections.Generic;
+using Core.Services;
 using UnityEngine;
 
 namespace Game.Data
 {
-    public class TerritoryVisualData
+    public interface ITerritoryVisualDataProvider
+    {
+        Color32[] Colors { get; }
+        Vector3[] Vertices { get; }
+        int[] Triangles { get; }
+        Vector2[] UVs { get; }
+        int VertexCount { get; }
+        Color32 GetCellColor(long cellIndex);
+    }
+    
+    public class TerritoryVisualData : IService, ITerritoryVisualDataProvider
     {
         public Color32[] Colors { get; private set; }
         public Vector3[] Vertices { get; private set; }
@@ -14,14 +25,20 @@ namespace Game.Data
         public int VertexCount => Colors?.Length ?? 0;
         public bool IsInitialized => Colors != null;
 
-        private int _width;
-        private int _height;
+        private uint _width;
+        private uint _height;
         private float _cellSize;
         private Color32 _neutralColor;
 
         private Func<uint, Color32> _colorResolver;
 
-        public TerritoryVisualData(int width, int height, float cellSize, Color32 neutralColor, Func<uint, Color32> colorResolver)
+        public void Initialize(ServiceContainer services)
+        { }
+
+        public void Dispose()
+        { }
+
+        public void SetData(uint width, uint height, float cellSize, Color32 neutralColor, Func<uint, Color32> colorResolver)
         {
             _width = width;
             _height = height;
@@ -37,10 +54,10 @@ namespace Game.Data
             Vertices = new Vector3[vertexCount];
             Triangles = new int[triangleCount];
             UVs = new Vector2[vertexCount];
-
+            
             GenerateGeometry();
         }
-
+        
         public void ApplyChanges(List<TerritoryChange> changes)
         {
             if (!IsInitialized || changes == null)
@@ -65,7 +82,7 @@ namespace Game.Data
                 return;
             }
 
-            int cellCount = Mathf.Min(cells.Length, _width * _height);
+            float cellCount = Mathf.Min(cells.Length, _width * _height);
             for (int i = 0; i < cellCount; i++)
             {
                 SetCellColor(i, cells[i]);
@@ -104,7 +121,7 @@ namespace Game.Data
 
                     float x0 = x * _cellSize;
                     float x1 = (x + 1) * _cellSize;
-                    int flippedY = _height - 1 - y;
+                    long flippedY = _height - 1 - y;
                     float z0 = flippedY * _cellSize;
                     float z1 = (flippedY + 1) * _cellSize;
 

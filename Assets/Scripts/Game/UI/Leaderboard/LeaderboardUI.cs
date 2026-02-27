@@ -29,15 +29,21 @@ namespace Game.UI.Leaderboard
 
         private IGameStateReceiver _stateReceiver;
         private IColorDataProvider _colorData;
-        private IGameSessionData _sessionData;
-        public void Setup(IGameStateReceiver stateReceiver, IColorDataProvider colorData, IGameSessionData sessionData)
+        private ITerritoryDataProvider _territoryData;
+        private IGameSessionDataProvider _sessionDataProvider;
+        public void Setup(
+            IGameStateReceiver stateReceiver, 
+            IColorDataProvider colorData, 
+            ITerritoryDataProvider territoryData,
+            IGameSessionDataProvider sessionDataProvider)
         {
             _stateReceiver = stateReceiver;
             _colorData = colorData;
-            _sessionData = sessionData;
-
-            _localPlayerId = _sessionData.LocalPlayerId;
-            _totalCells = _sessionData.GridWidth * _sessionData.GridHeight;
+            _territoryData = territoryData;
+            _sessionDataProvider = sessionDataProvider;
+            
+            _localPlayerId = _sessionDataProvider.LocalPlayerId;
+            _totalCells = _territoryData.Width * _territoryData.Height;
 
             _stateReceiver.OnStateProcessed += HandleStateUpdated;
             _isBound = true;
@@ -57,7 +63,7 @@ namespace Game.UI.Leaderboard
 
             _stateReceiver = null;
             _colorData = null;
-            _sessionData = null;
+            _sessionDataProvider = null;
             _isBound = false;
         }
 

@@ -43,7 +43,7 @@ namespace Game.Subsystems
 
         public bool IsFollowing => _localTarget != null && _isInitialized;
 
-        public void Initialize(IGameWorldDataProvider gameWorldData)
+        public void Initialize(uint gridWidth, uint gridHeight, float cellSize)
         {
             _transform = transform;
             _camera = GetComponent<Camera>();
@@ -52,9 +52,9 @@ namespace Game.Subsystems
             _currentYaw = _transform.eulerAngles.y;
 
             _gameBounds = GridHelper.GetGridBounds(
-                gameWorldData.GameSessionData.GridWidth,
-                gameWorldData.GameSessionData.GridHeight,
-                gameWorldData.Config.CellSize);
+                gridWidth,
+                gridWidth,
+                cellSize);
 
             _hasBounds = _gameBounds != default;
             _isInitialized = true;

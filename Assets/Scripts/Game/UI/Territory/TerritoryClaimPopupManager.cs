@@ -26,17 +26,18 @@ namespace Game.UI.Territory
         
         private Camera _localPlayerCamera;
         private ITerritoryEventsHandler _territoryEventsHandler;
-        private IGameWorldDataProvider _gameData;
+        private ITerritoryDataProvider _territoryData;
         private IPlayerVisualsDataProvider _playerVisualsData;
         public void Setup(
             ITerritoryEventsHandler territoryEventsHandler,
-            IGameWorldDataProvider gameData,
+            ITerritoryDataProvider territoryData,
+            IGameSessionDataProvider gameSessionData,
             IPlayerVisualsDataProvider playerVisualsData)
         {
+            _territoryData = territoryData;
             _territoryEventsHandler = territoryEventsHandler;
-            _gameData = gameData;
             _playerVisualsData = playerVisualsData;
-            _localPlayerCamera = _gameData.LocalPlayerCamera;
+            _localPlayerCamera = gameSessionData.LocalPlayerCamera;
             
             territoryEventsHandler.OnLocalClaim += ShowClaimPopup;
             CreateOverlayCanvas();
@@ -91,7 +92,7 @@ namespace Game.UI.Territory
             popup.Show(
                 localVisual.transform,
                 cellsClaimed,
-                _gameData.Territory.TotalCells,
+                _territoryData.TotalCells,
                 playerColor,
                 _localPlayerCamera
             );

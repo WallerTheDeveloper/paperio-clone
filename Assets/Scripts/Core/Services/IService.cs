@@ -15,7 +15,6 @@
     public interface IService
     {
         void Initialize(ServiceContainer services);
-        void OnRegistered() {}
         void Dispose();
     }
 }

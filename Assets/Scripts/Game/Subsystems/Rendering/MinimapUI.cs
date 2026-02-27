@@ -40,17 +40,17 @@ namespace Game.Subsystems.Rendering
         public RenderTexture MinimapTexture => minimapCamera != null ? minimapCamera.targetTexture : null;
         public bool IsReady => _isInitialized && MinimapTexture != null;
         
-        private IGameSessionData _gameSessionData;
+        private IGameSessionDataProvider _gameSessionDataProvider;
         private ITerritoryDataProvider _territoryDataProvider;
         private IPlayerVisualsDataProvider _playerVisualsDataProvider;
         private IColorDataProvider _colorDataProvider;
         public void Setup(
-            IGameSessionData gameSessionData,
+            IGameSessionDataProvider gameSessionDataProvider,
             ITerritoryDataProvider territoryDataProvider,
             IPlayerVisualsDataProvider playerVisualsDataProvider,
             IColorDataProvider colorDataProvider)
         {
-            _gameSessionData = gameSessionData;
+            _gameSessionDataProvider = gameSessionDataProvider;
             _territoryDataProvider = territoryDataProvider;
             _playerVisualsDataProvider = playerVisualsDataProvider;
             _colorDataProvider = colorDataProvider;
@@ -68,7 +68,7 @@ namespace Game.Subsystems.Rendering
                 return;
             }
 
-            _gameSessionData.OnGameStarted += OnGameStarted;
+            _gameSessionDataProvider.OnGameStarted += OnGameStarted;
         }
 
         public void Tick()
@@ -100,7 +100,7 @@ namespace Game.Subsystems.Rendering
         {
             Cleanup();
 
-            _gameSessionData.OnGameStarted -= OnGameStarted;
+            _gameSessionDataProvider.OnGameStarted -= OnGameStarted;
         }
         
         private void OnGameStarted()
@@ -115,17 +115,17 @@ namespace Game.Subsystems.Rendering
 
         private void UpdatePercentage()
         {
-            float pct = _territoryDataProvider.GetOwnershipPercentage(_gameSessionData.LocalPlayerId);
+            float pct = _territoryDataProvider.GetOwnershipPercentage(_gameSessionDataProvider.LocalPlayerId);
             percentageText.text = string.Format(percentageFormat, pct);
         }
         
         private void FitCameraToGrid()
         {
-            float gridWorldWidth = _gameSessionData.GridWidth * config.CellSize;
-            float gridWorldHeight = _gameSessionData.GridHeight * config.CellSize;
+            float gridWorldWidth = _territoryDataProvider.Width * config.CellSize;
+            float gridWorldHeight = _territoryDataProvider.Height * config.CellSize;
 
             Vector3 gridCenter = GridHelper.GetGridCenter(
-                _gameSessionData.GridWidth, _gameSessionData.GridHeight, config.CellSize);
+                _territoryDataProvider.Width, _territoryDataProvider.Height, config.CellSize);
 
             minimapCamera.transform.position = new Vector3(gridCenter.x, cameraHeight, gridCenter.z);
 
@@ -152,7 +152,7 @@ namespace Game.Subsystems.Rendering
                     continue;
                 }
 
-                bool isLocal = playerId == _gameSessionData.LocalPlayerId;
+                bool isLocal = playerId == _gameSessionDataProvider.LocalPlayerId;
 
                 if (!_indicators.TryGetValue(playerId, out var indicator) || indicator == null)
                 {

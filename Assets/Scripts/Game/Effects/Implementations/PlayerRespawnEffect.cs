@@ -39,7 +39,7 @@ namespace Game.Effects.Implementations
             }
         }
 
-        public void Prepare(IGameWorldDataProvider gameData)
+        public void Prepare(IGameSessionDataProvider gameSessionData)
         { }
 
         public void Play(EffectData data)

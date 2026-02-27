@@ -19,7 +19,7 @@ namespace Game.Effects.Implementations
         public GameObject GameObject => this.gameObject;
         public bool IsPlaying => _particleSystem != null && _particleSystem.isPlaying;
         
-        public void Prepare(IGameWorldDataProvider gameData)
+        public void Prepare(IGameSessionDataProvider gameSessionData)
         {
             _particleSystem = GetComponent<ParticleSystem>();
         }

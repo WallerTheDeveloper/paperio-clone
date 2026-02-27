@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using Core.Services;
 using Game.Paperio;
 using UnityEngine;
 
@@ -23,35 +24,60 @@ namespace Game.Data
         public Vector2Int Position => new Vector2Int(X, Y);
     }
 
+    public interface ITerritoryDataHandler
+    {
+        void SetData(uint width, uint height, float cellSize, Color32 neutralColor, Func<uint, Color32> colorResolver);
+        List<TerritoryChange> ApplyFullState(IEnumerable<TerritoryRow> territoryRows);
+        List<TerritoryChange> ApplyDeltaChanges(IEnumerable<TerritoryCell> cellChanges);
+        List<TerritoryChange> ClearOwnership(uint playerId);
+    }
+
     public interface ITerritoryDataProvider
     {
-        int Width { get; }
-        int Height { get; }
+        uint Width { get; }
+        uint Height { get; }
         int ClaimedCells { get; }
-        int TotalCells { get; }
+        uint TotalCells { get; }
         float GetOwnershipPercentage(uint playerId);
         bool IsOwnedBy(int x, int y, uint playerId);
     }
     
-    public class TerritoryData : ITerritoryDataProvider
+    public class TerritoryData : IService, ITerritoryDataProvider, ITerritoryDataHandler
     {
-        public int Width { get; }
-        public int Height { get; }
+        public uint Width { get; private set; }
+        public uint Height { get; private set; }
         public int ClaimedCells { get; private set; }
-        public int TotalCells => Width * Height;
+        public uint TotalCells => Width * Height;
+        
+        private uint[] _cells;
 
-        public TerritoryVisualData VisualData { get; private set; }
+        private TerritoryVisualData _visualData;
+        public void Initialize(ServiceContainer services)
+        {
+            _visualData = services.Get<TerritoryVisualData>();
+        }
 
-        private readonly uint[] _cells;
+        public void Dispose()
+        {
+            System.Array.Clear(_cells, 0, _cells.Length);
+            ClaimedCells = 0;
 
-        public TerritoryData(int width, int height, float cellSize, Color32 neutralColor, Func<uint, Color32> colorResolver)
+            _visualData.RebuildAllColors(_cells);
+        }
+        
+        public void SetData(uint width, uint height, float cellSize, Color32 neutralColor, Func<uint, Color32> colorResolver)
         {
             Width = width;
             Height = height;
             ClaimedCells = 0;
             _cells = new uint[width * height];
             
-            VisualData = new TerritoryVisualData(Width, Height, cellSize, neutralColor, colorResolver);
+            _visualData.SetData(Width, Height, cellSize, neutralColor, colorResolver);
+        }
+
+        public void SetData(int width, int height, float cellSize, Color32 neutralColor, Func<uint, Color32> colorResolver)
+        {
+            throw new NotImplementedException();
         }
 
         public List<TerritoryChange> ApplyFullState(IEnumerable<TerritoryRow> territoryRows)
@@ -78,7 +104,7 @@ namespace Game.Data
                 {
                     for (int x = 0; x < Width; x++)
                     {
-                        int idx = y * Width + x;
+                        long idx = y * Width + x;
                         if (_cells[idx] != 0)
                         {
                             changes.Add(new TerritoryChange(x, y, _cells[idx], 0));
@@ -90,7 +116,7 @@ namespace Game.Data
 
             RecalculateClaimedCells();
 
-            VisualData.ApplyChanges(changes);
+            _visualData.ApplyChanges(changes);
 
             return changes;
         }
@@ -110,7 +136,7 @@ namespace Game.Data
                     continue;
                 }
 
-                int idx = y * Width + x;
+                long idx = y * Width + x;
                 uint previousOwner = _cells[idx];
                 uint newOwner = cell.OwnerId;
 
@@ -131,7 +157,7 @@ namespace Game.Data
                 }
             }
 
-            VisualData?.ApplyChanges(changes);
+            _visualData.ApplyChanges(changes);
 
             return changes;
         }
@@ -144,10 +170,10 @@ namespace Game.Data
             {
                 if (_cells[i] == playerId)
                 {
-                    int x = i % Width;
-                    int y = i / Width;
+                    long x = i % Width;
+                    long y = i / Width;
 
-                    changes.Add(new TerritoryChange(x, y, playerId, 0));
+                    changes.Add(new TerritoryChange((int)x, (int)y, playerId, 0));
                     _cells[i] = 0;
                 }
             }
@@ -155,7 +181,7 @@ namespace Game.Data
             if (changes.Count > 0)
             {
                 RecalculateClaimedCells();
-                VisualData?.ApplyChanges(changes);
+                _visualData.ApplyChanges(changes);
             }
 
             return changes;
@@ -185,14 +211,6 @@ namespace Game.Data
             return GetOwner(x, y) == playerId;
         }
         
-        public void Clear()
-        {
-            System.Array.Clear(_cells, 0, _cells.Length);
-            ClaimedCells = 0;
-
-            VisualData.RebuildAllColors(_cells);
-        }
-        
         private uint GetOwner(int x, int y)
         {
             if (!IsInBounds(x, y))
@@ -219,7 +237,7 @@ namespace Game.Data
 
                 for (int i = 0; i < count && x < Width; i++, x++)
                 {
-                    int idx = y * Width + x;
+                    long idx = y * Width + x;
                     uint previousOwner = _cells[idx];
 
                     if (previousOwner != ownerId)

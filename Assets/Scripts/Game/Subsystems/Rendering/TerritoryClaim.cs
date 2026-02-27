@@ -37,24 +37,22 @@ namespace Game.Subsystems.Rendering
         private uint _height;
         private bool _isInitialized;
 
-        private TerritoryVisualData _visualData;
-
         public bool IsAnimating => _activeWaves.Count > 0;
 
-        private IGameWorldDataProvider _gameData;
+        private ITerritoryVisualDataProvider _territoryVisualData;
+        private ITerritoryDataProvider _territoryData;
         private MeshFilter _meshFilter;
         public void Initialize(ServiceContainer services)
         {
-            _gameData = services.Get<GameWorld>();
+            _territoryData = services.Get<TerritoryData>();
             _meshFilter = services.Get<TerritoryRenderer>().MeshFilter;
+            _territoryVisualData = services.Get<TerritoryVisualData>();
         }
 
         public void Prepare()
         {
-            _width = _gameData.GameSessionData.GridWidth;
-            _height = _gameData.GameSessionData.GridHeight;
-
-            _visualData = _gameData.Territory.VisualData;
+            _width = _territoryData.Width;
+            _height = _territoryData.Height;
 
             CaptureFromVisualData();
         }
@@ -172,12 +170,12 @@ namespace Game.Subsystems.Rendering
 
         public void SyncNonAnimatedColors()
         {
-            if (!_isInitialized || _visualData == null || !_visualData.IsInitialized)
+            if (!_isInitialized)
             {
                 return;
             }
 
-            var sourceColors = _visualData.Colors;
+            var sourceColors = _territoryVisualData.Colors;
             for (int i = 0; i < sourceColors.Length; i++)
             {
                 long cellIndex = i / 4;
@@ -211,7 +209,7 @@ namespace Game.Subsystems.Rendering
 
         private void CaptureFromVisualData()
         {
-            if (_visualData == null || !_visualData.IsInitialized)
+            if (_territoryVisualData == null)
             {
                 return;
             }
@@ -226,7 +224,7 @@ namespace Game.Subsystems.Rendering
             _originalVertices = _mesh.vertices;
             _animatedVertices = (Vector3[])_originalVertices.Clone();
 
-            _animatedColors = (Color32[])_visualData.Colors.Clone();
+            _animatedColors = (Color32[])_territoryVisualData.Colors.Clone();
 
             _isInitialized = true;
         }
@@ -273,7 +271,7 @@ namespace Game.Subsystems.Rendering
                 _animatedVertices[vBase + i] = _originalVertices[vBase + i];
             }
 
-            Color32 finalColor = _visualData.GetCellColor(cellIndex);
+            Color32 finalColor = _territoryVisualData.GetCellColor(cellIndex);
             _animatedColors[vBase + 0] = finalColor;
             _animatedColors[vBase + 1] = finalColor;
             _animatedColors[vBase + 2] = finalColor;

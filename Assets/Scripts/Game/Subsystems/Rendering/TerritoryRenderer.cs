@@ -22,10 +22,10 @@ namespace Game.Subsystems.Rendering
         public int TotalCellsUpdated => _totalCellsUpdated;
         public bool IsInitialized => _mesh != null;
 
-        private IGameWorldDataProvider _gameWorldData;
+        private ITerritoryVisualDataProvider _territoryVisualData;
         public void Initialize(ServiceContainer services)
         {
-            _gameWorldData = services.Get<GameWorld>();
+            _territoryVisualData = services.Get<TerritoryVisualData>();
 
             _meshFilter = GetComponent<MeshFilter>();
             _meshRenderer = GetComponent<MeshRenderer>();
@@ -47,9 +47,6 @@ namespace Game.Subsystems.Rendering
             }
 
             CreateMeshFromVisualData();
-
-            Debug.Log($"[TerritoryRenderer] Initialized: {_gameWorldData.GameSessionData.GridWidth}x{_gameWorldData.GameSessionData.GridHeight} grid, " +
-                      $"{_mesh.vertexCount} vertices, {_mesh.triangles.Length / 3} triangles");
         }
 
         public void FlushToMesh(int changeCount = 0)
@@ -59,10 +56,7 @@ namespace Game.Subsystems.Rendering
                 return;
             }
 
-            var visualData = _gameWorldData.Territory.VisualData;
-            if (visualData == null || !visualData.IsInitialized) return;
-
-            _mesh.colors32 = visualData.Colors;
+            _mesh.colors32 = _territoryVisualData.Colors;
 
             _totalCellsUpdated += changeCount;
 
@@ -74,49 +68,26 @@ namespace Game.Subsystems.Rendering
 
         private void CreateMeshFromVisualData()
         {
-            var visualData = _gameWorldData.Territory.VisualData;
-            if (visualData == null || !visualData.IsInitialized)
-            {
-                Debug.LogError("[TerritoryRenderer] TerritoryVisualData not initialized!");
-                return;
-            }
-
             _mesh = new Mesh
             {
                 name = "TerritoryMesh"
             };
 
-            if (visualData.VertexCount > 65535)
+            if (_territoryVisualData.VertexCount > 65535)
             {
                 _mesh.indexFormat = UnityEngine.Rendering.IndexFormat.UInt32;
             }
 
-            _mesh.vertices = visualData.Vertices;
-            _mesh.triangles = visualData.Triangles;
-            _mesh.colors32 = visualData.Colors;
-            _mesh.uv = visualData.UVs;
+            _mesh.vertices = _territoryVisualData.Vertices;
+            _mesh.triangles = _territoryVisualData.Triangles;
+            _mesh.colors32 = _territoryVisualData.Colors;
+            _mesh.uv = _territoryVisualData.UVs;
 
             _mesh.RecalculateNormals();
             _mesh.MarkDynamic();
             _mesh.RecalculateBounds();
 
             _meshFilter.mesh = _mesh;
-        }
-
-        private void OnDrawGizmosSelected()
-        {
-            if (!IsInitialized) return;
-
-            Gizmos.color = Color.green;
-            Vector3 size = new Vector3(
-                _gameWorldData.GameSessionData.GridWidth * _gameWorldData.Config.CellSize,
-                0.1f,
-                _gameWorldData.GameSessionData.GridHeight * _gameWorldData.Config.CellSize);
-            Vector3 center = size / 2f;
-            Gizmos.DrawWireCube(center, size);
-
-            Gizmos.color = Color.red;
-            Gizmos.DrawSphere(Vector3.zero, _gameWorldData.Config.CellSize * 0.5f);
         }
     }
 }

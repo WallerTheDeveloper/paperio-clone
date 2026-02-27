@@ -15,15 +15,17 @@ namespace Game.Subsystems
         private float _tickAccumulator;
         
         private ClientPrediction _prediction;
-        private IGameSessionData _sessionData;
+        private IGameSessionDataProvider _sessionDataProvider;
+        private ITerritoryDataProvider _territoryData;
         private PlayerVisualsManager _playerVisualsManager;
         private InputService _inputService;
         private GameWorldConfig _config;
         public void Initialize(ServiceContainer services)
         {
-            _sessionData = services.Get<GameWorld>().GameSessionData;
+            _sessionDataProvider = services.Get<GameSessionData>();
             _playerVisualsManager = services.Get<PlayerVisualsManager>();
             _inputService = services.Get<InputService>();
+            _territoryData = services.Get<TerritoryData>();
             _config = services.Get<GameWorld>().Config;
 
             _inputService.OnDirectionChanged += OnDirectionChanged;
@@ -31,13 +33,13 @@ namespace Game.Subsystems
 
         public void Tick()
         {
-            if (!_sessionData.IsGameActive || _prediction == null || _sessionData.TickRateMs == 0)
+            if (!_sessionDataProvider.IsGameActive || _prediction == null || _sessionDataProvider.TickRateMs == 0)
             {
                 return;
             }
 
             _tickAccumulator += Time.deltaTime;
-            float tickDuration = _sessionData.TickRateMs / 1000f;
+            float tickDuration = _sessionDataProvider.TickRateMs / 1000f;
 
             while (_tickAccumulator >= tickDuration)
             {
@@ -69,9 +71,9 @@ namespace Game.Subsystems
 
         public void InitializeForGame(Vector2Int startPosition, Direction startDirection)
         {
-            _prediction = new ClientPrediction(_sessionData.GridWidth, _sessionData.GridHeight);
+            _prediction = new ClientPrediction(_territoryData.Width, _territoryData.Height);
             _prediction.Initialize(startPosition, startDirection);
-            _prediction.SetMoveInterval(_sessionData.MoveIntervalTicks);
+            _prediction.SetMoveInterval(_sessionDataProvider.MoveIntervalTicks);
 
             _estimatedServerTick = 0;
             _tickAccumulator = 0f;
@@ -98,7 +100,7 @@ namespace Game.Subsystems
         public void ReinitializeAfterRespawn(Vector2Int position, Direction direction)
         {
             _prediction?.Initialize(position, direction);
-            _prediction?.SetMoveInterval(_sessionData.MoveIntervalTicks);
+            _prediction?.SetMoveInterval(_sessionDataProvider.MoveIntervalTicks);
         }
         
         private void OnDirectionChanged(Direction direction)

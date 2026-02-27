@@ -34,7 +34,7 @@ namespace Game.UI.Territory
                 canvasGroup = GetComponent<CanvasGroup>();
         }
 
-        public void Show(Transform trackTarget, int cellsClaimed, int totalCells, Color playerColor, Camera playerCamera)
+        public void Show(Transform trackTarget, int cellsClaimed, uint totalCells, Color playerColor, Camera playerCamera)
         {
             gameObject.SetActive(true);
             EnsureReferences();

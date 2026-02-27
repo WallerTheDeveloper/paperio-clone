@@ -32,6 +32,10 @@ namespace Core
         private PlayersContainer _playersContainer;
         private InputService _inputService;
         
+        private GameSessionData _gameSessionData;
+        private TerritoryVisualData _territoryVisualData;
+        private TerritoryData _territoryData;
+        
         private ColorsRegistry _colorRegistry;
         private GameStateReceiver _stateReceiver;
         private PredictionSystem _predictionSystem;
@@ -51,7 +55,13 @@ namespace Core
             _predictionSystem = new PredictionSystem();
             _territorySystem = new TerritorySystem();
             _effectsCoordinator = new EffectsCoordinator();
+            _gameSessionData = new GameSessionData();
+            _territoryVisualData = new TerritoryVisualData();
+            _territoryData = new TerritoryData();
             
+            _services.Register(_territoryVisualData);
+            _services.Register(_territoryData);
+            _services.Register(_gameSessionData);
             _services.Register(messageSender);
             _services.Register(_playersContainer);
             _services.Register(serverStateHandler);

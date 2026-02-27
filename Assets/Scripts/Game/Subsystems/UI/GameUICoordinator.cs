@@ -40,9 +40,9 @@ namespace Game.Subsystems.UI
         
         private IGameStateReceiver _stateReceiver;
         private IColorDataProvider _colorDataProvider;
-        private IGameSessionData _gameSessionData;
-        private IGameWorldDataProvider _gameWorldDataProvider;
+        private IGameSessionDataProvider _gameSessionData;
         private ITerritoryEventsHandler _territoryEventsHandler;
+        private ITerritoryDataProvider _territoryData;
         private IPlayerVisualsDataProvider _playerVisualsData;
         public void Initialize(ServiceContainer services)
         {
@@ -50,10 +50,10 @@ namespace Game.Subsystems.UI
             
             _stateReceiver = services.Get<GameStateReceiver>();
             _colorDataProvider = services.Get<ColorsRegistry>();
-            _gameWorldDataProvider = services.Get<GameWorld>();
-            _gameSessionData = services.Get<GameWorld>().GameSessionData;
+            _gameSessionData = services.Get<GameSessionData>();
             _territoryEventsHandler = services.Get<TerritorySystem>();
             _playerVisualsData = services.Get<PlayerVisualsManager>();
+            _territoryData = services.Get<TerritoryData>();
         }
 
         private MainMenu _mainMenu;
@@ -75,8 +75,8 @@ namespace Game.Subsystems.UI
             _territoryClaimPopupManager = Instantiate(territoryClaimPopupManagerPrefab, _hud.transform);
             _minimapUI = Instantiate(minimapUIPrefab, _hud.transform);
             
-            _leaderboardUI.Setup(_stateReceiver, _colorDataProvider, _gameSessionData);
-            _territoryClaimPopupManager.Setup(_territoryEventsHandler, _gameWorldDataProvider, _playerVisualsData);
+            _leaderboardUI.Setup(_stateReceiver, _colorDataProvider, _territoryData, _gameSessionData);
+            _territoryClaimPopupManager.Setup(_territoryEventsHandler, _territoryData, _gameSessionData, _playerVisualsData);
             _minimapUI.Setup(_gameSessionData, territoryDataProvider, _playerVisualsData, _colorDataProvider);
             
             _gameUiInitialized = true;

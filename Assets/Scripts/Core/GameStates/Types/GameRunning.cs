@@ -1,6 +1,7 @@
 ﻿using System;
 using Core.Services;
 using Game;
+using Game.Data;
 using Game.Effects;
 using Game.Server;
 using Network;
@@ -10,19 +11,21 @@ namespace Core.GameStates.Types
 {
     public class GameRunning : GameState
     {
-        private MessageSender _messageSender;
-        private ServerStateHandler _serverStateHandler;
-        private GameWorld _gameWorld;
         private EffectsManager _effectsManager;
         public override Action TriggerStateSwitch { get; set; }
 
+        private MessageSender _messageSender;
+        private ServerStateHandler _serverStateHandler;
+        private GameWorld _gameWorld;
+        private IGameSessionDataProvider _gameSessionData; 
         public override void Initialize(ServiceContainer container)
         {
             _messageSender = container.Get<MessageSender>();
             _serverStateHandler = container.Get<ServerStateHandler>();
             _gameWorld = container.Get<GameWorld>();
-
-            if (_gameWorld.IsGameActive)
+            _gameSessionData = container.Get<GameSessionData>();
+            
+            if (_gameSessionData.IsGameActive)
             {
                 Debug.Log("[GameRunning] Reconnection detected — resetting game state");
                 _gameWorld.Dispose();

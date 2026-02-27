@@ -25,10 +25,10 @@ namespace Game.Effects
         private readonly List<IEffect> _activeEffects = new();
 
         private Transform _effectsContainer;
-        private IGameWorldDataProvider _gameData;
+        private IGameSessionDataProvider _gameSessionData;
         public void Initialize(ServiceContainer services)
         {
-            _gameData = services.Get<GameWorld>();
+            _gameSessionData = services.Get<GameSessionData>();
             
             _effectsContainer = new GameObject("EffectsContainer").transform;
             _effectsContainer.SetParent(transform, false);
@@ -132,7 +132,7 @@ namespace Game.Effects
                 return null;
             }
 
-            effect.Prepare(_gameData);
+            effect.Prepare(_gameSessionData);
             effect.GameObject.SetActive(false);
             return effect;
         }

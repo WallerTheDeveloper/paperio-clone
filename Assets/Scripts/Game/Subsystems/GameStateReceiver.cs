@@ -20,7 +20,7 @@ namespace Game.Subsystems
 
         public event Action<List<TerritoryChange>> OnTerritoryChanged;
 
-        private IGameSessionData _sessionData;
+        private IGameSessionDataProvider _sessionDataProvider;
         private ColorsRegistry _colorRegistry;
         private ITerritoryStateHandler _territoryStateHandler;
         private PredictionSystem _predictionSystem;
@@ -33,16 +33,14 @@ namespace Game.Subsystems
             _predictionSystem = services.Get<PredictionSystem>();
             _playerVisualsManager = services.Get<PlayerVisualsManager>();
             _trailVisualsManager = services.Get<TrailVisualsManager>();
-
-            var gameWorld = services.Get<GameWorld>();
-            _sessionData = gameWorld.GameSessionData;
+            _sessionDataProvider = services.Get<GameSessionData>();
         }
 
         public void Dispose() { }
 
         public void ProcessState(PaperioState state)
         {
-            if (!_sessionData.IsGameActive)
+            if (!_sessionDataProvider.IsGameActive)
             {
                 return;
             }
@@ -60,7 +58,7 @@ namespace Game.Subsystems
 
             ReconcileLocalPlayer(state);
 
-            _playerVisualsManager.UpdateFromState(state, _sessionData.LocalPlayerId);
+            _playerVisualsManager.UpdateFromState(state, _sessionDataProvider.LocalPlayerId);
 
             UpdateTrails(state);
 
@@ -71,7 +69,7 @@ namespace Game.Subsystems
         {
             foreach (var player in state.Players)
             {
-                if (player.PlayerId == _sessionData.LocalPlayerId && player.Position != null)
+                if (player.PlayerId == _sessionDataProvider.LocalPlayerId && player.Position != null)
                 {
                     var serverPos = new Vector2Int(player.Position.X, player.Position.Y);
                     _predictionSystem.Reconcile(state.Tick, serverPos, player.Direction);

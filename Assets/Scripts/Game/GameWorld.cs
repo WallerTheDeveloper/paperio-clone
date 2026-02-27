@@ -12,6 +12,12 @@ using Utils;
 
 namespace Game
 {
+    public interface IGameWorldDataProvider
+    {
+        public GameWorldConfig Config { get; }
+        // public Camera LocalPlayerCamera { get; }
+    }
+    
     public class GameWorld : MonoBehaviour, ITickableService, IGameWorldDataProvider
     {
         [SerializeField] private GameWorldConfig config;
@@ -19,17 +25,13 @@ namespace Game
         private float _lastTickTime;
 
         public GameWorldConfig Config => config;
-        public TerritoryData Territory => _territorySystem?.Data;
         public Dictionary<uint, Color> PlayerColors => new(_colorRegistry?.Colors ?? new Dictionary<uint, Color>());
-        public IGameSessionData GameSessionData => _sessionData;
-        public uint LocalPlayerId => _sessionData.LocalPlayerId;
-        public bool IsGameActive => _sessionData.IsGameActive;
-        public uint GridWidth => _sessionData.GridWidth;
-        public uint GridHeight => _sessionData.GridHeight;
-        public uint TickRateMs => _sessionData.TickRateMs;
         public PlayerVisual LocalPlayerVisual => _playerVisualsManager?.LocalPlayerVisual;
-
-        public Camera LocalPlayerCamera
+        public event Action<PaperioState> OnStateRefreshed;
+        public event Action<uint> OnLocalPlayerSpawned;
+        public event Action<List<TerritoryChange>> OnTerritoryChanged;
+        
+        private Camera LocalPlayerCamera
         {
             get
             {
@@ -37,12 +39,7 @@ namespace Game
                 return camObj != null ? camObj.GetComponent<Camera>() : null;
             }
         }
-
-        public event Action<PaperioState> OnStateRefreshed;
-        public event Action<uint> OnLocalPlayerSpawned;
-        public event Action<List<TerritoryChange>> OnTerritoryChanged;
-
-
+        
         private float TickProgress
         {
             get
@@ -57,11 +54,6 @@ namespace Game
             }
         }
 
-        public void OnRegistered()
-        {
-            _sessionData = new GameSessionData();
-        }
-
         private GameSessionData _sessionData;
         private GameStateReceiver _stateReceiver;
         private PredictionSystem _predictionSystem;
@@ -73,6 +65,7 @@ namespace Game
         private CameraController _cameraController;
         private InputService _inputService;
         private IGameUICoordinator _gameUICoordinator;
+        private ITerritoryDataProvider _territoryData;
         public void Initialize(ServiceContainer services)
         {
             _colorRegistry = services.Get<ColorsRegistry>();
@@ -84,6 +77,8 @@ namespace Game
             _trailVisualsManager = services.Get<TrailVisualsManager>();
             _inputService = services.Get<InputService>();
             _gameUICoordinator = services.Get<GameUICoordinator>();
+            _sessionData = services.Get<GameSessionData>();
+            _territoryData = services.Get<TerritoryData>();
             
             _stateReceiver.OnStateProcessed += OnStateProcessed;
             _stateReceiver.OnTerritoryChanged += OnTerritoryChangedReceived;
@@ -116,7 +111,7 @@ namespace Game
             _inputService.DisableInput();
             _territorySystem.Dispose();
             _playerVisualsManager.ClearAll();
-            _sessionData.EndGame();
+            _sessionData.SetEndGameData();
             _cameraController?.Dispose();
         }
 
@@ -135,9 +130,7 @@ namespace Game
             _sessionData.SetData(
                 response.YourPlayerId,
                 response.TickRateMs,
-                response.MoveIntervalTicks,
-                response.InitialState?.GridWidth ?? 0,
-                response.InitialState?.GridHeight ?? 0
+                response.MoveIntervalTicks
             );
 
             if (response.InitialState != null)
@@ -149,14 +142,15 @@ namespace Game
 
                 _playerVisualsManager.UpdateFromState(response.InitialState, _sessionData.LocalPlayerId);
                 _playerVisualsManager.SpawnPlayers();
-
+                _sessionData.SetLocalPlayerCamera(LocalPlayerCamera);
+                
                 if (_playerVisualsManager.LocalPlayerVisual != null)
                 {
                     _playerVisualsManager.LocalPlayerVisual.SetMoveDuration(_sessionData.MoveDuration);
                 }
 
                 _cameraController = FindFirstObjectByType<CameraController>();
-                _cameraController.Initialize(this as IGameWorldDataProvider);
+                _cameraController.Initialize(_territoryData.Width, _territoryData.Height, config.CellSize);
 
                 if (_playerVisualsManager.LocalPlayerVisual != null)
                 {
@@ -182,16 +176,16 @@ namespace Game
                 _predictionSystem.SyncToServerTick(response.InitialState.Tick);
             }
 
-            _gameUICoordinator.CreateAndInitializeGameUI(Territory);
+            _gameUICoordinator.CreateAndInitializeGameUI(_territoryData);
             
             _inputService.EnableInput();
             _lastTickTime = Time.time;
-            _sessionData.StartGame();
+            _sessionData.SetStartGameData();
 
             Debug.Log($"[GameWorld] Game started! " +
                       $"LocalPlayer={_sessionData.LocalPlayerId}, " +
-                      $"Grid={GridWidth}x{GridHeight}, " +
-                      $"TickRate={TickRateMs}ms");
+                      $"Grid={_territoryData.Width}x{_territoryData.Height}, " +
+                      $"TickRate={_sessionData.TickRateMs}ms");
 
             OnLocalPlayerSpawned?.Invoke(_sessionData.LocalPlayerId);
         }

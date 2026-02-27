@@ -10,15 +10,15 @@ namespace Game.Subsystems
     {
         private EffectsManager _effectsManager;
         private PlayerVisualsManager _playerVisualsManager;
-        private IGameSessionData _sessionData;
+        private IGameSessionDataProvider _sessionDataProvider;
         private GameWorldConfig _config;
         public void Initialize(ServiceContainer services)
         {
             _effectsManager = services.Get<EffectsManager>();
             _playerVisualsManager = services.Get<PlayerVisualsManager>();
-            var gameWorld = services.Get<GameWorld>();
             
-            _sessionData = gameWorld.GameSessionData;
+            var gameWorld = services.Get<GameWorld>();
+            _sessionDataProvider = services.Get<GameSessionData>();
             _config = gameWorld.Config;
         }
 
@@ -31,7 +31,7 @@ namespace Game.Subsystems
         
         public void OnPlayerEliminated(uint playerId)
         {
-            bool isLocal = playerId == _sessionData.LocalPlayerId;
+            bool isLocal = playerId == _sessionDataProvider.LocalPlayerId;
 
             var playerData = _playerVisualsManager.PlayersContainer.TryGetPlayerById(playerId);
             if (playerData == null)
