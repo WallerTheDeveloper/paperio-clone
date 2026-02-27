@@ -20,7 +20,6 @@ namespace Core.GameStates.Types
         {
             _messageSender = container.Get<MessageSender>();
             _gameUICoordinator = container.Get<GameUICoordinator>();
-            
         }
 
         public override void Tick()

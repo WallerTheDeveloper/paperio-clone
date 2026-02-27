@@ -1,10 +1,11 @@
-﻿using Game.Data;
+﻿using Core.Services;
+using Game.Data;
 using UnityEngine;
 using Utils;
 
 namespace Game.Subsystems
 {
-    public class CameraController : MonoBehaviour
+    public class CameraController : MonoBehaviour, IService
     {
         [Header("Follow")] [SerializeField] private float height = 30f;
         [SerializeField] private float distance = 10f;
@@ -43,6 +44,11 @@ namespace Game.Subsystems
 
         public bool IsFollowing => _localTarget != null && _isInitialized;
 
+        public void Initialize(ServiceContainer services)
+        {
+            
+        }
+        
         public void Initialize(uint gridWidth, uint gridHeight, float cellSize)
         {
             _transform = transform;

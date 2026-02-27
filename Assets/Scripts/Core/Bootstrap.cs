@@ -41,6 +41,8 @@ namespace Core
         private GameStateReceiver _stateReceiver;
         private PredictionSystem _predictionSystem;
         private TerritorySystem _territorySystem;
+        
+        private GameSessionCoordinator _gameSessionCoordinator;
         private EffectsCoordinator _effectsCoordinator;
         
         private ServiceContainer _services;
@@ -60,7 +62,8 @@ namespace Core
             _territoryVisualData = new TerritoryVisualData();
             _territoryData = new TerritoryData();
             _gameWorldConfigProvider = new GameWorldConfigProvider(gameWorld.Config);
-
+            _gameSessionCoordinator = new GameSessionCoordinator();
+            
             _services.Register(_gameWorldConfigProvider);
             _services.Register(_territoryVisualData);
             _services.Register(_territoryData);
@@ -93,6 +96,7 @@ namespace Core
                 _services.Register(_predictionSystem);
                 _services.Register(_stateReceiver);
                 _services.Register(gameUICoordinator);
+                _services.Register(_gameSessionCoordinator);
             }
         }
 

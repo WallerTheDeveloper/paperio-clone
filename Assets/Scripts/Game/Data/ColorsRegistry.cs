@@ -1,10 +1,14 @@
 ﻿using System.Collections.Generic;
 using Core.Services;
-using Game.Subsystems.Rendering;
 using UnityEngine;
 
 namespace Game.Data
 {
+    public interface IColorRegistry : IColorDataProvider
+    {
+        void Register(uint playerId);
+    }
+    
     public interface IColorDataProvider
     {
         IReadOnlyDictionary<uint, Color> Colors { get; }
@@ -12,7 +16,7 @@ namespace Game.Data
         Color32 GetTerritoryColor(uint ownerId, Color32 neutralColor);
     }
     
-    public class ColorsRegistry : IService, IColorDataProvider
+    public class ColorsRegistry : IService, IColorRegistry
     {
         private readonly Color32[] _playerColors = {
             new(255, 77, 77, 255),   // Red
