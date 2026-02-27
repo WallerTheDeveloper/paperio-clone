@@ -11,14 +11,14 @@ namespace Core.GameStates.Types
     {
         public override Action TriggerStateSwitch { get; set; }
         
-        private MessageSender _messageSender;
+        private NetworkManager _networkManager;
         private bool _isMainMenuCreated = false;
         
         private IGameUICoordinator _gameUICoordinator;
         private IMainMenuEventsHandler _mainMenuEvents;
         public override void Initialize(ServiceContainer container)
         {
-            _messageSender = container.Get<MessageSender>();
+            _networkManager = container.Get<NetworkManager>();
             _gameUICoordinator = container.Get<GameUICoordinator>();
         }
 
@@ -46,7 +46,7 @@ namespace Core.GameStates.Types
 
         private void OnChangeState(string playerName)
         {
-            _messageSender.SetPlayerName(playerName);
+            _networkManager.SetPlayerName(playerName);
 
             Debug.Log($"[GameMenu] Player name set to '{playerName}', transitioning to JoinRoom");
             TriggerStateSwitch?.Invoke();

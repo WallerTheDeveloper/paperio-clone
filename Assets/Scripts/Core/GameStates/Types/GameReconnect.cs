@@ -9,7 +9,7 @@ namespace Core.GameStates.Types
     {
         public override Action TriggerStateSwitch { get; set; }
 
-        private MessageSender _messageSender;
+        private NetworkManager _networkManager;
         private bool _isWaitingForResponse;
         private float _timeoutTimer;
 
@@ -19,7 +19,7 @@ namespace Core.GameStates.Types
 
         public override void Initialize(ServiceContainer container)
         {
-            _messageSender = container.Get<MessageSender>();
+            _networkManager = container.Get<NetworkManager>();
             _isWaitingForResponse = false;
             _timeoutTimer = 0f;
             Succeeded = true;
@@ -35,11 +35,11 @@ namespace Core.GameStates.Types
                 return;
             }
 
-            if (!string.IsNullOrEmpty(_messageSender.RoomCode) &&
+            if (!string.IsNullOrEmpty(_networkManager.RoomCode) &&
                 !string.IsNullOrEmpty(savedRoom) &&
-                _messageSender.RoomCode != savedRoom)
+                _networkManager.RoomCode != savedRoom)
             {
-                Debug.Log($"[GameReconnect] Room mismatch (saved: {savedRoom}, target: {_messageSender.RoomCode}), falling back to join");
+                Debug.Log($"[GameReconnect] Room mismatch (saved: {savedRoom}, target: {_networkManager.RoomCode}), falling back to join");
                 ClearSavedToken();
                 Succeeded = false;
                 TriggerStateSwitch?.Invoke();
@@ -48,10 +48,10 @@ namespace Core.GameStates.Types
 
             Debug.Log($"[GameReconnect] Attempting reconnect with saved token for room {savedRoom}");
 
-            _messageSender.OnRoomJoined += OnRoomJoined;
-            _messageSender.OnError += OnError;
+            _networkManager.OnRoomJoined += OnRoomJoined;
+            _networkManager.OnError += OnError;
 
-            _messageSender.SendReconnect(savedToken);
+            _networkManager.SendReconnect(savedToken);
             _isWaitingForResponse = true;
             _timeoutTimer = 0f;
         }
@@ -101,10 +101,10 @@ namespace Core.GameStates.Types
 
         private void Cleanup()
         {
-            if (_messageSender != null)
+            if (_networkManager != null)
             {
-                _messageSender.OnRoomJoined -= OnRoomJoined;
-                _messageSender.OnError -= OnError;
+                _networkManager.OnRoomJoined -= OnRoomJoined;
+                _networkManager.OnError -= OnError;
             }
         }
 

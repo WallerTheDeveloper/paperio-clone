@@ -16,12 +16,12 @@ namespace Game.Subsystems.Input
         private Direction _lastSentDirection = Direction.None;
         private float _lastInputTime;
         
-        private MessageSender _messageSender;
+        private NetworkManager _networkManager;
         private PlayerInputActions _playerInputActions;
         
         public void Initialize(ServiceContainer services)
         {
-            _messageSender = services.Get<MessageSender>();
+            _networkManager = services.Get<NetworkManager>();
         
             _playerInputActions = new PlayerInputActions();
             
@@ -81,9 +81,9 @@ namespace Game.Subsystems.Input
             
             OnDirectionChanged?.Invoke(newDirection);
             
-            if (_messageSender != null && _messageSender.IsConnected && newDirection != _lastSentDirection)
+            if (_networkManager != null && _networkManager.IsConnected && newDirection != _lastSentDirection)
             {
-                _messageSender.SendDirection(newDirection);
+                _networkManager.SendDirection(newDirection);
                 _lastSentDirection = newDirection;
                 Debug.Log($"[InputService] Sent direction: {newDirection}");
             }

@@ -20,7 +20,6 @@ namespace Game.Subsystems.Rendering
     }
     public class PlayerVisualsManager : MonoBehaviour, IService, IPlayerVisualsManager
     {
-        [SerializeField] private GameWorldConfig config;
         [SerializeField] private PlayerConfig playerConfig;
         [SerializeField] private PlayerVisual playerVisualPrefab;
         
@@ -43,10 +42,12 @@ namespace Game.Subsystems.Rendering
         
         private IColorDataProvider _colorDataProvider;
         private IPlayerDataProvider _playerDataProvider;
+        private GameWorldConfigProvider _gameWorldConfigProvider;
         public void Initialize(ServiceContainer services)
         {
             _playerDataProvider = services.Get<PlayersContainer>();
             _colorDataProvider = services.Get<ColorsRegistry>();
+            _gameWorldConfigProvider = services.Get<GameWorldConfigProvider>();
             
             // Create container for player game objects if not assigned
             if (visualsContainer == null)
@@ -239,7 +240,7 @@ namespace Game.Subsystems.Rendering
             return GridHelper.GridToWorld(
                 protoPlayer.Position.X,
                 protoPlayer.Position.Y,
-                config.CellSize,
+                _gameWorldConfigProvider.Config.CellSize,
                 playerConfig.PlayerHeight
             );
         }

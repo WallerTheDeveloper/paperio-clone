@@ -13,12 +13,13 @@ using Game.UI.Leaderboard;
 using Game.UI.Territory;
 using Network;
 using UnityEngine;
+using UnityEngine.Serialization;
 
 namespace Core
 {
     public class Bootstrap : MonoBehaviour
     {
-        [SerializeField] private MessageSender messageSender;
+        [FormerlySerializedAs("messageSender")] [SerializeField] private NetworkManager networkManager;
         [SerializeField] private GameStatesManager gameStatesManager;
         [SerializeField] private ServerStateHandler serverStateHandler;
         [SerializeField] private GameWorld gameWorld;
@@ -68,7 +69,7 @@ namespace Core
             _services.Register(_territoryVisualData);
             _services.Register(_territoryData);
             _services.Register(_gameSessionData);
-            _services.Register(messageSender);
+            _services.Register(networkManager);
             _services.Register(_playersContainer);
             _services.Register(serverStateHandler);
             _services.Register(gameStatesManager);

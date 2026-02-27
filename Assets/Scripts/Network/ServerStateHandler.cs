@@ -23,7 +23,7 @@ namespace Network
 
         private PaperioState _currentState;
         
-        private MessageSender _messageSender;
+        private NetworkManager _networkManager;
         private IPlayersContainer _playersContainer;
 
         private bool _hasValidBaseline;
@@ -34,19 +34,19 @@ namespace Network
 
         public void Initialize(ServiceContainer services)
         {
-            _messageSender = services.Get<MessageSender>();
+            _networkManager = services.Get<NetworkManager>();
             _playersContainer = services.Get<PlayersContainer>();
             
-            _messageSender.OnPaperioStateReceived += HandleStateReceived;
-            _messageSender.OnPaperioJoinResponse += HandleJoinResponse;
+            _networkManager.OnPaperioStateReceived += HandleStateReceived;
+            _networkManager.OnPaperioJoinResponse += HandleJoinResponse;
         }
 
         public void Dispose()
         {
-            if (_messageSender != null)
+            if (_networkManager != null)
             {
-                _messageSender.OnPaperioStateReceived -= HandleStateReceived;
-                _messageSender.OnPaperioJoinResponse -= HandleJoinResponse;
+                _networkManager.OnPaperioStateReceived -= HandleStateReceived;
+                _networkManager.OnPaperioJoinResponse -= HandleJoinResponse;
             }
             
             HasJoinedGame = false;

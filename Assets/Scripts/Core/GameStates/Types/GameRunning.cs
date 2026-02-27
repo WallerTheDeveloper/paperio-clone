@@ -12,14 +12,14 @@ namespace Core.GameStates.Types
     {
         public override Action TriggerStateSwitch { get; set; }
 
-        private MessageSender _messageSender;
+        private NetworkManager _networkManager;
         private ServerStateHandler _serverStateHandler;
         private GameSessionCoordinator _coordinator;
         private IGameSessionDataProvider _gameSessionData;
 
         public override void Initialize(ServiceContainer container)
         {
-            _messageSender = container.Get<MessageSender>();
+            _networkManager = container.Get<NetworkManager>();
             _serverStateHandler = container.Get<ServerStateHandler>();
             _coordinator = container.Get<GameSessionCoordinator>();
             _gameSessionData = container.Get<GameSessionData>();
@@ -36,11 +36,11 @@ namespace Core.GameStates.Types
             _serverStateHandler.OnStateUpdated += _coordinator.OnServerStateUpdated;
             _serverStateHandler.OnPlayerEliminated += _coordinator.OnPlayerEliminated;
             _serverStateHandler.OnPlayerRespawned += _coordinator.OnPlayerRespawned;
-            _messageSender.OnPlayerDisconnected += HandlePlayerDisconnected;
+            _networkManager.OnPlayerDisconnected += HandlePlayerDisconnected;
 
             if (!_serverStateHandler.HasJoinedGame)
             {
-                _messageSender.SendReady();
+                _networkManager.SendReady();
             }
             else
             {
@@ -58,7 +58,7 @@ namespace Core.GameStates.Types
             _serverStateHandler.OnStateUpdated -= _coordinator.OnServerStateUpdated;
             _serverStateHandler.OnPlayerEliminated -= _coordinator.OnPlayerEliminated;
             _serverStateHandler.OnPlayerRespawned -= _coordinator.OnPlayerRespawned;
-            _messageSender.OnPlayerDisconnected -= HandlePlayerDisconnected;
+            _networkManager.OnPlayerDisconnected -= HandlePlayerDisconnected;
         }
         
         private void HandlePlayerDisconnected(PlayerDisconnected obj)

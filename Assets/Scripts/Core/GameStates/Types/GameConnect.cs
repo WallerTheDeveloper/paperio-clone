@@ -8,13 +8,13 @@ namespace Core.GameStates.Types
     {
         public override Action TriggerStateSwitch { get; set; }
         
-        private MessageSender _messageSender;
+        private NetworkManager _networkManager;
         public override void Initialize(ServiceContainer container)
         {
-            _messageSender = container.Get<MessageSender>();
-            _messageSender.OnConnected += OnConnected;
+            _networkManager = container.Get<NetworkManager>();
+            _networkManager.OnConnected += OnConnected;
             
-            _messageSender.Connect();
+            _networkManager.Connect();
         }
 
         public override void Tick()
@@ -22,7 +22,7 @@ namespace Core.GameStates.Types
 
         public override void Stop()
         {
-            _messageSender.OnConnected -= OnConnected;
+            _networkManager.OnConnected -= OnConnected;
         }
 
         private void OnConnected()
