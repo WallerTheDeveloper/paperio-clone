@@ -46,6 +46,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::Game.Network.NetworkManager
   serverHost: 165.22.79.248
   serverPort: 9000
+  webSocketHost: ws.paperio-demo.info
+  webSocketPort: 443
   playerName: 
   roomCode: demo-paperio
   pingInterval: 1

@@ -113,7 +113,7 @@ namespace Network
             Disconnect();
 
             // WebSocket URL — use ws:// for dev, wss:// for production
-            string protocol = port == 443 ? "wss" : "ws";
+            string protocol = (host == "127.0.0.1" || host == "localhost") ? "ws" : "wss";
             string url = $"{protocol}://{host}:{port}";
 
             Debug.Log($"[WebSocketClient] Connecting to {url}");

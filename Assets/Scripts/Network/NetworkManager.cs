@@ -13,6 +13,7 @@ namespace Network
         [Header("Connection Settings")]
         [SerializeField] private string serverHost = "127.0.0.1";
         [SerializeField] private int serverPort = 9000;
+        [SerializeField] private string webSocketHost = "ws.paperio-demo.info";
         [SerializeField] private int webSocketPort = 9001;
         [SerializeField] private string playerName = "";
         [SerializeField] private string roomCode = "";
@@ -113,13 +114,15 @@ namespace Network
 
         public bool Connect()
         {
-        #if UNITY_WEBGL && !UNITY_EDITOR
-            int port = webSocketPort;
-        #else
-            int port = serverPort;
-        #endif
+            #if UNITY_WEBGL && !UNITY_EDITOR
+                string host = webSocketHost;
+                int port = webSocketPort;
+            #else
+                string host = serverHost;
+                int port = serverPort;
+            #endif
 
-            if (_transport.Connect(serverHost, port))
+            if (_transport.Connect(host, port))
             {
                 _sendSequence = 0;
                 _lastPongTime = Time.time;
