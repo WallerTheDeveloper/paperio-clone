@@ -89,6 +89,8 @@ namespace Game.Subsystems
         {
             if (_prediction == null) return false;
 
+            _inputService.SyncDirection(serverDirection);
+
             bool corrected = _prediction.Reconcile(serverTick, serverPosition, serverDirection);
 
             _estimatedServerTick = serverTick;
@@ -99,6 +101,7 @@ namespace Game.Subsystems
 
         public void ReinitializeAfterRespawn(Vector2Int position, Direction direction)
         {
+            _inputService.SyncDirection(direction);
             _prediction?.Initialize(position, direction);
             _prediction?.SetMoveInterval(_sessionDataProvider.MoveIntervalTicks);
         }

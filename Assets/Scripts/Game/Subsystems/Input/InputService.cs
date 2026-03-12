@@ -48,6 +48,16 @@ namespace Game.Subsystems.Input
             _playerInputActions.Player.Disable();
         }
         
+        public void SyncDirection(Direction serverDirection)
+        {
+            if (_currentDirection != serverDirection)
+            {
+                Debug.Log($"[InputService] SyncDirection: {_currentDirection} -> {serverDirection}");
+                _currentDirection = serverDirection;
+                _lastSentDirection = serverDirection;
+            }
+        }
+        
         private void OnMovePerformed(InputAction.CallbackContext context)
         {
             var input = context.ReadValue<Vector2>();

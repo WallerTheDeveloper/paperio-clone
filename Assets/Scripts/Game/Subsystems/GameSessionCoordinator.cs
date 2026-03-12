@@ -136,7 +136,9 @@ namespace Game.Subsystems
 
         public void OnPlayerEliminated(uint playerId)
         {
-            _inputService.DisableInput();
+            if (playerId == _sessionData.LocalPlayerId)
+                _inputService.DisableInput();
+
             _trailVisualsManager.RemoveTrail(playerId);
             _effectsCoordinator.OnPlayerEliminated(playerId);
         }
@@ -147,19 +149,22 @@ namespace Game.Subsystems
 
             _effectsCoordinator.OnPlayerRespawned(playerId);
 
-            if (isLocal && _cameraController != null && _playerVisualsManager.LocalPlayerVisual != null)
+            if (isLocal)
             {
-                _cameraController.SetLocalTarget(_playerVisualsManager.LocalPlayerVisual.transform);
-
-                var playerData = _playerDataProvider.TryGetPlayerById(playerId);
-                if (playerData != null)
+                if (_cameraController != null && _playerVisualsManager.LocalPlayerVisual != null)
                 {
-                    _predictionSystem.ReinitializeAfterRespawn(playerData.GridPosition, Direction.None);
-                    _playerVisualsManager.LocalPlayerVisual.SetMoveDuration(_sessionData.MoveDuration);
-                }
-            }
+                    _cameraController.SetLocalTarget(_playerVisualsManager.LocalPlayerVisual.transform);
 
-            _inputService.EnableInput();
+                    var playerData = _playerDataProvider.TryGetPlayerById(playerId);
+                    if (playerData != null)
+                    {
+                        _predictionSystem.ReinitializeAfterRespawn(playerData.GridPosition, Direction.None);
+                        _playerVisualsManager.LocalPlayerVisual.SetMoveDuration(_sessionData.MoveDuration);
+                    }
+                }
+
+                _inputService.EnableInput();
+            }
         }
 
         public void OnPlayerDisconnected(uint playerId)
