@@ -10,6 +10,7 @@ namespace Game.Subsystems.Rendering
     {
         [SerializeField] private GameWorldConfig config;
         
+        [SerializeField] private Material indicatorMaterial;
         [SerializeField] private Camera minimapCamera;
         [SerializeField] private float gridPadding = 2f;
         [SerializeField] private float cameraHeight = 200f;
@@ -68,6 +69,11 @@ namespace Game.Subsystems.Rendering
                 return;
             }
 
+            if (minimapCamera.transform.parent != null && minimapCamera.transform.parent is RectTransform)
+            {
+                minimapCamera.transform.SetParent(null, true);
+            }
+            
             _gameSessionDataProvider.OnGameStarted += OnGameStarted;
         }
 
@@ -209,10 +215,17 @@ namespace Game.Subsystems.Rendering
             renderer.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
             renderer.receiveShadows = false;
 
-            var mpb = new MaterialPropertyBlock();
-            mpb.SetColor("_BaseColor", color);
-            mpb.SetColor("_Color", color);
-            renderer.SetPropertyBlock(mpb);
+            if (indicatorMaterial != null)
+            {
+                renderer.material = new Material(indicatorMaterial);
+                renderer.material.color = color;
+            }
+            else
+            {
+                var mpb = new MaterialPropertyBlock();
+                mpb.SetColor("_BaseColor", color);
+                renderer.SetPropertyBlock(mpb);
+            }
 
             return indicator;
         }

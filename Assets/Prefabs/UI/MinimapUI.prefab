@@ -433,6 +433,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Game.Rendering.MinimapSystem
   config: {fileID: 11400000, guid: e159dff81f5cda142859638221635e07, type: 2}
+  indicatorMaterial: {fileID: 2100000, guid: 6cb00d721b84c4b4e9fb635b3b89c612, type: 2}
   minimapCamera: {fileID: 6487936252727107034}
   gridPadding: 2
   cameraHeight: 25

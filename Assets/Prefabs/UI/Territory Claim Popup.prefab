@@ -207,7 +207,7 @@ MonoBehaviour:
   peakScale: 1.35
   scalePeakTime: 0.25
   fadeStartTime: 0.4
-  screenOffsetY: 60
+  screenOffsetY: 120
   showAsPercentage: 1
   usePlayerColor: 1
   textColor: {r: 1, g: 1, b: 1, a: 1}
