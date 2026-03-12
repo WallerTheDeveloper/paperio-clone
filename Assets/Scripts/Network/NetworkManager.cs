@@ -13,6 +13,7 @@ namespace Network
         [Header("Connection Settings")]
         [SerializeField] private string serverHost = "127.0.0.1";
         [SerializeField] private int serverPort = 9000;
+        [SerializeField] private int webSocketPort = 9001;
         [SerializeField] private string playerName = "";
         [SerializeField] private string roomCode = "";
 
@@ -20,7 +21,7 @@ namespace Network
         [SerializeField] private float pingInterval = 1.0f;
         [SerializeField] private float connectionTimeout = 10.0f;
 
-        private UdpClient _udpClient;
+        private INetworkTransport _transport;
         private uint _sendSequence;
         private uint _pingSequence;
         private float _lastPingTime;
@@ -32,7 +33,7 @@ namespace Network
         private string _roomCode;
         private string _reconnectToken;
 
-        public bool IsConnected => _udpClient?.IsConnected ?? false;
+        public bool IsConnected => _transport?.IsConnected ?? false;
         public string RoomCode => _roomCode;
 
         public event Action<RoomJoined> OnRoomJoined;
@@ -55,14 +56,27 @@ namespace Network
         {
             MainThreadDispatcher.Initialize();
 
-            _udpClient = new UdpClient();
-            _udpClient.OnDataReceived += HandleDataReceived;
-            _udpClient.OnError += HandleNetworkError;
-            _udpClient.OnDisconnected += HandleDisconnected;
+            #if UNITY_WEBGL && !UNITY_EDITOR
+                _transport = new WebSocketClient();
+            #else
+                _transport = new UdpClient();
+            #endif
+
+            _transport.OnDataReceived += HandleDataReceived;
+            _transport.OnError += HandleNetworkError;
+            _transport.OnDisconnected += HandleDisconnected;
+            _transport.OnConnected += HandleTransportConnected;
         }
 
         public void Tick()
         {
+            #if UNITY_WEBGL && !UNITY_EDITOR
+                // WebSocket callbacks arrive from JS — must be dispatched on main thread
+                if (_transport is WebSocketClient wsClient)
+                {
+                    wsClient.ProcessCallbacks();
+                }
+            #endif
             if (IsConnected && _isJoined)
             {
                 if (Time.time - _lastPingTime >= pingInterval)
@@ -82,12 +96,13 @@ namespace Network
         {
             SendLeaveRoom();
             
-            if (_udpClient != null)
+            if (_transport != null)
             {
-                _udpClient.OnDataReceived -= HandleDataReceived;
-                _udpClient.OnError -= HandleNetworkError;
-                _udpClient.OnDisconnected -= HandleDisconnected;
-                _udpClient.Dispose();
+                _transport.OnDataReceived -= HandleDataReceived;
+                _transport.OnError -= HandleNetworkError;
+                _transport.OnDisconnected -= HandleDisconnected;
+                _transport.OnConnected -= HandleTransportConnected; 
+                _transport.Dispose();
             }
         }
         
@@ -98,11 +113,16 @@ namespace Network
 
         public bool Connect()
         {
-            if (_udpClient.Connect(serverHost, serverPort))
+        #if UNITY_WEBGL && !UNITY_EDITOR
+            int port = webSocketPort;
+        #else
+            int port = serverPort;
+        #endif
+
+            if (_transport.Connect(serverHost, port))
             {
                 _sendSequence = 0;
                 _lastPongTime = Time.time;
-                OnConnected?.Invoke();
                 return true;
             }
             return false;
@@ -114,7 +134,7 @@ namespace Network
             _localPlayerId = 0;
             _roomCode = null;
             _reconnectToken = null;
-            _udpClient.Disconnect();
+            _transport.Disconnect();
         }
 
         public void SendJoinRoom()
@@ -223,6 +243,12 @@ namespace Network
             }
         }
 
+        private void HandleTransportConnected()
+        {
+            Debug.Log("[NetworkManager] Transport connected");
+            OnConnected?.Invoke();
+        }
+        
         private void HandleDataReceived(byte[] data)
         {
             try
@@ -230,7 +256,7 @@ namespace Network
                 var serverMsg = new ServerMessage();
                 serverMsg.MergeFrom(new CodedInputStream(data));
 
-                _udpClient.UpdateReceivedSequence(serverMsg.Sequence);
+                _transport.UpdateReceivedSequence(serverMsg.Sequence);
 
                 switch (serverMsg.PayloadCase)
                 {
@@ -379,7 +405,7 @@ namespace Network
                 using (var stream = new System.IO.MemoryStream())
                 {
                     msg.WriteTo(stream);
-                    _udpClient.Send(stream.ToArray());
+                    _transport.Send(stream.ToArray());
                 }
             }
             catch (Exception ex)

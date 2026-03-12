@@ -7,7 +7,7 @@ using UnityEngine;
 
 namespace Network
 {
-    public class UdpClient : IDisposable
+    public class UdpClient : INetworkTransport
     {
         private System.Net.Sockets.UdpClient _client;
         private IPEndPoint _serverEndpoint;
@@ -26,6 +26,7 @@ namespace Network
         public event Action<byte[]> OnDataReceived;
         public event Action<string> OnError;
         public event Action OnDisconnected;
+        public event Action OnConnected;
 
         private const int ReceiveBufferSize = 4096;
         private const int SendBufferSize = 4096;
@@ -60,6 +61,7 @@ namespace Network
                 StartReceiving();
 
                 Debug.Log($"[UdpClient] Connected to {host}:{port}");
+                OnConnected?.Invoke();
                 return true;
             }
             catch (Exception ex)
