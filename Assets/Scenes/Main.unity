@@ -228,7 +228,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 5176566871470606912, guid: 1674e49f3e36d1b4e888faf35462def6, type: 3}
       propertyPath: serverHost
-      value: 165.22.79.248
+      value: paperio-demo.info
       objectReference: {fileID: 0}
     - target: {fileID: 6979031964787616009, guid: 1674e49f3e36d1b4e888faf35462def6, type: 3}
       propertyPath: m_LocalPosition.x

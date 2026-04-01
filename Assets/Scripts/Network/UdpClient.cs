@@ -50,7 +50,16 @@ namespace Network
                 _client.Client.ReceiveTimeout = 5000;
                 _client.Client.SendTimeout = 1000;
 
-                _serverEndpoint = new IPEndPoint(IPAddress.Parse(host), port);
+                IPAddress ipAddress;
+                if (!IPAddress.TryParse(host, out ipAddress))
+                {
+                    var addresses = Dns.GetHostAddresses(host);
+                    if (addresses.Length == 0)
+                        throw new Exception($"Could not resolve hostname: {host}");
+                    ipAddress = addresses[0];
+                    Debug.Log($"[UdpClient] Resolved {host} -> {ipAddress}");
+                }
+                _serverEndpoint = new IPEndPoint(ipAddress, port);
                 
                 _client.Connect(_serverEndpoint);
 
